@@ -61,8 +61,68 @@ def spray_field(seed, count, cx, cy, spread):
     return dots
 
 
+# The spade, lifted verbatim from `SuitShapes.swift` so the icon and the app
+# draw the same shape rather than two shapes that look similar.
+SPADE_PATH = [
+    ("move", (0.50, 0.04)),
+    ("curve", (0.34, 0.22), (0.05, 0.40), (0.05, 0.58)),
+    ("curve", (0.05, 0.74), (0.20, 0.83), (0.35, 0.80)),
+    ("curve", (0.42, 0.79), (0.46, 0.75), (0.48, 0.70)),
+    ("curve", (0.47, 0.84), (0.40, 0.93), (0.30, 0.97)),
+    ("line", (0.70, 0.97)),
+    ("curve", (0.60, 0.93), (0.53, 0.84), (0.52, 0.70)),
+    ("curve", (0.54, 0.75), (0.58, 0.79), (0.65, 0.80)),
+    ("curve", (0.80, 0.83), (0.95, 0.74), (0.95, 0.58)),
+    ("curve", (0.95, 0.40), (0.66, 0.22), (0.50, 0.04)),
+]
+
+
+def flatten_spade(steps=18):
+    """The spade outline as a unit-box polygon."""
+    points = []
+    current = (0.0, 0.0)
+    for segment in SPADE_PATH:
+        if segment[0] == "move":
+            current = segment[1]
+            points.append(current)
+        elif segment[0] == "line":
+            current = segment[1]
+            points.append(current)
+        else:
+            c1, c2, end = segment[1], segment[2], segment[3]
+            p0 = current
+            for step in range(1, steps + 1):
+                t = step / steps
+                u = 1 - t
+                x = (u ** 3) * p0[0] + 3 * (u ** 2) * t * c1[0] \
+                    + 3 * u * (t ** 2) * c2[0] + (t ** 3) * end[0]
+                y = (u ** 3) * p0[1] + 3 * (u ** 2) * t * c1[1] \
+                    + 3 * u * (t ** 2) * c2[1] + (t ** 3) * end[1]
+                points.append((x, y))
+            current = end
+    return points
+
+
+SPADE = flatten_spade()
+
+
+def polygon_hit(px, py, polygon):
+    """Crossing-number test in the polygon's own unit space."""
+    inside = False
+    count = len(polygon)
+    j = count - 1
+    for i in range(count):
+        xi, yi = polygon[i]
+        xj, yj = polygon[j]
+        if (yi > py) != (yj > py):
+            if px < (xj - xi) * (py - yi) / (yj - yi) + xi:
+                inside = not inside
+        j = i
+    return inside
+
+
 def render():
-    """Rasterise into a float buffer: ground, then spray, then cards."""
+    """Rasterise into a float buffer: ground, then spray, then cards, then mark."""
     cx = cy = SIZE / 2
     card_w = SIZE * 0.335
     card_h = card_w / (2.5 / 3.5)
@@ -112,6 +172,29 @@ def render():
                 pixel = buffer[base + x]
                 for i in range(3):
                     pixel[i] += (colour[i] - pixel[i]) * weight
+
+    # The mark: a spade knocked out of the front card in cream, sized so it
+    # still reads at the smallest icon size.
+    mark = SIZE * 0.185
+    mx, my = cx - mark / 2, (cy - SIZE * 0.012) - mark / 2
+    x0, x1 = int(mx) - 2, int(mx + mark) + 2
+    y0, y1 = int(my) - 2, int(my + mark) + 2
+    for y in range(max(0, y0), min(SIZE - 1, y1) + 1):
+        base = y * SIZE
+        for x in range(max(0, x0), min(SIZE - 1, x1) + 1):
+            covered = 0
+            for sy in range(SS):
+                for sx in range(SS):
+                    ux = (x + (sx + 0.5) / SS - mx) / mark
+                    uy = (y + (sy + 0.5) / SS - my) / mark
+                    if 0 <= ux <= 1 and 0 <= uy <= 1 and polygon_hit(ux, uy, SPADE):
+                        covered += 1
+            if covered == 0:
+                continue
+            weight = covered / (SS * SS)
+            pixel = buffer[base + x]
+            for i in range(3):
+                pixel[i] += (CREAM[i] - pixel[i]) * weight
 
     raw = bytearray()
     for y in range(SIZE):
