@@ -167,7 +167,10 @@ public struct GameSetupScreen: View {
                 } label: {
                     VStack(spacing: DeckSpace.xxs) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 13, style: .continuous)
+                            // The same shape as the avatars beside it, so the
+                            // empty slot reads as one of them rather than near one.
+                            RoundedRectangle(cornerRadius: 48 * AvatarArt.cornerRatio,
+                                             style: .continuous)
                                 .strokeBorder(theme.onGround.opacity(0.3),
                                               style: StrokeStyle(lineWidth: 2, dash: [4, 3]))
                                 .frame(width: 48, height: 48)

@@ -299,7 +299,7 @@ public struct BossCard: View {
                             .stroke(DeckPalette.forest, style: StrokeStyle(lineWidth: 3,
                                                                            lineCap: .round,
                                                                            lineJoin: .round))
-                            .frame(width: 18, height: 13)
+                            .frame(width: DeckSpace.l, height: DeckSpace.s)
                     )
                     .rotationEffect(.degrees(-12))
                     .padding(DeckSpace.xs)

@@ -372,7 +372,8 @@ public struct ProfileEditor: View {
                             } label: {
                                 AvatarArt(avatarID: cosmetic.id, initials: draft.initials, size: 52)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                        RoundedRectangle(cornerRadius: 52 * AvatarArt.cornerRatio,
+                                                         style: .continuous)
                                             .strokeBorder(draft.avatarID == cosmetic.id
                                                           ? DeckPalette.vermilion : .clear,
                                                           lineWidth: 3)

@@ -215,6 +215,11 @@ struct StarShape: Shape {
 /// pair of eyes. The unlockable ones are recognisably from the same hand as the
 /// bosses.
 public struct AvatarArt: View {
+    /// Corner radius as a fraction of the avatar's size. Anything that outlines
+    /// or sits behind an avatar reads it from here rather than guessing a
+    /// number that nearly matches.
+    public static let cornerRatio: CGFloat = 0.28
+
     private let avatarID: String
     private let initials: String
     private let size: CGFloat
@@ -268,9 +273,9 @@ public struct AvatarArt: View {
             }
         }
         .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: size * 0.28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: size * Self.cornerRatio, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+            RoundedRectangle(cornerRadius: size * Self.cornerRatio, style: .continuous)
                 .strokeBorder(DeckPalette.ink.opacity(0.25), lineWidth: 1)
         )
         .accessibilityHidden(true)

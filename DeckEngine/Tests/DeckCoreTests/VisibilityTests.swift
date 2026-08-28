@@ -122,6 +122,29 @@ final class VisibilityTests: XCTestCase {
         XCTAssertFalse(board.visibility(of: card.id).canSee(bob))
     }
 
+    /// The last link in the Pass & Play chain: a card the viewer may not see
+    /// arrives at the view layer with no face attached, so there is nothing for
+    /// the renderer to draw and nothing for VoiceOver to read out.
+    func testAConcealedCardCarriesNothingThatCouldLeak() {
+        let concealed = VisibleCard.concealed(Card(.spades, .ace).id)
+        XCTAssertNil(concealed.card, "there is no face to draw")
+        XCTAssertFalse(concealed.isKnown)
+        XCTAssertEqual(concealed.token, "??", "not even a debug description gives it away")
+        XCTAssertEqual(concealed.id, Card(.spades, .ace).id,
+                       "the identity is kept so the layout is stable")
+
+        let known = VisibleCard.known(Card(.spades, .ace))
+        XCTAssertEqual(known.card, Card(.spades, .ace))
+        XCTAssertEqual(known.token, "AS")
+    }
+
+    /// The two values are distinct even for the same card, so a view cannot
+    /// accidentally treat a concealed card as its revealed self.
+    func testConcealedAndKnownAreNotInterchangeable() {
+        let card = Card(.hearts, .queen)
+        XCTAssertNotEqual(VisibleCard.concealed(card.id), VisibleCard.known(card))
+    }
+
     func testEveryCardIsAccountedForAfterMoves() {
         var board = dealtBoard()
         let total = board.cards.count
