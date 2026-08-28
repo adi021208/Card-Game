@@ -1,0 +1,82 @@
+{
+  "identifier" : "DECK",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "24.99",
+      "familyShareable" : true,
+      "internalID" : "DECKLIFETIME",
+      "localizations" : [
+        {
+          "description" : "Unlimited daily attempts, every variant and the premium decks, once.",
+          "displayName" : "DECK Premium — Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.deck.premium.lifetime",
+      "referenceName" : "Premium Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "DECK",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "DECKPREMIUM",
+      "localizations" : [],
+      "name" : "DECK Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "2.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "DECKMONTHLY",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited daily attempts, every variant and the premium decks.",
+              "displayName" : "DECK Premium — Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.deck.premium.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Premium Monthly",
+          "subscriptionGroupID" : "DECKPREMIUM",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "19.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "DECKYEARLY",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited daily attempts, every variant and the premium decks.",
+              "displayName" : "DECK Premium — Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.deck.premium.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Premium Yearly",
+          "subscriptionGroupID" : "DECKPREMIUM",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : { "major" : 3, "minor" : 0 }
+}
