@@ -71,6 +71,8 @@ public struct GinRummyRules: GameRules {
         /// Cards each player has taken from the discard pile this hand. Public
         /// information, and the strongest read either player gets.
         public var discardTakes: [SeatID: [CardID]]
+        /// The upcard taken this turn, which may not be thrown straight back.
+        public var takenUpcard: CardID?
         /// Result of the last knock, for the score screen.
         public var lastKnock: KnockSummary?
 
@@ -139,6 +141,7 @@ public struct GinRummyRules: GameRules {
                      upcardRefusals: 0,
                      roundComplete: false,
                      discardTakes: [:],
+                     takenUpcard: nil,
                      lastKnock: nil)
     }
 
@@ -180,7 +183,7 @@ public struct GinRummyRules: GameRules {
         case .discard:
             let hand = state.hand(seat)
             var actions: [Action] = []
-            for card in hand {
+            for card in hand where card.id != state.takenUpcard {
                 actions.append(.discard(card.id))
                 var remaining = hand
                 remaining.removeAll { $0.id == card.id }
@@ -216,10 +219,12 @@ public struct GinRummyRules: GameRules {
         case let .discard(cardID):
             guard state.phase == .discard else { return .noSuchAction }
             guard state.board.zone(of: cardID) == Zone.hand(seat) else { return .cardNotInHand }
+            if let reason = upcardReturn(cardID, in: state) { return reason }
             return nil
         case let .knock(cardID):
             guard state.phase == .discard else { return .noSuchAction }
             guard state.board.zone(of: cardID) == Zone.hand(seat) else { return .cardNotInHand }
+            if let reason = upcardReturn(cardID, in: state) { return reason }
             var remaining = state.hand(seat)
             remaining.removeAll { $0.id == cardID }
             let deadwood = MeldSolver.best(remaining).deadwoodPoints
@@ -232,6 +237,14 @@ public struct GinRummyRules: GameRules {
         }
     }
 
+    /// Taking the upcard and throwing it straight back would pass the turn
+    /// without changing anything, so the rules forbid it.
+    private func upcardReturn(_ cardID: CardID, in state: State) -> IllegalMove? {
+        guard state.takenUpcard == cardID else { return nil }
+        return IllegalMove("cannotReturnUpcard",
+                           english: "You cannot discard the card you just took from the discard pile.")
+    }
+
     public func apply(_ action: Action, to state: inout State, generator: inout SeededGenerator) -> [GameEvent] {
         guard let seat = state.activeSeat else { return [] }
         var events: [GameEvent] = []
@@ -241,6 +254,7 @@ public struct GinRummyRules: GameRules {
         case .drawFromStock:
             guard let card = state.board.draw(from: .stock, to: .hand(seat), facing: .hand(seat)) else { break }
             state.board.sort(.hand(seat), by: HandSort.bySuitThenRank)
+            state.takenUpcard = nil
             state.phase = .discard
             events.append(.cardDrawn(card: card.id, by: seat, from: .stock))
 
@@ -250,6 +264,7 @@ public struct GinRummyRules: GameRules {
             state.openingUpcard = false
             state.phase = .discard
             state.discardTakes[seat, default: []].append(card.id)
+            state.takenUpcard = card.id
             events.append(.cardDrawn(card: card.id, by: seat, from: .discard))
 
         case .passUpcard:
@@ -266,6 +281,7 @@ public struct GinRummyRules: GameRules {
 
         case let .discard(cardID):
             state.board.move(cardID, to: .discard, facing: .faceUp)
+            state.takenUpcard = nil
             state.phase = .draw
             events.append(.cardDiscarded(card: cardID, by: seat))
             // Running the stock down to two cards is a draw.
@@ -280,6 +296,7 @@ public struct GinRummyRules: GameRules {
 
         case let .knock(cardID):
             state.board.move(cardID, to: .discard, facing: .faceUp)
+            state.takenUpcard = nil
             events.append(.cardDiscarded(card: cardID, by: seat))
             events += resolveKnock(knocker: seat, state: &state)
             return events
@@ -379,6 +396,7 @@ public struct GinRummyRules: GameRules {
         state.openingUpcard = true
         state.upcardRefusals = 0
         state.discardTakes = [:]
+        state.takenUpcard = nil
         return [.roundStarted(number: state.roundNumber),
                 .handsDealt(counts: Dictionary(uniqueKeysWithValues: state.seatOrder.map { ($0, 10) }))]
     }

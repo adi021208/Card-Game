@@ -375,6 +375,7 @@
 "illegal.duplicateCards" = "Choose different cards.";
 "illegal.mustClaimNextRank" = "The pile is on %@ — that is what you have to claim.";
 "illegal.mustDecideUpcard" = "Take the upcard or pass it first.";
+"illegal.cannotReturnUpcard" = "You cannot discard the card you just took from the discard pile.";
 "illegal.deadwoodTooHigh" = "You would still be holding %@ in deadwood; you can only knock at %@ or less.";
 "illegal.notAValidMeld" = "A meld is three or more of a rank in different suits, or three or more in sequence in one suit.";
 "illegal.cannotLayOff" = "That card does not extend the meld you chose.";

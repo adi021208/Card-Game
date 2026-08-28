@@ -158,7 +158,7 @@ Any AnyObject AnyHashable Array ArraySlice Bool Character ClosedRange CodingKey 
 CodingKeyRepresentable Collection Comparable CustomStringConvertible Data Date DateComponents
 DateFormatter DateInterval Decodable Decoder Dictionary Double Encodable Encoder Equatable Error
 ExpressibleByArrayLiteral ExpressibleByStringLiteral Float Hashable Hasher Identifiable Int Int8
-Int16 Int32 Int64 IteratorProtocol JSONDecoder JSONEncoder KeyedDecodingContainer LazyMapSequence
+Int16 Int32 Int64 IteratorProtocol JSONDecoder JSONEncoder JSONSerialization KeyedDecodingContainer LazyMapSequence
 Locale NSLock NSObject Never Numeric Optional OptionSet PartialRangeFrom Range RandomNumberGenerator
 RangeReplaceableCollection RawRepresentable Result Self Sendable Sequence Set String StringProtocol
 Strideable SubSequence Substring SystemRandomNumberGenerator TimeInterval TimeZone URL UUID UInt
