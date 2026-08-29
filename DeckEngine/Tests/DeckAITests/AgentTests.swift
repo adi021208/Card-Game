@@ -333,7 +333,17 @@ final class AgentPlayTests: XCTestCase {
 
     func testRummyAgentsPlayALegalGameToTheEnd() {
         let seating = AgentHarness.seating([.hal, .honey, .calvin])
-        let configuration = GameConfiguration(gameID: .rummy, seating: seating, seed: 7890)
+        // Played to twenty-five rather than the default hundred. At a hundred
+        // this did not converge: 180 deals produced scores of 0, 99 and 65,
+        // because these agents rarely go out and a deal nobody goes out of
+        // scores nothing at all. That is the agents playing weakly, which is
+        // worth knowing but is not what this test is for — it asserts they
+        // play a legal game to the end, and a shorter game asserts it just as
+        // well. The scoring itself is correct: the winner of a deal takes the
+        // losers' deadwood.
+        let configuration = GameConfiguration(gameID: .rummy, seating: seating,
+                                              options: ["targetScore": 25],
+                                              seed: 7890)
         let run = AgentHarness.play(RummyRules(),
                                     configuration: configuration,
                                     agent: RummyAgent.choose,

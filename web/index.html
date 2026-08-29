@@ -2059,6 +2059,13 @@ def({
     st.moves++;
     const home = [0, 1, 2, 3].reduce((n, f) => n + B.count(st.board, Z.foundation(f)), 0);
     if (home === 52) { st.done = { winners: [0], scores: { 0: Math.max(0, 1000 - st.moves * 2) }, lowWins: false }; ev.push("Solved."); }
+    /* FreeCell has no stock to turn, so a position with no move left is the end
+       of the deal rather than a pause in it. Klondike can always recycle its
+       waste, which is why only this one needs a losing ending. */
+    else if (!this.legal(st).length) {
+      st.done = { winners: [], scores: { 0: 0 }, lowWins: false };
+      ev.push("No moves left — this deal is dead.");
+    }
     return ev;
   },
   observe() { return {}; },

@@ -284,6 +284,23 @@ public struct FreeCellRules: GameRules {
             state.finalResult = result
             state.activeSeat = nil
             events.append(.gameEnded(result))
+        } else if state.finalResult == nil,
+                  legalActions(in: state, for: state.seat).isEmpty {
+            // FreeCell has no stock to turn, so a position with no legal move
+            // is the end of the deal: it is lost, and there is nothing to do
+            // but start another. Klondike can always recycle its waste, which
+            // is why this is the solitaire that needs a losing ending.
+            let result = GameResult(winners: [],
+                                    scores: [state.seat: 0],
+                                    placements: [state.seat],
+                                    duration: 0,
+                                    turnCount: state.moveCount,
+                                    roundCount: 1,
+                                    metrics: [FreeCellStatistics.moves: state.moveCount],
+                                    highlights: ["freecell.stuck"])
+            state.finalResult = result
+            state.activeSeat = nil
+            events.append(.gameEnded(result))
         }
         return events
     }
