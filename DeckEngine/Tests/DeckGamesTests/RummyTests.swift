@@ -203,7 +203,7 @@ final class GinRummyTests: XCTestCase {
             for action in legal { if case .knock = action { return action } }
             return legal[0]
         }
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(result.winners.count, 1)
         let best = outcome.state.scores.values.max() ?? 0
         XCTAssertGreaterThanOrEqual(best, outcome.state.settings.targetScore)
@@ -363,7 +363,7 @@ final class RummyTests: XCTestCase {
     func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.rummy, humans: 1, ai: 2)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(result.winners.count, 1)
         XCTAssertGreaterThan(outcome.moves, 0)
     }

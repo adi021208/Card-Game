@@ -44,10 +44,11 @@ enum TestTable {
     static func playOut<R: GameRules>(_ rules: R,
                                       configuration: GameConfiguration,
                                       maximumMoves: Int = 6000,
-                                      chooser: ((R.State, [R.Action]) -> R.Action)? = nil) -> (state: R.State, moves: Int) {
+                                      chooser: ((R.State, [R.Action]) -> R.Action)? = nil) -> (state: R.State, moves: Int, stop: String) {
         var generator = SeededGenerator(seed: configuration.seed)
         var state = rules.setup(configuration: configuration, generator: &generator)
         var moves = 0
+        var stop = "hit the \(maximumMoves)-move cap with the game still running"
         while state.finalResult == nil && moves < maximumMoves {
             var advanced = false
             for _ in 0..<512 {
@@ -57,6 +58,7 @@ enum TestTable {
             }
             guard state.finalResult == nil else { break }
             guard let seat = state.activeSeat else {
+                stop = "no active seat after \(moves) moves"
                 XCTAssertTrue(advanced, "no active seat and nothing left to do automatically")
                 break
             }
@@ -64,6 +66,7 @@ enum TestTable {
             // The chooser must return an action, so it is only consulted when
             // there is one to return.
             guard let action = (legal.isEmpty ? nil : chooser.map { $0(state, legal) }) ?? legal.first else {
+                stop = "seat \(seat) had no legal move after \(moves) moves"
                 XCTFail("no legal move for \(seat) after \(moves) moves")
                 break
             }
@@ -72,7 +75,8 @@ enum TestTable {
             _ = rules.apply(action, to: &state, generator: &generator)
             moves += 1
         }
-        return (state, moves)
+        if state.finalResult != nil { stop = "reached a result" }
+        return (state, moves, stop)
     }
 }
 

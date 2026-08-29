@@ -159,7 +159,7 @@ final class PresidentTests: XCTestCase {
     func testAFullGameFinishesWithEveryoneRanked() throws {
         let configuration = TestTable.configuration(.president, humans: 1, ai: 3)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(Set(result.placements), Set(outcome.state.seatOrder),
                        "everybody gets a place, president to scum")
         XCTAssertEqual(result.winners.count, 1)
@@ -339,7 +339,7 @@ final class CheatTests: XCTestCase {
     func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.cheat, humans: 1, ai: 3)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(result.winners.count, 1)
         let winner = result.winners[0]
         let held = outcome.state.board.count(in: Zone.hand(winner))

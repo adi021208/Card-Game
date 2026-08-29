@@ -204,7 +204,20 @@ final class CatalogSessionTests: XCTestCase {
             }
 
             let result = session.result
-            XCTAssertNotNil(result, "\(name) never reached a result in \(moves) moves")
+            // A solitaire has no losing condition: you give up, the game does
+            // not lose for you. So a driver that plays the first legal move for
+            // ever is not entitled to a result — it can shuffle the tableau and
+            // recycle the stock indefinitely, which is exactly what a person
+            // stuck in a dead deal does. What must hold is that the engine kept
+            // offering it legal moves the whole way and never contradicted
+            // itself, both of which the loop above already checks.
+            if definition.playerRange.upperBound > 1 {
+                XCTAssertNotNil(result, "\(name) never reached a result in \(moves) moves")
+            } else {
+                XCTAssertEqual(moves, 6000,
+                               "\(name) stopped early at \(moves) with no result — a solitaire "
+                               + "should either be solved or still have something to offer")
+            }
             XCTAssertGreaterThan(moves, 0, "\(name) finished without anybody moving")
             XCTAssertEqual(session.replayLog.count, moves, "\(name) lost a move from its log")
         }

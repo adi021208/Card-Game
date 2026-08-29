@@ -207,7 +207,7 @@ final class SpadesTests: XCTestCase {
     func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.spades, humans: 1, ai: 3, teams: true)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertFalse(result.winners.isEmpty)
         XCTAssertEqual(result.winners.count, 2, "spades is won by a partnership")
         XCTAssertGreaterThan(outcome.state.roundNumber, 1, "a game takes more than one deal")
@@ -370,7 +370,7 @@ final class EuchreTests: XCTestCase {
     func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.euchre, humans: 1, ai: 3, teams: true)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(result.winners.count, 2)
         let winningScore = outcome.state.teamScores.values.max() ?? 0
         XCTAssertGreaterThanOrEqual(winningScore, outcome.state.settings.targetScore)

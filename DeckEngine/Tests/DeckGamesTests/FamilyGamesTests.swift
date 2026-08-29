@@ -155,7 +155,7 @@ final class GoFishTests: XCTestCase {
     func testAFullGameBooksAllThirteenRanks() throws {
         let configuration = TestTable.configuration(.goFish, humans: 1, ai: 2)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(outcome.state.totalBooks, 13, "all fifty-two cards end up in books")
         XCTAssertFalse(result.winners.isEmpty)
     }
@@ -259,7 +259,7 @@ final class WarTests: XCTestCase {
     func testAGameAlwaysEnds() throws {
         let configuration = TestTable.configuration(.war, humans: 1, ai: 1)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertFalse(result.winners.isEmpty)
         XCTAssertLessThanOrEqual(outcome.state.flips, outcome.state.settings.flipLimit,
                                  "the flip limit stops war from running forever")
