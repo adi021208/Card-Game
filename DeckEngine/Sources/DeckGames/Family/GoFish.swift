@@ -238,12 +238,15 @@ public struct GoFishRules: GameRules {
     }
 
     private func checkForEnd(state: inout State) -> GameResult? {
-        guard state.totalBooks == 13 else {
-            // The game also ends when nobody can ask any more.
-            let anyoneHasCards = state.seatOrder.contains { state.board.count(in: .hand($0)) > 0 }
-            guard !anyoneHasCards, state.board.count(in: .stock) == 0 else { return nil }
-            return finish(state: &state)
-        }
+        guard state.totalBooks < 13 else { return finish(state: &state) }
+        // The game also ends when nobody can ask any more. Asking needs two
+        // players holding cards, so once the pond is empty and at most one
+        // player has anything the game is over — even though that player is
+        // still holding cards they can now never book. Waiting for every hand
+        // to empty deadlocks there: they have no legal move and no ending.
+        guard state.board.count(in: .stock) == 0 else { return nil }
+        let holding = state.seatOrder.filter { state.board.count(in: .hand($0)) > 0 }
+        guard holding.count <= 1 else { return nil }
         return finish(state: &state)
     }
 

@@ -21,24 +21,27 @@ final class GoFishTests: XCTestCase {
                        "every card is in a hand, a book or the pond")
     }
 
-    func testAHandDealtFourOfAKindBooksImmediately() {
-        // Search seeds until one deals a book, then check it was taken.
-        var found = false
-        for seed in UInt64(1)...80 {
-            let state = fresh(seed: seed)
-            if state.totalBooks > 0 {
-                found = true
-                for (seat, ranks) in state.books {
-                    for rank in ranks {
-                        XCTAssertEqual(state.board.cardList(in: .captured(seat)).filter { $0.rank == rank }.count, 4)
-                        XCTAssertFalse(state.hand(seat).contains { $0.rank == rank },
-                                       "a booked rank leaves the hand")
-                    }
-                }
-                break
-            }
-        }
-        XCTAssertTrue(found, "no seed in eighty dealt a book — the search is wrong, not the game")
+    func testFourOfAKindBooksAsSoonAsItIsHeld() {
+        // This used to search eighty seeds for a deal that happened to contain
+        // four of a kind. A seven-card hand holds one about once in six
+        // hundred, so eighty deals across three players found one well under
+        // half the time: the search was the thing that was wrong. Build the
+        // hand instead and let the turn resolve.
+        var state = fresh()
+        let asker = state.seatOrder[0]
+        let target = state.seatOrder[1]
+        TestTable.setHand(deck("7C", "7D", "7H", "7S", "9C"), for: asker, in: &state.board)
+        TestTable.setHand(deck("9D", "3S"), for: target, in: &state.board)
+        state.activeSeat = asker
+
+        var generator = SeededGenerator(seed: 5)
+        _ = rules.apply(.ask(target: target, rank: .nine), to: &state, generator: &generator)
+
+        XCTAssertEqual(state.books[asker] ?? [], [.seven], "four of a kind is a book")
+        XCTAssertEqual(state.board.cardList(in: .captured(asker)).filter { $0.rank == .seven }.count, 4,
+                       "all four cards go to the book")
+        XCTAssertFalse(state.hand(asker).contains { $0.rank == .seven },
+                       "a booked rank leaves the hand")
     }
 
     func testYouCanOnlyAskForARankYouHold() {

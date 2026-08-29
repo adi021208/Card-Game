@@ -172,14 +172,6 @@ public struct KlondikeRules: GameRules {
         guard state.finalResult == nil else { return [] }
         var actions: [Action] = []
 
-        if state.board.count(in: .stock) > 0 {
-            actions.append(.drawFromStock)
-        } else if state.board.count(in: .waste) > 0 {
-            if state.settings.redealLimit == 0 || state.redealsUsed < state.settings.redealLimit {
-                actions.append(.recycleWaste)
-            }
-        }
-
         let foundations = (0..<Self.foundationCount).map { Zone.foundation($0) }
         let columns = (0..<Self.tableauCount).map { Zone.tableau($0) }
 
@@ -226,6 +218,18 @@ public struct KlondikeRules: GameRules {
 
         if canCollect(state: state) {
             actions.append(.collect)
+        }
+
+        // Turning the stock is what you do when there is nothing better, so it
+        // comes last. Offered first, anything that takes the head of the list —
+        // the quick-play button, a sweep test — cycles the stock for ever and
+        // never plays a card.
+        if state.board.count(in: .stock) > 0 {
+            actions.append(.drawFromStock)
+        } else if state.board.count(in: .waste) > 0 {
+            if state.settings.redealLimit == 0 || state.redealsUsed < state.settings.redealLimit {
+                actions.append(.recycleWaste)
+            }
         }
         return actions
     }
