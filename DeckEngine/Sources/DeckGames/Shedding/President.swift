@@ -145,7 +145,7 @@ public struct PresidentRules: GameRules {
     }
 
     /// Rank ordering: three is low, ace high, and a two beats everything.
-    static func power(_ rank: Rank, twosAreBombs: Bool) -> Int {
+    public static func power(_ rank: Rank, twosAreBombs: Bool) -> Int {
         if rank == .two && twosAreBombs { return 100 }
         // Three is the lowest card, so shift the scale down past the two.
         return rank == .two ? 15 : rank.rawValue
