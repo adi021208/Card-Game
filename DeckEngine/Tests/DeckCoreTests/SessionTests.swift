@@ -156,12 +156,16 @@ final class GameSessionTests: XCTestCase {
         XCTAssertEqual(session.replayLog, [token.id])
     }
 
-    func testIllegalMoveThrowsWithAReason() {
+    func testIllegalMoveThrowsWithAReason() throws {
         let session = GameSession(rules: ToyRules(), configuration: makeConfiguration())
-        // A card from the other player's hand.
-        let opponentCard = session.presentation(for: SeatID(1))
-            .board.contents(of: .hand(SeatID(1))).first
-        let bogus = ActionToken(id: ToyToken.id(SeatID(0), opponentCard ?? CardID(rawValue: 0)),
+        // A card from the other player's hand. A presentation board holds
+        // VisibleCards, whose id is there whether the face is known or
+        // concealed — that is the whole point of the seam. Unwrapping rather
+        // than defaulting: an empty opponent hand should fail this test, not
+        // quietly hand it a card that never existed.
+        let opponentCard = try XCTUnwrap(session.presentation(for: SeatID(1))
+            .board.contents(of: .hand(SeatID(1))).first)
+        let bogus = ActionToken(id: ToyToken.id(SeatID(0), opponentCard.id),
                                 kind: .playCard,
                                 seat: SeatID(0),
                                 labelKey: "action.play")
