@@ -1618,9 +1618,17 @@ function viewSetup() {
   const list = el("div", "seatlist");
   field.append(el("div", "label", "Who's playing"), list);
 
+  const note = el("p", "label");
+  const refreshNote = () => {
+    const humans = seats.filter((x) => !x.ai).length;
+    note.textContent = humans > 1
+      ? `Pass & Play — the device goes round ${humans} people.`
+      : humans === 1 ? "Solo against the machine." : "Everyone is an opponent; you're watching.";
+  };
+
   const drawSeats = () => {
     list.innerHTML = "";
-    if (typeof refreshNote === "function") refreshNote();
+    refreshNote();
     seats.forEach((seat, i) => {
       const row = el("div", "seat-row");
       const chip = el("span", "chip" + (seat.ai ? " ai" : ""), seat.ai ? "AI" : "You");
@@ -1668,13 +1676,6 @@ function viewSetup() {
   }
   diffField.append(el("div", "label", "Opponent skill"), seg);
 
-  const note = el("p", "label");
-  const refreshNote = () => {
-    const humans = seats.filter((x) => !x.ai).length;
-    note.textContent = humans > 1
-      ? `Pass & Play — the device goes round ${humans} people.`
-      : humans === 1 ? "Solo against the machine." : "Everyone is an opponent; you're watching.";
-  };
   const start = el("button", "btn wide", "Deal");
   start.onclick = () => {
     const names = seats.map((x, i) => (x.name || "").trim() || `Player ${i + 1}`);
@@ -2099,6 +2100,24 @@ function viewResult() {
 
 /* ── Render ──────────────────────────────────────────────────────── */
 function render() {
+  try { renderInner(); }
+  catch (err) {
+    console.error(err);
+    screen.innerHTML = "";
+    const s = el("div", "screen");
+    const w = el("div", "wrap stack");
+    w.style.gap = "var(--s4)";
+    w.append(el("h1", "poster h-m", "That screen did not open."));
+    const p = el("p", "label");
+    p.textContent = String((err && err.message) || err);
+    const b = el("button", "btn wide", "Back to the library");
+    b.onclick = () => { App.run = null; App.game = null; App.view = "library"; render(); };
+    w.append(p, b);
+    s.append(w);
+    screen.append(s);
+  }
+}
+function renderInner() {
   const run = App.run;
   const inGame = !!run && App.view === "table";
   document.getElementById("quitBtn").classList.toggle("hidden", !inGame && App.view !== "setup");
