@@ -433,8 +433,8 @@ public struct KlondikeRules: GameRules {
             return ActionToken(id: TokenID.make(seat, "recycle"),
                                kind: .drawCard,
                                seat: seat,
-                               source: .waste,
                                destination: .stock,
+                               source: .waste,
                                labelKey: "action.recycle")
         case let .move(cardID, destination):
             let cards = liftableRun(from: cardID, in: state) ?? [cardID]

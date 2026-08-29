@@ -169,7 +169,8 @@ public enum PokerEvaluator {
                 .prefix(1)
             candidates.append(PokerHandRank(category: .twoPair,
                                             tiebreakers: [high.rank, low.rank] + kickers.map(rankValue),
-                                            cards: Array(high.cards.prefix(2)) + Array(low.cards.prefix(2)) + kickers))
+                                            cards: Array(high.cards.prefix(2)) + Array(low.cards.prefix(2))
+                                                + Array(kickers)))
         }
 
         if let onlyPair = pairs.first, trips.isEmpty {
