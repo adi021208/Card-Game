@@ -174,7 +174,15 @@ final class CatalogSessionTests: XCTestCase {
             let name = definition.englishName
             let configuration = GameConfiguration(gameID: definition.id,
                                                   seating: seating(for: definition),
-                                                  options: definition.defaultOptions,
+                                                  // This sweep is about the engine dealing, offering
+                                                  // and finishing — not about strategy. It plays the
+                                                  // first legal action, which in poker means folding
+                                                  // to the blind every hand, and a table that always
+                                                  // folds is a stable cycle nobody ever busts out of.
+                                                  // Bound the games that can legitimately run forever;
+                                                  // anything that does not read handLimit ignores it.
+                                                  options: definition.defaultOptions
+                                                      .merging(["handLimit": 40]) { declared, _ in declared },
                                                   seed: 20260828)
             let session = definition.makeSession(configuration)
             XCTAssertEqual(session.gameID, definition.id, "\(name) built the wrong session")

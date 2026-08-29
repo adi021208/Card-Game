@@ -172,7 +172,13 @@ final class TexasHoldemFlowTests: XCTestCase {
 
     func testChipsAreConservedAcrossAWholeHand() {
         var (state, generator, configuration) = start(players: 4, seed: 3141)
-        let startingTotal = state.stacks.values.reduce(0, +)
+        // `setup` deals a hand and posts the blinds, so chips are already off
+        // the stacks before the first look. The quantity that cannot change is
+        // stacks plus what is committed — stacks alone start thirty light.
+        let table = 4 * 1000
+        XCTAssertEqual(state.stacks.values.reduce(0, +) + state.pot, table,
+                       "the blinds are on the table, not in the stacks")
+
         var safety = 0
         while !state.handComplete && safety < 200 {
             safety += 1
@@ -180,9 +186,15 @@ final class TexasHoldemFlowTests: XCTestCase {
             let legal = rules.legalActions(in: state, for: seat)
             guard let action = legal.last else { break }   // last is usually all-in
             _ = rules.apply(action, to: &state, generator: &generator)
+            if !state.handComplete {
+                XCTAssertEqual(state.stacks.values.reduce(0, +) + state.pot, table,
+                               "chips cannot be created or destroyed mid-hand")
+            }
         }
-        let endingTotal = state.stacks.values.reduce(0, +)
-        XCTAssertEqual(endingTotal, startingTotal, "chips cannot be created or destroyed")
+        XCTAssertTrue(state.handComplete, "the hand should have played to the end")
+        // Settled: the pot has been pushed into the stacks, so they hold it all.
+        XCTAssertEqual(state.stacks.values.reduce(0, +), table,
+                       "chips cannot be created or destroyed")
         XCTAssertEqual(configuration.seating.count, 4)
     }
 
@@ -207,7 +219,15 @@ final class TexasHoldemFlowTests: XCTestCase {
                                                               "smallBlind": 10,
                                                               "bigBlind": 20],
                                                     seed: 777)
-        let outcome = TestTable.playOut(rules, configuration: configuration, maximumMoves: 4000)
+        // Folding is the first action offered whenever anything is owed, and
+        // preflop everybody owes the big blind — so a first-legal driver folds
+        // to the blind every hand. Over an orbit each player pays one small
+        // blind and collects one big blind: nobody ever busts and the game
+        // correctly never ends. Shove instead (the last action is the biggest
+        // raise available) so chips actually change hands.
+        let outcome = TestTable.playOut(rules, configuration: configuration, maximumMoves: 4000) { _, legal in
+            legal[legal.count - 1]
+        }
         guard let result = outcome.state.finalResult else { return XCTFail("game never ended") }
         XCTAssertEqual(result.winners.count, 1)
         XCTAssertEqual(outcome.state.stacks.values.reduce(0, +), 300)

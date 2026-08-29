@@ -20,19 +20,29 @@ public struct CheatRules: GameRules {
         public var sequentialRanks: Bool
         /// Only the next player may call, rather than everybody in turn.
         public var onlyNextPlayerChallenges: Bool
+        /// Turns after which the round is called and hands are counted.
+        ///
+        /// Between players who count perfectly, Cheat is a treadmill: roughly
+        /// as many cards come back on the next call as went down on the lay,
+        /// so a round can run indefinitely. Real tables call it and count
+        /// hands. Zero means play until somebody goes out, however long.
+        public var turnLimit: Int
 
         public init(maximumPerTurn: Int = 4,
                     sequentialRanks: Bool = true,
-                    onlyNextPlayerChallenges: Bool = false) {
+                    onlyNextPlayerChallenges: Bool = false,
+                    turnLimit: Int = 120) {
             self.maximumPerTurn = max(1, min(4, maximumPerTurn))
             self.sequentialRanks = sequentialRanks
             self.onlyNextPlayerChallenges = onlyNextPlayerChallenges
+            self.turnLimit = max(0, turnLimit)
         }
 
         public static func from(_ configuration: GameConfiguration) -> Settings {
             Settings(maximumPerTurn: configuration.option("maximumPerTurn", default: 4),
                      sequentialRanks: configuration.flag("sequentialRanks", default: true),
-                     onlyNextPlayerChallenges: configuration.flag("onlyNextPlayerChallenges"))
+                     onlyNextPlayerChallenges: configuration.flag("onlyNextPlayerChallenges"),
+                     turnLimit: configuration.option("turnLimit", default: 120))
         }
     }
 
@@ -371,9 +381,15 @@ public struct CheatRules: GameRules {
 
     private func checkForEnd(state: inout State) -> GameResult? {
         let remaining = state.seatOrder.filter { !state.finishOrder.contains($0) }
-        guard remaining.count <= 1 else { return nil }
+        let calledTime = state.settings.turnLimit > 0
+            && state.turnsTaken >= state.settings.turnLimit
+        guard remaining.count <= 1 || calledTime else { return nil }
         var placements = state.finishOrder
-        placements.append(contentsOf: remaining)
+        // Round called: whoever is still holding cards places by how few they
+        // hold, which is how a real table settles a hand that will not end.
+        placements.append(contentsOf: remaining.sorted {
+            state.board.count(in: Zone.hand($0)) < state.board.count(in: Zone.hand($1))
+        })
         var scores: [SeatID: Int] = [:]
         for (index, seat) in placements.enumerated() {
             scores[seat] = placements.count - index
