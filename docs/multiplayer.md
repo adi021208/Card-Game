@@ -66,12 +66,31 @@ The host can add computer opponents to fill the table, then picks the game.
 Games appear greyed out until the number of players suits them — Hearts
 wants exactly four, Cheat wants at least three.
 
-Nine games work on several devices. Klondike is solitaire, so it only
-appears in the single-device library.
+Twelve games work on several devices. The three solitaires only
+appear in the single-device library.
 
 Reloading puts you back in your seat: the browser keeps a token, and the
 server keeps the seat. If somebody's phone dies mid-game their seat stays,
 marked away, and picks up where it left off when they come back.
+
+## Who you are
+
+There are no accounts. The server knows you by your device's address, and
+on a tailnet that is exactly the right key: Tailscale hands each device a
+stable `100.x` address that follows it between networks, so your record
+finds you with nothing to sign into. Change your name whenever you like —
+the address is the identity, the name is a label.
+
+Your statistics, achievements, mastery bands, daily streak and which of
+the seven you have beaten are all kept against that address, in
+`web/.profiles.json` next to the server. They survive restarts, and are
+written through a temporary file and renamed so a crash cannot corrupt
+them.
+
+**This only works on a private network.** Two people behind one home
+router share an address, so they would share a record. That is fine on a
+tailnet, where every device has its own; it would be wrong on the open
+internet, and is another reason not to put this there.
 
 ## Why this is the private way to do it
 

@@ -61,7 +61,7 @@ function matches(n, sel) {
 const root = makeNode("html");
 const body = makeNode("body");
 const byId = {};
-for (const id of ["screen", "themeBtn", "quitBtn"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
+for (const id of ["screen", "themeBtn", "quitBtn", "statsBtn"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
 
 global.document = {
   documentElement: root, body,
@@ -78,6 +78,8 @@ global.ResizeObserver = class { observe() {} };
 global.requestAnimationFrame = (fn) => { timers.push(fn); return 0; };
 global.setTimeout = (fn) => { timers.push(fn); return timers.length; };
 global.confirm = () => true;
+global.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ players: [], you: "" }) });
+global.EventSource = class { constructor() {} close() {} };
 const drain = (max = 3000) => { let n = 0; while (timers.length && n++ < max) timers.shift()(); };
 
 /* ── Load the page's script ────────────────────────────────────────── */
@@ -120,8 +122,12 @@ function assertNoLeak(label) {
 /* ── The library opens ─────────────────────────────────────────────── */
 api.render(); drain();
 ok(screenText().includes("One deck"), "library renders");
-const shelf = all(byId.screen).filter((n) => n.classList.contains("game-card"));
-ok(shelf.length === Object.keys(GAMES).length, `library lists all ${Object.keys(GAMES).length} games — found ${shelf.length}`);
+function shelfTiles() {
+  const anchor = all(byId.screen).find((n) => n.getAttribute("id") === "shelfAnchor");
+  return anchor ? all(anchor).filter((n) => n.classList.contains("game-card")) : [];
+}
+ok(shelfTiles().length === Object.keys(GAMES).length,
+   `library lists all ${Object.keys(GAMES).length} games — found ${shelfTiles().length}`);
 
 /* ── Every game opens its setup screen and deals ───────────────────── */
 for (const id of Object.keys(GAMES)) {
@@ -129,8 +135,7 @@ for (const id of Object.keys(GAMES)) {
   api.App.run = null; api.App.game = null; api.App.view = "library";
   api.render(); drain();
 
-  const tile = all(byId.screen).filter((n) => n.classList.contains("game-card"))
-    .find((n) => n.textContent.includes(g.name));
+  const tile = shelfTiles().find((n) => n.textContent.includes(g.name));
   ok(!!tile, `${id}: has a tile in the library`);
   if (!tile) continue;
 
@@ -184,6 +189,27 @@ for (const id of Object.keys(GAMES)) {
   }
   ok(steps > 0, `${id}: the table accepted at least one interaction`);
   ok(screenText().length > 0, `${id}: the screen is never blank`);
+}
+
+/* ── The screens that show what you have done ──────────────────────── */
+{
+  api.App.run = null; api.App.game = null; api.App.remote = null;
+  for (const view of ["stats", "daily", "library"]) {
+    api.App.view = view;
+    let threw = null;
+    try { api.render(); drain(); } catch (e) { threw = e; }
+    ok(!threw, `the ${view} screen opens — ${threw && threw.message}`);
+    ok(screenText().length > 20, `the ${view} screen has content`);
+  }
+  api.App.view = "stats"; api.render(); drain();
+  const txt = screenText();
+  ok(/Achievements/i.test(txt), "the record lists achievements");
+  ok(/seven/i.test(txt), "and the seven");
+  ok(/Win rate/i.test(txt), "and a win rate");
+  api.App.view = "daily"; api.render(); drain();
+  ok(/Daily challenge/i.test(screenText()), "the daily names itself");
+  ok(/Objective|Difficulty/i.test(screenText()), "and says what it wants");
+  api.App.view = "library"; api.render(); drain();
 }
 
 /* ── The error boundary catches a thrown view instead of blanking ──── */

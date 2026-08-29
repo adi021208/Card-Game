@@ -125,10 +125,12 @@ for (const g of Object.values(GAMES)) {
     while (!st.done && moves < 6000) {
       if (g.auto) { const ev = g.auto(st, rng); if (ev.length) { stuck = 0; continue; } }
       if (st.done) break;
-      const seat = st.active;
-      if (seat === null || seat === undefined) { if (++stuck > 3) break; continue; }
-      const legal = g.legal(st, seat);
-      if (!legal.length) { if (++stuck > 3) break; st.active = st.seats[(st.seats.indexOf(seat) + 1) % st.seats.length]; continue; }
+      /* A simultaneous game nominates nobody, so anybody with a move may
+         take one. Everything else has exactly one seat on the clock. */
+      const actors = st.active === null || st.active === undefined ? st.seats : [st.active];
+      let seat = null, legal = [];
+      for (const cand of actors) { const l = g.legal(st, cand); if (l.length) { seat = cand; legal = l; break; } }
+      if (seat === null) { if (++stuck > 3) break; continue; }
       stuck = 0;
       const think = rng.branch(moves);
       let a;

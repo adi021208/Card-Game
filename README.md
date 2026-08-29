@@ -21,6 +21,8 @@ Adding the fiftieth game is a module. It is not a rewrite.
 | **Bluff** | Cheat | a pile nobody may look at, calls that cost you |
 | **Speed** | Speed | simultaneous play, no turn order |
 
+All fifteen also play in the browser — see below.
+
 Every one is the real game, with the rules people argue about at a table
 implemented rather than smoothed over.
 

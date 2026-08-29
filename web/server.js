@@ -48,11 +48,56 @@ function loadEngine() {
   const api = {};
   new Function("__out", src.slice(0, uiAt) +
     "\n__out.GAMES = GAMES; __out.CAST = CAST; __out.DIFFICULTY = DIFFICULTY;" +
-    "\n__out.rngFrom = rngFrom; __out.B = B; __out.Z = Z; __out.tableFor = tableFor;")(api);
+    "\n__out.rngFrom = rngFrom; __out.B = B; __out.Z = Z; __out.tableFor = tableFor;" +
+    "\n__out.Profile = Profile; __out.Daily = Daily; __out.ACHIEVEMENTS = ACHIEVEMENTS;" +
+    "\n__out.METRICS = METRICS; __out.BOSSES = BOSSES; __out.mastery = mastery; __out.metricsFrom = metricsFrom;")(api);
   return api;
 }
 const E = loadEngine();
-const { GAMES, CAST, DIFFICULTY, rngFrom, B, Z, tableFor } = E;
+const { GAMES, CAST, DIFFICULTY, rngFrom, B, Z, tableFor, Profile, Daily, ACHIEVEMENTS, METRICS, BOSSES, mastery, metricsFrom } = E;
+
+/* ── Who you are ─────────────────────────────────────────────────────
+   Identity is the device's address. On a tailnet that is exactly right:
+   Tailscale hands each device a stable 100.x address that follows it
+   between networks, so your statistics find you with no account, no
+   password and nothing to sign into.
+
+   It is only right on a private network. Behind shared NAT on the open
+   internet, everybody would look like the same person — so the address
+   is the key, and the name is yours to change. */
+const PROFILES = path.join(__dirname, ".profiles.json");
+let profiles = {};
+try { profiles = JSON.parse(fs.readFileSync(PROFILES, "utf8")); } catch { profiles = {}; }
+let saveTimer = null;
+/* Written through a temporary file and renamed, so a crash mid-write
+   cannot leave a half-written file where everybody's record used to be. */
+function flushProfiles() {
+  clearTimeout(saveTimer); saveTimer = null;
+  const tmp = PROFILES + ".tmp";
+  try { fs.writeFileSync(tmp, JSON.stringify(profiles, null, 1)); fs.renameSync(tmp, PROFILES); }
+  catch (e) { console.error("could not save profiles:", e.message); }
+}
+function saveProfiles() {
+  if (saveTimer) return;
+  saveTimer = setTimeout(flushProfiles, 400);
+  if (saveTimer.unref) saveTimer.unref();
+}
+/* A debounced write must never be the last word. Anything still pending
+   goes to disk before the process goes away. */
+for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { flushProfiles(); process.exit(0); });
+process.on("exit", () => { if (saveTimer) flushProfiles(); });
+function addressOf(req) {
+  const raw = (req.socket && req.socket.remoteAddress) || "unknown";
+  return raw.replace(/^::ffff:/, "");             // IPv4 inside IPv6
+}
+function profileFor(req, name) {
+  const key = addressOf(req);
+  if (!profiles[key]) { profiles[key] = Profile.blank(name || "Player"); profiles[key].address = key; saveProfiles(); }
+  const p = profiles[key];
+  if (name && name !== p.name) { p.name = name; saveProfiles(); }
+  Profile.expireStreak(p, Daily.today());
+  return p;
+}
 
 /* ── Rooms ───────────────────────────────────────────────────────── */
 const rooms = new Map();
@@ -76,6 +121,7 @@ function makeRoom() {
 }
 
 const playerByToken = (room, token) => room.players.find((p) => p.token === token) || null;
+const profileOfPlayer = (p) => (p && p.address && profiles[p.address]) || null;
 const isHost = (room, p) => !!p && room.players.length > 0 && room.players[0].token === p.token;
 
 /* ── What one device is allowed to know ──────────────────────────── */
@@ -91,6 +137,7 @@ function viewFor(room, player) {
       .filter((g) => !g.solo)
       .map((g) => ({ id: g.id, name: g.name, tagline: g.tagline, category: g.category, min: g.min, max: g.max })),
     gameId: room.gameId, difficulty: room.difficulty,
+    me: player ? summarise(profileOfPlayer(player)) : null,
     phase: room.run ? (room.run.state.done ? "over" : "playing") : "lobby",
     log: room.log.slice(-6),
   };
@@ -110,6 +157,21 @@ function viewFor(room, player) {
     done: st.done ? { winners: st.done.winners, scores: st.done.scores, lowWins: !!st.done.lowWins } : null,
     gameName: g.name,
   });
+}
+
+/* Everything a person is entitled to know about themselves. */
+function summarise(p) {
+  if (!p) return null;
+  const today = Daily.today();
+  return {
+    name: p.name, address: p.address, played: p.played, won: p.won, lost: p.lost,
+    seconds: p.seconds, byGame: p.byGame, wonGames: p.wonGames,
+    streak: p.streak, bestStreak: p.bestStreak, dailyDone: p.dailyDone,
+    dailyToday: p.dailyHistory.includes(today), bosses: p.bosses,
+    unlocked: p.unlocked,
+    achievements: ACHIEVEMENTS.map((a) => ({ id: a.id, t: a.t, d: a.d, target: a.target, at: Math.min(a.target, a.of(p)) })),
+    mastery: Object.keys(GAMES).map((id) => ({ id, name: GAMES[id].name, ...mastery(p, id) })),
+  };
 }
 
 function broadcast(room) {
@@ -141,12 +203,12 @@ function startGame(room, gameId, difficulty) {
   room.gameId = gameId;
   room.difficulty = difficulty || room.difficulty;
   room.log = [];
-  room.run = { g, rng, state, seed, busy: false, steps: 0 };
+  room.run = { g, rng, state, seed, busy: false, steps: 0, started: Date.now(), recorded: false };
   settle(room);
   return null;
 }
 
-function profileFor(room, seat) {
+function aiProfileFor(room, seat) {
   const p = room.players[seat];
   const base = CAST.find((c) => c.id === p.ai) || CAST[0];
   return { ...base, mistake: Math.max(0, base.mistake + (DIFFICULTY[room.difficulty] || 0)) };
@@ -162,6 +224,26 @@ function settle(room) {
 
   const step = () => {
     if (room.run !== run) return;
+
+    if (state.done && !run.recorded) {
+      run.recorded = true;
+      const secs = Math.round((Date.now() - (run.started || Date.now())) / 1000);
+      for (const p of room.players) {
+        const prof = profileOfPlayer(p);
+        if (!prof || p.ai) continue;
+        const fresh = Profile.record(prof, {
+          gameId: g.id, won: state.done.winners.includes(p.seat), seconds: secs,
+          score: state.done.scores[p.seat], metrics: metricsFrom(g, state, p.seat),
+          difficulty: room.difficulty, daily: room.daily ? room.daily.date : null,
+          bossId: room.daily ? room.daily.bossId : null,
+        });
+        if (fresh.length) note(room, fresh.map((id) => {
+          const a = ACHIEVEMENTS.find((x) => x.id === id);
+          return `${p.name} earned "${a ? a.t : id}".`;
+        }));
+      }
+      saveProfiles();
+    }
     if (state.done || guard++ > 4000) { broadcast(room); return; }
 
     if (g.auto) {
@@ -175,14 +257,19 @@ function settle(room) {
     }
     if (state.done) { broadcast(room); return; }
 
-    const seat = state.active;
-    if (seat === null || seat === undefined) { broadcast(room); return; }
+    /* A simultaneous game nominates nobody, so find an opponent who can
+       actually move rather than assuming one seat is on the clock. */
+    let seat = state.active;
+    if (seat === null || seat === undefined) {
+      seat = state.seats.find((s) => room.players[s] && room.players[s].ai && g.legal(state, s).length);
+      if (seat === undefined) { broadcast(room); return; }
+    }
     const player = room.players[seat];
     if (!player || !player.ai) { broadcast(room); return; }
 
     const legal = g.legal(state, seat);
     if (!legal.length) { broadcast(room); return; }
-    const action = g.agent(state, seat, legal, profileFor(room, seat), run.rng.branch(run.steps++)) || legal[0];
+    const action = g.agent(state, seat, legal, aiProfileFor(room, seat), run.rng.branch(run.steps++)) || legal[0];
     run.busy = true; broadcast(room);
     setTimeout(() => {
       if (room.run !== run) return;
@@ -229,8 +316,9 @@ function pageHtml() {
 const ROUTES = {
   async "/api/create"(req, res, body) {
     const name = String(body.name || "Player").slice(0, 24).trim() || "Player";
+    const me = profileFor(req, name);
     const room = makeRoom();
-    const player = { token: newToken(), name, seat: 0, ai: null, online: true };
+    const player = { token: newToken(), name: me.name, seat: 0, ai: null, online: true, address: addressOf(req) };
     room.players.push(player);
     send(res, 200, { code: room.code, token: player.token, seat: 0 });
     broadcast(room);
@@ -252,9 +340,10 @@ const ROUTES = {
     if (room.run) return fail(res, 409, "That game has already started.");
     if (room.players.length >= 8) return fail(res, 409, "That table is full.");
     const name = String(body.name || "Player").slice(0, 24).trim() || "Player";
-    const player = { token: newToken(), name, seat: room.players.length, ai: null, online: true };
+    const me = profileFor(req, name);
+    const player = { token: newToken(), name: me.name, seat: room.players.length, ai: null, online: true, address: addressOf(req) };
     room.players.push(player);
-    note(room, [`${name} sits down.`]);
+    note(room, [`${me.name} sits down.`]);
     send(res, 200, { code: room.code, token: player.token, seat: player.seat });
     broadcast(room);
   },
@@ -309,6 +398,21 @@ const ROUTES = {
     note(room, run.g.apply(run.state, match, run.rng));
     send(res, 200, { ok: true });
     settle(room);
+  },
+
+  async "/api/me"(req, res, body) {
+    const me = profileFor(req, body.name);
+    if (body.rename) { me.name = String(body.rename).slice(0, 24).trim() || me.name; saveProfiles(); }
+    send(res, 200, { me: summarise(me), metrics: METRICS, today: Daily.today(), daily: Daily.for(Daily.today()), bosses: BOSSES });
+  },
+
+  async "/api/leaderboard"(req, res) {
+    const all = Object.values(profiles).map((p) => ({
+      name: p.name, address: p.address, played: p.played, won: p.won,
+      rate: p.played ? Math.round((p.won / p.played) * 100) : 0,
+      games: (p.wonGames || []).length, streak: p.bestStreak || 0,
+    })).sort((a, b) => b.won - a.won).slice(0, 30);
+    send(res, 200, { players: all, you: addressOf(req) });
   },
 
   async "/api/leave"(req, res, body) {
@@ -408,4 +512,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { server, rooms, makeRoom, startGame, viewFor, loadEngine, addresses, GAMES, B, Z };
+module.exports = { server, rooms, makeRoom, startGame, viewFor, loadEngine, addresses, GAMES, B, Z, flushProfiles, PROFILES };

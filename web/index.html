@@ -280,7 +280,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   <div class="topbar">
     <span class="mark">DECK</span>
     <span class="spacer"></span>
-    <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
+    <button class="icon-btn" id="statsBtn" title="Your record" aria-label="Your record">◍</button>
+  <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
     <button class="icon-btn hidden" id="quitBtn" title="Leave game" aria-label="Leave game">✕</button>
   </div>
   <div id="screen"></div>
@@ -618,7 +619,11 @@ def({
         if (c.suit === st.led && (w.suit !== st.led || c.rank > w.rank)) win = p;
       }
       let pts = 0;
-      for (const p of st.plays) { const c = st.board.cards.get(p.id); if (c.suit === "H") pts += 1; if (c.suit === "S" && c.rank === 12) pts += 13; }
+      for (const p of st.plays) {
+        const c = st.board.cards.get(p.id);
+        if (c.suit === "H") pts += 1;
+        if (c.suit === "S" && c.rank === 12) { pts += 13; if (win.seat === 0) st.queensTaken = (st.queensTaken || 0) + 1; }
+      }
       st.points[win.seat] += pts; st.taken[win.seat] += 1;
       B.move(st.board, st.plays.map((p) => p.id), Z.captured(win.seat), "up");
       ev.push(`${st.names[win.seat]} takes the trick${pts ? ` — ${pts} point${pts > 1 ? "s" : ""}` : ""}.`);
@@ -727,7 +732,7 @@ def({
     B.move(st.board, a.id, Z.discard, "up");
     st.suit = card.suit; st.drawn = 0;
     if (emptyHands(st, seat)) { st.done = { winners: [seat], scores: this.score(st), lowWins: false }; ev.push(`${st.names[seat]} is out.`); return ev; }
-    if (card.rank === 8) { st.pending = seat; return ev; }
+    if (card.rank === 8) { st.eightsPlayed = (st.eightsPlayed || 0) + 1; st.pending = seat; return ev; }
     st.active = nextSeat(st.seats, seat);
     if (!B.count(st.board, Z.stock)) this.recycle(st, rng);
     return ev;
@@ -820,6 +825,9 @@ def({
       ? `${st.names[seat]} calls — and ${st.names[st.layer]} was telling the truth.`
       : `${st.names[seat]} calls — ${st.names[st.layer]} was lying.`);
     st.sweep = loser;
+    st.caught = st.caught || {}; st.badCalls = st.badCalls || {};
+    if (truthful) st.badCalls[seat] = (st.badCalls[seat] || 0) + 1;
+    else st.caught[seat] = (st.caught[seat] || 0) + 1;
     return ev;
   },
   finishLay(st, layer, ev) {
@@ -961,6 +969,9 @@ def({
     if (!B.count(st.board, Z.hand(seat))) return B.count(st.board, Z.stock) ? [{ t: "refill" }] : [];
     const ranks = [...new Set(B.cardsIn(st.board, Z.hand(seat)).map((c) => c.rank))].sort((a, b) => a - b);
     const targets = st.seats.filter((s) => s !== seat && B.count(st.board, Z.hand(s)) > 0);
+    /* Holding cards is no use if everybody else is empty — you draw
+       instead, and if the pond is empty too the deal is over. */
+    if (!targets.length) return B.count(st.board, Z.stock) ? [{ t: "refill" }] : [];
     const out = [];
     for (const t of targets) for (const r of ranks) out.push({ t: "ask", target: t, rank: r });
     return out;
@@ -996,7 +1007,11 @@ def({
     st.goAgain = again && B.count(st.board, Z.hand(seat)) > 0;
     return ev;
   },
-  canAct(st, s) { return B.count(st.board, Z.hand(s)) > 0 || B.count(st.board, Z.stock) > 0; },
+  canAct(st, s) {
+    if (B.count(st.board, Z.stock) > 0) return true;
+    if (!B.count(st.board, Z.hand(s))) return false;
+    return st.seats.some((o) => o !== s && B.count(st.board, Z.hand(o)) > 0);
+  },
   nextPlayable(st, from) {
     let s = from;
     for (let i = 0; i < st.seats.length; i++) { s = nextSeat(st.seats, s); if (this.canAct(st, s)) return s; }
@@ -1097,7 +1112,7 @@ def({
     st.leadRank = rank; st.leadN = ids.length; st.last = seat; st.passed = [];
     ev.push(`${st.names[seat]} plays ${ids.length} × ${RANK_TOKEN[rank]}.`);
     if (emptyHands(st, seat)) { st.finish.push(seat); ev.push(`${st.names[seat]} is out — place ${st.finish.length}.`); }
-    if (rank === 2 || ids.length === 4) { ev.push("Pile swept."); return this.clearPile(st, seat, ev); }
+    if (rank === 2 || ids.length === 4) { st.bombs = (st.bombs || 0) + 1; ev.push("Pile swept."); return this.clearPile(st, seat, ev); }
     return this.advance(st, seat, ev);
   },
   clearPile(st, leader, ev) {
@@ -1267,6 +1282,7 @@ def({
     else if (a.t === "check") ev.push(`${st.names[seat]} checks.`);
     else if (a.t === "call") { this.post(st, seat, a.amount); ev.push(`${st.names[seat]} calls ${a.amount}.`); }
     else {
+      if (a.t === "allin") st.allinCount = (st.allinCount || 0) + 1;
       this.post(st, seat, a.amount);
       const newBet = st.committed[seat];
       st.lastRaise = Math.max(st.lastRaise, newBet - st.bet);
@@ -1315,6 +1331,7 @@ def({
       winners = ranked.filter((x) => cmpHands(x.r, ranked[0].r) === 0).map((x) => x.s);
       ev.push(`${winners.map((s) => st.names[s]).join(" and ")} — ${ranked[0].r.name}.`);
     }
+    st.biggestPot = Math.max(st.biggestPot || 0, st.pot);
     const share = Math.floor(st.pot / winners.length);
     winners.forEach((s, i) => { st.stacks[s] += share + (i === 0 ? st.pot - share * winners.length : 0); });
     st.showdown = null; st.pot = 0;
@@ -1454,6 +1471,665 @@ def({
       zones: [{ label: "Battle", cards: B.visiblePile(st.board, Z.trick, viewer).slice(-6), spread: true }],
       counts: (s) => `${this.total(st, s)}`,
       handHint: null, noCardPlay: true,
+    };
+  },
+});
+
+/* ── Tricks: shared by Spades and Euchre ──────────────────────────── */
+const Trick = {
+  following(hand, led) { const f = hand.filter((c) => c.suit === led); return f.length ? f : hand; },
+  /* Highest trump, else highest of the led suit. Anything else discards. */
+  winner(plays, cards, led, trump, value) {
+    const rank = value || ((c) => c.rank);
+    let best = null;
+    for (const p of plays) {
+      const c = cards.get(p.id); if (!c) continue;
+      const isTrump = trump && c.suit === trump;
+      if (!isTrump && c.suit !== led) continue;
+      const v = rank(c);
+      if (!best || (isTrump && !best.trump) || (isTrump === best.trump && v > best.v)) best = { seat: p.seat, v, trump: isTrump };
+    }
+    return best ? best.seat : (plays[0] && plays[0].seat);
+  },
+};
+
+/* ── SPADES ───────────────────────────────────────────────────────── */
+def({
+  id: "spades", name: "Spades", tagline: "Bid it. Make it. Mind the bags.",
+  category: "Trick taking", min: 4, max: 4, teams: true, art: ["cobalt", "ink"],
+  setup(cfg, rng) {
+    const seats = [0, 1, 2, 3];
+    const st = { seats, board: newBoard(), done: null, phase: "bid", bids: {}, plays: [],
+      led: null, broken: false, tricks: {}, teamScore: { 0: 0, 1: 0 }, bags: { 0: 0, 1: 0 },
+      dealer: 0, active: 1, round: 1, target: 500, trickNo: 1, dealDone: false, nils: {} };
+    this.deal(st, rng);
+    return st;
+  },
+  team(seat) { return seat % 2; },
+  deal(st, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...st.seats.map(Z.hand), ...st.seats.map(Z.captured), Z.trick]);
+    for (let i = 0; i < 13; i++) for (const s of st.seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of st.seats) B.sort(b, Z.hand(s), bySuitRank);
+    st.board = b; st.phase = "bid"; st.bids = {}; st.plays = []; st.led = null;
+    st.broken = false; st.tricks = {}; st.trickNo = 1;
+    st.seats.forEach((s) => { st.tricks[s] = 0; });
+    st.active = nextSeat(st.seats, st.dealer);
+  },
+  legalCards(st, seat) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (!hand.length) return [];
+    if (!st.plays.length) {
+      if (st.broken) return hand;
+      const off = hand.filter((c) => c.suit !== "S");
+      return off.length ? off : hand;
+    }
+    return Trick.following(hand, st.led);
+  },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.phase === "bid") return Array.from({ length: 14 }, (_, n) => ({ t: "bid", n }));
+    if (st.phase !== "play") return [];
+    return this.legalCards(st, seat).map((c) => ({ t: "play", id: c.id }));
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "bid") {
+      st.bids[seat] = a.n;
+      ev.push(a.n === 0 ? `${st.names[seat]} bids nil.` : `${st.names[seat]} bids ${a.n}.`);
+      if (Object.keys(st.bids).length === 4) { st.phase = "play"; st.active = nextSeat(st.seats, st.dealer); }
+      else st.active = nextSeat(st.seats, seat);
+      return ev;
+    }
+    const card = st.board.cards.get(a.id);
+    B.move(st.board, a.id, Z.trick, "up");
+    st.plays.push({ seat, id: a.id });
+    if (st.plays.length === 1) st.led = card.suit;
+    if (card.suit === "S" && !st.broken) { st.broken = true; ev.push("Spades are broken."); }
+    if (st.plays.length < 4) { st.active = nextSeat(st.seats, seat); return ev; }
+    const win = Trick.winner(st.plays, st.board.cards, st.led, "S");
+    st.tricks[win] = (st.tricks[win] || 0) + 1;
+    B.move(st.board, st.plays.map((p) => p.id), Z.captured(win), "up");
+    ev.push(`${st.names[win]} takes it.`);
+    st.plays = []; st.led = null; st.trickNo++;
+    if (st.seats.every((x) => !B.count(st.board, Z.hand(x)))) { st.phase = "score"; st.active = null; st.dealDone = true; }
+    else st.active = win;
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.dealDone) return [];
+    st.dealDone = false;
+    const ev = [];
+    for (const team of [0, 1]) {
+      const members = st.seats.filter((s) => this.team(s) === team);
+      let bid = 0, took = 0, delta = 0;
+      for (const s of members) {
+        const b = st.bids[s] || 0, t = st.tricks[s] || 0;
+        if (b === 0) {
+          // Nil scores on its own; its tricks do not help the contract.
+          delta += t === 0 ? 100 : -100;
+          if (t === 0) { st.nils[s] = (st.nils[s] || 0) + 1; ev.push(`${st.names[s]} made nil.`); }
+          took += t;
+        } else { bid += b; took += t; }
+      }
+      if (bid > 0) {
+        if (took >= bid) {
+          const over = took - bid;
+          delta += bid * 10 + over;
+          st.bags[team] += over;
+          if (st.bags[team] >= 10) { st.bags[team] -= 10; delta -= 100; ev.push(`Team ${team + 1} bagged out.`); }
+        } else delta -= bid * 10;
+      }
+      st.teamScore[team] += delta;
+    }
+    ev.push("Hand scored.");
+    if (st.teamScore[0] >= st.target || st.teamScore[1] >= st.target) {
+      const winTeam = st.teamScore[0] === st.teamScore[1] ? null : (st.teamScore[0] > st.teamScore[1] ? 0 : 1);
+      const scores = {}; st.seats.forEach((s) => { scores[s] = st.teamScore[this.team(s)]; });
+      st.done = { winners: winTeam === null ? [] : st.seats.filter((s) => this.team(s) === winTeam), scores, lowWins: false };
+      return ev;
+    }
+    st.round++; st.dealer = nextSeat(st.seats, st.dealer); this.deal(st, rng);
+    ev.push(`Deal ${st.round}.`);
+    return ev;
+  },
+  observe(st, seat) {
+    return { hand: B.cardsIn(st.board, Z.hand(seat)), bids: st.bids, led: st.led,
+      plays: st.plays.map((p) => ({ seat: p.seat, card: st.board.cards.get(p.id) })),
+      broken: st.broken, tricks: st.tricks, partner: (seat + 2) % 4, teamScore: st.teamScore };
+  },
+  agent(st, seat, legal, prof, rng) {
+    if (st.phase === "bid") {
+      const hand = B.cardsIn(st.board, Z.hand(seat));
+      const spades = hand.filter((c) => c.suit === "S");
+      let est = spades.filter((c) => c.rank >= 12).length + Math.max(0, spades.length - 3);
+      est += hand.filter((c) => c.suit !== "S" && c.rank === 14).length;
+      est += hand.filter((c) => c.suit !== "S" && c.rank === 13).length * 0.5;
+      est = Math.round(est * (0.85 + prof.aggression * 0.35));
+      const n = Math.max(0, Math.min(13, est));
+      const bidNil = n <= 1 && !spades.some((c) => c.rank >= 12) && rng.chance(prof.risk * .5);
+      const want = bidNil ? 0 : Math.max(1, n);
+      return legal.find((a) => a.n === want) || legal[Math.min(want, legal.length - 1)];
+    }
+    const o = this.observe(st, seat);
+    const partnerWinning = o.plays.length && Trick.winner(st.plays, st.board.cards, o.led, "S") === o.partner;
+    const scored = legal.map((a) => {
+      const c = st.board.cards.get(a.id);
+      const myBid = st.bids[seat] || 0, myTricks = st.tricks[seat] || 0;
+      const wantTricks = myBid === 0 ? -1 : myBid - myTricks;
+      let v = 0;
+      if (!o.plays.length) v = wantTricks > 0 ? c.rank * .6 : -c.rank * .6;
+      else {
+        const best = Trick.winner(st.plays.concat([{ seat, id: a.id }]), st.board.cards, o.led, "S");
+        const wins = best === seat;
+        v = wins ? (wantTricks > 0 ? 25 : -25) : (wantTricks > 0 ? -4 : 8);
+        if (partnerWinning && wins) v -= 12;                 // do not steal from your partner
+        v -= c.suit === "S" && wantTricks <= 0 ? c.rank * .4 : 0;
+      }
+      return { action: a, score: v + rng() * 3 * prof.risk };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    const co = [];
+    if (st.phase === "bid") co.push({ k: "Bidding", v: `${Object.keys(st.bids).length} of 4 in` });
+    else co.push({ k: "Trick", v: `${st.trickNo} of 13` }, { k: "Spades", v: st.broken ? "Broken" : "Not broken" });
+    co.push({ k: "Us / Them", v: `${st.teamScore[0]} · ${st.teamScore[1]}` });
+    if (st.led) co.push({ k: "Led", v: SUIT_GLYPH[st.led] });
+    return {
+      callouts: co,
+      zones: [{ label: "Trick", cards: st.plays.map((p) => B.visible(st.board, p.id, viewer)), spread: true }],
+      counts: (s) => `${B.count(st.board, Z.hand(s))}${st.bids[s] !== undefined ? ` · ${st.tricks[s] || 0}/${st.bids[s]}` : ""}`,
+      handHint: st.phase === "bid" ? "How many tricks will you take?" : null,
+    };
+  },
+});
+
+/* ── EUCHRE ───────────────────────────────────────────────────────── */
+def({
+  id: "euchre", name: "Euchre", tagline: "Bowers, partners, and going alone.",
+  category: "Trick taking", min: 4, max: 4, teams: true, art: ["forest", "ink"],
+  setup(cfg, rng) {
+    const seats = [0, 1, 2, 3];
+    const st = { seats, board: newBoard(), done: null, phase: "bid1", dealer: 0, active: 1,
+      upcard: null, trump: null, maker: null, alone: null, passes: 0, plays: [], led: null,
+      tricks: {}, teamScore: { 0: 0, 1: 0 }, round: 1, target: 10, dealDone: false, trickNo: 1 };
+    this.deal(st, rng);
+    return st;
+  },
+  team(seat) { return seat % 2; },
+  partner(seat) { return (seat + 2) % 4; },
+  sameColour(suit) { return { H: "D", D: "H", S: "C", C: "S" }[suit]; },
+  /* The left bower counts as trump. This is the rule people forget. */
+  effSuit(card, trump) {
+    if (trump && card.rank === 11 && card.suit === this.sameColour(trump)) return trump;
+    return card.suit;
+  },
+  trumpValue(card, trump) {
+    if (card.rank === 11 && card.suit === trump) return 100;
+    if (card.rank === 11 && card.suit === this.sameColour(trump)) return 99;
+    return card.suit === trump ? card.rank : 0;
+  },
+  deal(st, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck({ ranks: [9, 10, 11, 12, 13, 14] })), Z.stock);
+    B.ensure(b, [...st.seats.map(Z.hand), ...st.seats.map(Z.captured), Z.trick, Z.reserve, Z.discard]);
+    for (let i = 0; i < 5; i++) for (const s of st.seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of st.seats) B.sort(b, Z.hand(s), bySuitRank);
+    const up = B.draw(b, Z.stock, Z.reserve, "up");
+    st.board = b; st.upcard = up ? up.id : null; st.trump = null; st.maker = null;
+    st.alone = null; st.passes = 0; st.phase = "bid1"; st.plays = []; st.led = null;
+    st.trickNo = 1; st.tricks = {}; st.seats.forEach((s) => { st.tricks[s] = 0; });
+    st.active = nextSeat(st.seats, st.dealer);
+  },
+  inPlay(st) { return st.seats.filter((s) => s !== st.alone); },
+  nextIn(st, from) { let s = from; for (let i = 0; i < 4; i++) { s = nextSeat(st.seats, s); if (s !== st.alone) return s; } return from; },
+  legalCards(st, seat) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (!st.plays.length || !st.led) return hand;
+    const follow = hand.filter((c) => this.effSuit(c, st.trump) === st.led);
+    return follow.length ? follow : hand;
+  },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.phase === "bid1") {
+      const out = [{ t: "orderUp", alone: false }, { t: "orderUp", alone: true }, { t: "passBid" }];
+      return out;
+    }
+    if (st.phase === "bid2") {
+      const turned = st.board.cards.get(st.upcard);
+      const out = [];
+      for (const suit of SUITS) if (!turned || suit !== turned.suit) {
+        out.push({ t: "callTrump", suit, alone: false });
+        out.push({ t: "callTrump", suit, alone: true });
+      }
+      if (seat !== st.dealer) out.push({ t: "passBid" });     // the dealer is stuck
+      return out;
+    }
+    if (st.phase === "discard") return B.cardsIn(st.board, Z.hand(seat)).map((c) => ({ t: "discard", id: c.id }));
+    if (st.phase !== "play") return [];
+    return this.legalCards(st, seat).map((c) => ({ t: "play", id: c.id }));
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "orderUp") {
+      const up = st.board.cards.get(st.upcard);
+      st.trump = up.suit; st.maker = seat;
+      if (a.alone) { st.alone = this.partner(seat); ev.push(`${st.names[seat]} goes alone.`); }
+      B.move(st.board, st.upcard, Z.hand(st.dealer), "own", st.dealer);
+      B.sort(st.board, Z.hand(st.dealer), bySuitRank);
+      st.phase = "discard"; st.active = st.dealer;
+      ev.push(`${st.names[seat]} orders up ${SUIT_NAME[st.trump].toLowerCase()}.`);
+      return ev;
+    }
+    if (a.t === "callTrump") {
+      st.trump = a.suit; st.maker = seat;
+      if (a.alone) { st.alone = this.partner(seat); ev.push(`${st.names[seat]} goes alone.`); }
+      st.phase = "play"; st.active = this.nextIn(st, st.dealer);
+      ev.push(`${st.names[seat]} calls ${SUIT_NAME[a.suit].toLowerCase()}.`);
+      return ev;
+    }
+    if (a.t === "passBid") {
+      st.passes++;
+      if (st.phase === "bid1" && st.passes >= 4) {
+        st.phase = "bid2"; st.passes = 0;
+        if (st.upcard) B.face(st.board, st.upcard, "down");
+        st.active = nextSeat(st.seats, st.dealer);
+      } else st.active = nextSeat(st.seats, seat);
+      return ev;
+    }
+    if (a.t === "discard") {
+      B.move(st.board, a.id, Z.discard, "down");
+      st.phase = "play"; st.active = this.nextIn(st, st.dealer);
+      return ev;
+    }
+    const card = st.board.cards.get(a.id);
+    B.move(st.board, a.id, Z.trick, "up");
+    st.plays.push({ seat, id: a.id });
+    if (st.plays.length === 1) st.led = this.effSuit(card, st.trump);
+    if (st.plays.length < this.inPlay(st).length) { st.active = this.nextIn(st, seat); return ev; }
+    const win = Trick.winner(st.plays, st.board.cards, st.led, st.trump,
+      (c) => (this.effSuit(c, st.trump) === st.trump ? this.trumpValue(c, st.trump) : c.rank));
+    st.tricks[win] = (st.tricks[win] || 0) + 1;
+    B.move(st.board, st.plays.map((p) => p.id), Z.captured(win), "up");
+    ev.push(`${st.names[win]} takes it.`);
+    st.plays = []; st.led = null; st.trickNo++;
+    if (this.inPlay(st).every((x) => !B.count(st.board, Z.hand(x)))) { st.phase = "score"; st.active = null; st.dealDone = true; }
+    else st.active = win;
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.dealDone) return [];
+    st.dealDone = false;
+    const ev = [];
+    const mk = this.team(st.maker);
+    const made = st.seats.filter((s) => this.team(s) === mk).reduce((n, s) => n + (st.tricks[s] || 0), 0);
+    let points = 0, to = mk;
+    if (made >= 3) {
+      points = made === 5 ? (st.alone !== null ? 4 : 2) : 1;
+      if (made === 5) { st.marches = (st.marches || 0) + 1; if (st.alone !== null) st.loners = (st.loners || 0) + 1; }
+      ev.push(made === 5 ? `${st.names[st.maker]}'s team march.` : `${st.names[st.maker]}'s team make it.`);
+    } else { points = 2; to = 1 - mk; st.euchres = (st.euchres || 0) + 1; ev.push("Euchred!"); }
+    st.teamScore[to] += points;
+    if (st.teamScore[0] >= st.target || st.teamScore[1] >= st.target) {
+      const winTeam = st.teamScore[0] > st.teamScore[1] ? 0 : 1;
+      const scores = {}; st.seats.forEach((s) => { scores[s] = st.teamScore[this.team(s)]; });
+      st.done = { winners: st.seats.filter((s) => this.team(s) === winTeam), scores, lowWins: false };
+      return ev;
+    }
+    st.round++; st.dealer = nextSeat(st.seats, st.dealer); this.deal(st, rng);
+    ev.push(`Deal ${st.round}.`);
+    return ev;
+  },
+  observe(st, seat) {
+    return { hand: B.cardsIn(st.board, Z.hand(seat)), trump: st.trump, led: st.led,
+      upcard: st.upcard ? st.board.cards.get(st.upcard) : null, maker: st.maker,
+      plays: st.plays.map((p) => ({ seat: p.seat, card: st.board.cards.get(p.id) })),
+      tricks: st.tricks, teamScore: st.teamScore, partner: this.partner(seat) };
+  },
+  agent(st, seat, legal, prof, rng) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const strength = (trump) => hand.reduce((n, c) => n + (this.effSuit(c, trump) === trump ? this.trumpValue(c, trump) / 12 : (c.rank === 14 ? 1.2 : 0)), 0);
+    if (st.phase === "bid1") {
+      const up = st.board.cards.get(st.upcard);
+      const s = strength(up.suit) + (seat === st.dealer ? .8 : 0);
+      const bar = 5.2 - prof.aggression * 1.6;
+      if (s >= bar + 2.4 && rng.chance(prof.risk * .5)) return legal.find((a) => a.t === "orderUp" && a.alone);
+      if (s >= bar) return legal.find((a) => a.t === "orderUp" && !a.alone);
+      return legal.find((a) => a.t === "passBid") || legal[0];
+    }
+    if (st.phase === "bid2") {
+      let best = null;
+      for (const a of legal) if (a.t === "callTrump" && !a.alone) {
+        const s = strength(a.suit);
+        if (!best || s > best.s) best = { a, s };
+      }
+      const bar = 5.0 - prof.aggression * 1.6;
+      if (best && (best.s >= bar || !legal.some((a) => a.t === "passBid"))) return best.a;
+      return legal.find((a) => a.t === "passBid") || (best && best.a) || legal[0];
+    }
+    if (st.phase === "discard") {
+      const worst = hand.filter((c) => this.effSuit(c, st.trump) !== st.trump).sort((a, b) => a.rank - b.rank)[0] || hand[0];
+      return legal.find((a) => a.id === worst.id) || legal[0];
+    }
+    const o = this.observe(st, seat);
+    const partnerWinning = o.plays.length && Trick.winner(st.plays, st.board.cards, o.led, st.trump,
+      (c) => (this.effSuit(c, st.trump) === st.trump ? this.trumpValue(c, st.trump) : c.rank)) === o.partner;
+    const scored = legal.map((a) => {
+      const c = st.board.cards.get(a.id);
+      const val = this.effSuit(c, st.trump) === st.trump ? this.trumpValue(c, st.trump) : c.rank;
+      let v;
+      if (!o.plays.length) v = val * .5;
+      else {
+        const wins = Trick.winner(st.plays.concat([{ seat, id: a.id }]), st.board.cards, o.led, st.trump,
+          (x) => (this.effSuit(x, st.trump) === st.trump ? this.trumpValue(x, st.trump) : x.rank)) === seat;
+        v = wins ? 20 - val * .1 : -val * .3;
+        if (partnerWinning && wins) v -= 14;
+      }
+      return { action: a, score: v + rng() * 2 * prof.risk };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    const up = st.upcard ? st.board.cards.get(st.upcard) : null;
+    const co = [{ k: "Us / Them", v: `${st.teamScore[0]} · ${st.teamScore[1]}` }];
+    if (st.trump) co.push({ k: "Trump", v: SUIT_GLYPH[st.trump] + " " + SUIT_NAME[st.trump] });
+    else if (up) co.push({ k: "Turned up", v: RANK_TOKEN[up.rank] + SUIT_GLYPH[up.suit] });
+    if (st.phase === "play") co.push({ k: "Trick", v: `${st.trickNo} of 5` });
+    if (st.alone !== null) co.push({ k: "Alone", v: st.names[this.partner(st.alone)] });
+    const zones = [{ label: "Trick", cards: st.plays.map((p) => B.visible(st.board, p.id, viewer)), spread: true }];
+    if (st.phase === "bid1" && st.upcard) zones.unshift({ label: "Up", cards: [B.visible(st.board, st.upcard, viewer)] });
+    return {
+      callouts: co, zones,
+      counts: (s) => (s === st.alone ? "sitting out" : `${B.count(st.board, Z.hand(s))} · ${st.tricks[s] || 0}`),
+      handHint: st.phase === "discard" ? "Throw one away" : null,
+    };
+  },
+});
+
+/* ── SPEED ────────────────────────────────────────────────────────── */
+def({
+  id: "speed", name: "Speed", tagline: "No turns. Just be quicker.",
+  category: "Speed", min: 2, max: 2, art: ["coral", "ink"],
+  centre(i) { return `centre:${i}`; },
+  setup(cfg, rng) {
+    const seats = [0, 1];
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), ...seats.map((s) => Z.own("draw", s)), ...seats.map((s) => Z.own("res", s)), this.centre(0), this.centre(1), Z.stock]);
+    for (const s of seats) for (let i = 0; i < 5; i++) B.draw(b, Z.stock, Z.own("res", s), "down");
+    for (const s of seats) for (let i = 0; i < 5; i++) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    let i = 0;
+    while (B.count(b, Z.stock)) { B.draw(b, Z.stock, Z.own("draw", seats[i % 2]), "down"); i++; }
+    for (const s of seats) B.sort(b, Z.hand(s), byRankSuit);
+    const st = { seats, board: b, done: null, active: null, played: { 0: 0, 1: 0 }, flips: 1, moves: 0 };
+    seats.forEach((s, k) => { const top = B.at(b, Z.own("res", s)).slice(-1)[0]; if (top !== undefined) B.move(b, top, this.centre(k), "up"); });
+    return st;
+  },
+  /* One rank above or below, with the ace joining both ends. */
+  playable(card, top) {
+    if (!top) return false;
+    if (Math.abs(card.rank - top.rank) === 1) return true;
+    return Math.abs(aceLow(card.rank) - aceLow(top.rank)) === 1;
+  },
+  remaining(st, s) { return B.count(st.board, Z.hand(s)) + B.count(st.board, Z.own("draw", s)); },
+  stuck(st) {
+    for (const s of st.seats) for (const c of B.cardsIn(st.board, Z.hand(s)))
+      for (let p = 0; p < 2; p++) if (this.playable(c, B.top(st.board, this.centre(p)))) return false;
+    return true;
+  },
+  canFlip(st) { return st.seats.every((s) => B.count(st.board, Z.own("res", s)) > 0); },
+  legal(st, seat) {
+    if (st.done) return [];
+    const out = [];
+    for (const c of B.cardsIn(st.board, Z.hand(seat)))
+      for (let p = 0; p < 2; p++) if (this.playable(c, B.top(st.board, this.centre(p)))) out.push({ t: "play", id: c.id, pile: p });
+    if (!out.length && this.stuck(st) && this.canFlip(st)) out.push({ t: "flip" });
+    return out;
+  },
+  apply(st, a, rng) {
+    const ev = [];
+    const seat = st.seats.find((s) => B.at(st.board, Z.hand(s)).includes(a.id));
+    if (a.t === "flip") {
+      st.flips++;
+      st.seats.forEach((s, k) => { const top = B.at(st.board, Z.own("res", s)).slice(-1)[0]; if (top !== undefined) B.move(st.board, top, this.centre(k), "up"); });
+      ev.push("New cards down.");
+    } else {
+      B.move(st.board, a.id, this.centre(a.pile), "up");
+      st.played[seat]++; st.moves++;
+      while (B.count(st.board, Z.hand(seat)) < 5 && B.count(st.board, Z.own("draw", seat)) > 0)
+        B.draw(st.board, Z.own("draw", seat), Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), byRankSuit);
+      if (this.remaining(st, seat) === 0) { st.done = this.finish(st, seat); ev.push(`${st.names[seat]} is out.`); return ev; }
+    }
+    if (this.stuck(st) && !this.canFlip(st)) {
+      const rank = [...st.seats].sort((x, y) => this.remaining(st, x) - this.remaining(st, y));
+      st.done = this.finish(st, rank[0]);
+      ev.push("Nobody can move and there is nothing to turn.");
+    }
+    return ev;
+  },
+  finish(st, winner) {
+    const scores = {}; st.seats.forEach((s) => { scores[s] = 52 - this.remaining(st, s); });
+    return { winners: [winner], scores, lowWins: false };
+  },
+  observe(st, seat) {
+    return { hand: B.cardsIn(st.board, Z.hand(seat)),
+      centres: [0, 1].map((p) => B.top(st.board, this.centre(p))),
+      draw: B.count(st.board, Z.own("draw", seat)), opponent: this.remaining(st, seat === 0 ? 1 : 0) };
+  },
+  agent(st, seat, legal, prof, rng) {
+    // Prefer a card that keeps the most follow-ups open.
+    const scored = legal.map((a) => {
+      if (a.t === "flip") return { action: a, score: 0 };
+      const c = st.board.cards.get(a.id);
+      const rest = B.cardsIn(st.board, Z.hand(seat)).filter((x) => x.id !== a.id);
+      const follows = rest.filter((x) => this.playable(x, c)).length;
+      return { action: a, score: follows * 6 + rng() * 2 };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    return {
+      callouts: [{ k: "Left", v: viewer === null ? "—" : this.remaining(st, viewer) },
+        { k: "Turns down", v: st.flips }],
+      zones: [
+        { label: "", cards: [B.top(st.board, this.centre(0))].filter(Boolean).map((c) => ({ known: true, ...c })) },
+        { label: "", cards: [B.top(st.board, this.centre(1))].filter(Boolean).map((c) => ({ known: true, ...c })) },
+      ],
+      counts: (s) => `${this.remaining(st, s)}`,
+      handHint: "Play onto either pile — one rank up or down",
+      dimUnplayable: (c) => ![0, 1].some((p) => this.playable(c, B.top(st.board, this.centre(p)))),
+    };
+  },
+});
+
+/* ── FREECELL (solo) ──────────────────────────────────────────────── */
+def({
+  id: "freecell", name: "FreeCell", tagline: "Everything is visible. That is the hard part.",
+  category: "Solitaire", min: 1, max: 1, solo: true, art: ["acid", "ink"],
+  cell(i) { return `cell:${i}`; },
+  setup(cfg, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...Array(8).keys()].map(Z.tableau)
+      .concat([...Array(4).keys()].map(Z.foundation), [...Array(4).keys()].map(this.cell), [Z.stock]));
+    let col = 0;
+    while (B.count(b, Z.stock)) { B.draw(b, Z.stock, Z.tableau(col % 8), "up"); col++; }
+    return { board: b, seats: [0], active: 0, done: null, moves: 0, pick: null };
+  },
+  freeCells(st) { return [0, 1, 2, 3].filter((i) => !B.count(st.board, this.cell(i))).length; },
+  emptyCols(st) { return [...Array(8).keys()].filter((i) => !B.count(st.board, Z.tableau(i))).length; },
+  /* The classic formula: (free cells + 1) x 2^(empty columns), halved when
+     the destination is itself an empty column. */
+  lift(st, toEmpty) { return (this.freeCells(st) + 1) * Math.pow(2, Math.max(0, this.emptyCols(st) - (toEmpty ? 1 : 0))); },
+  canFoundation(st, c, f) {
+    const top = B.top(st.board, Z.foundation(f));
+    return top ? top.suit === c.suit && c.rank === top.rank + 1 : c.rank === 14;
+  },
+  canTableau(st, c, col) {
+    const top = B.top(st.board, Z.tableau(col));
+    return top ? isRed(top) !== isRed(c) && c.rank === top.rank - 1 : true;
+  },
+  run(st, id) {
+    const z = B.zoneOf(st.board, id);
+    if (!z || !z.startsWith("tab:")) return B.top(st.board, z) && B.top(st.board, z).id === id ? [id] : null;
+    const pile = B.at(st.board, z), i = pile.indexOf(id);
+    if (i < 0) return null;
+    const run = pile.slice(i);
+    for (let k = 1; k < run.length; k++) {
+      const a = st.board.cards.get(run[k - 1]), c = st.board.cards.get(run[k]);
+      if (isRed(a) === isRed(c) || c.rank !== a.rank - 1) return null;
+    }
+    return run;
+  },
+  legal(st) {
+    if (st.done) return [];
+    const out = [], sources = [];
+    for (let i = 0; i < 4; i++) { const t = B.top(st.board, this.cell(i)); if (t) sources.push(t); }
+    for (let col = 0; col < 8; col++) for (const id of B.at(st.board, Z.tableau(col))) sources.push(st.board.cards.get(id));
+    for (const c of sources) {
+      const run = this.run(st, c.id);
+      if (!run) continue;
+      if (run.length === 1) {
+        for (let f = 0; f < 4; f++) if (this.canFoundation(st, c, f)) out.push({ t: "move", id: c.id, to: Z.foundation(f) });
+        for (let i = 0; i < 4; i++) if (!B.count(st.board, this.cell(i)) && B.zoneOf(st.board, c.id) !== this.cell(i)) out.push({ t: "move", id: c.id, to: this.cell(i) });
+      }
+      for (let col = 0; col < 8; col++) {
+        if (B.zoneOf(st.board, c.id) === Z.tableau(col)) continue;
+        if (!this.canTableau(st, c, col)) continue;
+        if (run.length > this.lift(st, !B.count(st.board, Z.tableau(col)))) continue;
+        out.push({ t: "move", id: c.id, to: Z.tableau(col) });
+      }
+    }
+    return out;
+  },
+  apply(st, a) {
+    const ev = [];
+    const run = this.run(st, a.id) || [a.id];
+    B.move(st.board, run, a.to, "up");
+    st.moves++;
+    const home = [0, 1, 2, 3].reduce((n, f) => n + B.count(st.board, Z.foundation(f)), 0);
+    if (home === 52) { st.done = { winners: [0], scores: { 0: Math.max(0, 1000 - st.moves * 2) }, lowWins: false }; ev.push("Solved."); }
+    return ev;
+  },
+  observe() { return {}; },
+  agent(st, seat, legal) { return legal[0] || null; },
+  table(st) {
+    const zones = [];
+    for (let i = 0; i < 4; i++) zones.push({ label: i === 0 ? "Cells" : "", cell: i, small: true,
+      cards: [B.top(st.board, this.cell(i))].filter(Boolean).map((c) => ({ known: true, ...c })) });
+    for (let f = 0; f < 4; f++) zones.push({ label: f === 0 ? "Home" : "", foundation: f, small: true,
+      cards: [B.top(st.board, Z.foundation(f))].filter(Boolean).map((c) => ({ known: true, ...c })) });
+    return {
+      callouts: [{ k: "Moves", v: st.moves }, { k: "Free cells", v: this.freeCells(st) },
+        { k: "Can move", v: this.lift(st, false) },
+        { k: "Home", v: [0,1,2,3].reduce((n, f) => n + B.count(st.board, Z.foundation(f)), 0) + " of 52" }],
+      zones, tableau: true, columns: 8, counts: () => "", handHint: null, noCardPlay: true,
+    };
+  },
+});
+
+/* ── SPIDER (solo) ────────────────────────────────────────────────── */
+def({
+  id: "spider", name: "Spider", tagline: "Ten columns. Eight runs. One suit, or four.",
+  category: "Solitaire", min: 1, max: 1, solo: true, art: ["crimson", "ink"],
+  setup(cfg, rng) {
+    const suits = cfg.suits || 1;
+    const packs = suits === 1 ? 8 : suits === 2 ? 4 : 2;
+    const use = suits === 1 ? ["S"] : suits === 2 ? ["S", "H"] : SUITS;
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck({ packs, suits: use })), Z.stock);
+    B.ensure(b, [...Array(10).keys()].map(Z.tableau).concat([...Array(8).keys()].map(Z.foundation), [Z.stock]));
+    for (let col = 0; col < 10; col++) {
+      const depth = col < 4 ? 6 : 5;
+      for (let r = 0; r < depth; r++) B.draw(b, Z.stock, Z.tableau(col), r === depth - 1 ? "up" : "down");
+    }
+    return { board: b, seats: [0], active: 0, done: null, moves: 0, runs: 0, suits, pick: null };
+  },
+  canTableau(st, c, col) {
+    const top = B.top(st.board, Z.tableau(col));
+    if (!top) return true;
+    return st.board.up.has(top.id) && c.rank === top.rank - 1;
+  },
+  /* Anything sits on one rank higher, but only a same-suit run lifts. */
+  run(st, id) {
+    const z = B.zoneOf(st.board, id);
+    if (!z || !z.startsWith("tab:") || !st.board.up.has(id)) return null;
+    const pile = B.at(st.board, z), i = pile.indexOf(id);
+    if (i < 0) return null;
+    const run = pile.slice(i);
+    for (let k = 1; k < run.length; k++) {
+      const a = st.board.cards.get(run[k - 1]), c = st.board.cards.get(run[k]);
+      if (!st.board.up.has(run[k]) || a.suit !== c.suit || c.rank !== a.rank - 1) return null;
+    }
+    return run;
+  },
+  legal(st) {
+    if (st.done) return [];
+    const out = [];
+    for (let col = 0; col < 10; col++) for (const id of B.at(st.board, Z.tableau(col))) {
+      if (!st.board.up.has(id)) continue;
+      const run = this.run(st, id);
+      if (!run) continue;
+      const c = st.board.cards.get(id);
+      for (let to = 0; to < 10; to++) {
+        if (to === col) continue;
+        if (this.canTableau(st, c, to)) out.push({ t: "move", id, to: Z.tableau(to) });
+      }
+    }
+    if (B.count(st.board, Z.stock) >= 10 && ![...Array(10).keys()].some((c) => !B.count(st.board, Z.tableau(c))))
+      out.push({ t: "deal" });
+    return out;
+  },
+  apply(st, a) {
+    const ev = [];
+    if (a.t === "deal") {
+      for (let col = 0; col < 10; col++) B.draw(st.board, Z.stock, Z.tableau(col), "up");
+      st.moves++;
+      ev.push("A row down.");
+    } else {
+      const run = this.run(st, a.id) || [a.id];
+      const from = B.zoneOf(st.board, a.id);
+      B.move(st.board, run, a.to, "up");
+      st.moves++;
+      const top = B.top(st.board, from);
+      if (top && !st.board.up.has(top.id)) { B.face(st.board, top.id, "up"); ev.push("Turned a card."); }
+    }
+    ev.push(...this.harvest(st));
+    if (st.runs === 8) { st.done = { winners: [0], scores: { 0: Math.max(0, 1200 - st.moves) }, lowWins: false }; ev.push("Solved."); }
+    return ev;
+  },
+  harvest(st) {
+    const ev = [];
+    for (let col = 0; col < 10; col++) {
+      const pile = B.at(st.board, Z.tableau(col));
+      if (pile.length < 13) continue;
+      const tail = pile.slice(-13);
+      const cards = tail.map((id) => st.board.cards.get(id));
+      let ok = cards.every((c, i) => st.board.up.has(tail[i]) && c.suit === cards[0].suit && c.rank === 14 - i);
+      if (!ok) continue;
+      B.move(st.board, tail, Z.foundation(st.runs), "up");
+      st.runs++;
+      const top = B.top(st.board, Z.tableau(col));
+      if (top && !st.board.up.has(top.id)) B.face(st.board, top.id, "up");
+      ev.push("A run comes off.");
+    }
+    return ev;
+  },
+  observe() { return {}; },
+  agent(st, seat, legal) { return legal[0] || null; },
+  table(st) {
+    const zones = [];
+    for (let f = 0; f < 8; f++) zones.push({ label: f === 0 ? "Runs" : "", foundation: f, small: true,
+      cards: [B.top(st.board, Z.foundation(f))].filter(Boolean).map((c) => ({ known: true, ...c })) });
+    zones.unshift({ label: "Stock", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -21 }] : [], stack: true, action: { t: "deal" } });
+    return {
+      callouts: [{ k: "Moves", v: st.moves }, { k: "Runs", v: `${st.runs} of 8` },
+        { k: "Rows left", v: Math.floor(B.count(st.board, Z.stock) / 10) },
+        { k: "Suits", v: st.suits }],
+      zones, tableau: true, columns: 10, counts: () => "", handHint: null, noCardPlay: true,
     };
   },
 });
@@ -1598,6 +2274,7 @@ def({
       const zone = Z.meld(seat, st.melds.length);
       B.move(st.board, ids, zone, "up");
       st.melds.push({ owner: seat, zone, cards: ids });
+      st.meldsLaid = st.meldsLaid || {}; st.meldsLaid[seat] = (st.meldsLaid[seat] || 0) + 1;
       ev.push(`${st.names[seat]} melds ${ids.length}.`);
       return this.checkOut(st, seat, ev);
     }
@@ -1794,9 +2471,9 @@ def({
     }
     const diff = theirPoints - mine.points;
     let winner = seat, points, kind;
-    if (gin) { points = theirPoints + 25; kind = "gin"; }
-    else if (diff <= 0) { winner = other; points = Math.abs(diff) + 25; kind = "undercut"; }
-    else { points = diff; kind = "knock"; }
+    if (gin) { points = theirPoints + 25; kind = "gin"; if (seat === 0) st.ginCount = (st.ginCount || 0) + 1; }
+    else if (diff <= 0) { winner = other; points = Math.abs(diff) + 25; kind = "undercut"; if (other === 0) st.undercutCount = (st.undercutCount || 0) + 1; }
+    else { points = diff; kind = "knock"; if (seat === 0) st.knockCount = (st.knockCount || 0) + 1; }
     st.scores[winner] += points;
     st.summary = { knocker: seat, winner, points, kind, mine: mine.points, theirs: theirPoints };
     ev.push(kind === "gin" ? `${st.names[seat]} goes gin — ${points}.`
@@ -1897,6 +2574,231 @@ function tableFor(g, st, viewer) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   PROGRESSION
+   Statistics, achievements, mastery, daily challenges and the seven.
+   All of it is data the engine folds; none of it knows any game's rules.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* What each game asks to be counted about it. The engine has no idea what
+   a "moon" or a "nil" is; it reads the aggregation and folds the number. */
+const METRICS = {
+  hearts:    [{ k: "moons", t: "Moons shot", agg: "sum" }, { k: "queens", t: "Queens taken", agg: "sum" }, { k: "clean", t: "Point-free hands", agg: "sum" }],
+  spades:    [{ k: "nils", t: "Nils made", agg: "sum" }, { k: "bags", t: "Bags collected", agg: "sum" }, { k: "setThem", t: "Contracts set", agg: "sum" }],
+  euchre:    [{ k: "marches", t: "Marches", agg: "sum" }, { k: "loners", t: "Loners made", agg: "sum" }, { k: "euchres", t: "Euchres", agg: "sum" }],
+  holdem:    [{ k: "biggestPot", t: "Biggest pot", agg: "max" }, { k: "allins", t: "All-ins", agg: "sum" }, { k: "showdowns", t: "Showdowns won", agg: "sum" }],
+  gin:       [{ k: "gins", t: "Gins", agg: "sum" }, { k: "undercuts", t: "Undercuts", agg: "sum" }, { k: "knocks", t: "Knocks", agg: "sum" }],
+  rummy:     [{ k: "melds", t: "Melds laid", agg: "sum" }, { k: "goneOut", t: "Gone out", agg: "sum" }],
+  crazy8:    [{ k: "eights", t: "Eights played", agg: "sum" }],
+  cheat:     [{ k: "bluffs", t: "Bluffs that stuck", agg: "sum" }, { k: "caught", t: "Liars caught", agg: "sum" }, { k: "badCalls", t: "Bad calls", agg: "sum" }],
+  president: [{ k: "bombs", t: "Bombs dropped", agg: "sum" }, { k: "presidencies", t: "Presidencies", agg: "sum" }],
+  gofish:    [{ k: "books", t: "Books made", agg: "sum" }, { k: "luckyDraws", t: "Lucky draws", agg: "sum" }],
+  war:       [{ k: "wars", t: "Wars fought", agg: "sum" }, { k: "battles", t: "Battles won", agg: "sum" }],
+  speed:     [{ k: "cardsPlayed", t: "Cards played", agg: "sum" }, { k: "flips", t: "Deadlocks broken", agg: "sum" }],
+  klondike:  [{ k: "fewestMoves", t: "Fewest moves", agg: "min" }],
+  freecell:  [{ k: "fewestMoves", t: "Fewest moves", agg: "min" }],
+  spider:    [{ k: "fewestMoves", t: "Fewest moves", agg: "min" }, { k: "suits", t: "Hardest suits beaten", agg: "max" }],
+};
+
+/* Each game reports its own numbers at the end. */
+function metricsFrom(g, st, seat) {
+  const m = {};
+  const n = (k, v) => { if (v) m[k] = v; };
+  switch (g.id) {
+    case "hearts": n("moons", st.points && st.points[seat] === 26 ? 1 : 0); n("queens", st.queensTaken || 0); break;
+    case "spades": n("nils", (st.nils || {})[seat] || 0); n("bags", (st.bags || {})[seat % 2] || 0); break;
+    case "euchre": n("marches", st.marches || 0); n("loners", st.loners || 0); n("euchres", st.euchres || 0); break;
+    case "holdem": n("biggestPot", st.biggestPot || 0); n("allins", st.allinCount || 0); break;
+    case "gin": n("gins", st.ginCount || 0); n("undercuts", st.undercutCount || 0); n("knocks", st.knockCount || 0); break;
+    case "rummy": n("melds", (st.meldsLaid || {})[seat] || 0); n("goneOut", st.outSeat === seat ? 1 : 0); break;
+    case "crazy8": n("eights", st.eightsPlayed || 0); break;
+    case "cheat": n("caught", (st.caught || {})[seat] || 0); n("badCalls", (st.badCalls || {})[seat] || 0); break;
+    case "president": n("bombs", st.bombs || 0); n("presidencies", st.finish && st.finish[0] === seat ? 1 : 0); break;
+    case "gofish": n("books", (st.books || {})[seat] ? st.books[seat].length : 0); break;
+    case "war": n("wars", st.wars || 0); break;
+    case "speed": n("cardsPlayed", (st.played || {})[seat] || 0); n("flips", st.flips || 0); break;
+    case "klondike": case "freecell": if (st.done) n("fewestMoves", st.moves || 0); break;
+    case "spider": if (st.done) { n("fewestMoves", st.moves || 0); n("suits", st.suits || 1); } break;
+  }
+  return m;
+}
+
+/* ── The seven ────────────────────────────────────────────────────── */
+const BOSSES = [
+  { id: "hal", name: "Hal", title: "The Metronome", colour: "cobalt",
+    lore: "He has played the same opening for eleven years. It is still working.",
+    modifier: "Opponents play 15% sharper, and the target is 10% harder.", scale: 1.15, tighten: 10 },
+  { id: "pedro", name: "Pedro", title: "The Pressure", colour: "vermilion",
+    lore: "Nobody has ever seen him fold first. Nobody has checked whether he can.",
+    modifier: "Opponents play 30% sharper. Beating him is worth 125%.", scale: 1.3, tighten: 0, reward: 125 },
+  { id: "calvin", name: "Calvin", title: "The Closer", colour: "forest",
+    lore: "He does not need to win the hand. He needs you not to.",
+    modifier: "You start 20 points behind.", scale: 1.1, tighten: 0, handicap: 20 },
+  { id: "rohan", name: "Rohan", title: "The Count", colour: "acid",
+    lore: "He knows which cards are gone. All of them. Since the first deal.",
+    modifier: "Opponents remember everything, and the target is 25% harder.", scale: 1.2, tighten: 25 },
+  { id: "shayla", name: "Shayla", title: "The Read", colour: "coral",
+    lore: "She is not playing the cards. She has not been for a while.",
+    modifier: "Opponents adapt to how you play. The target is 15% harder.", scale: 1.25, tighten: 15 },
+  { id: "honey", name: "Honey", title: "The Chaos", colour: "orange",
+    lore: "Charming, unbothered, and impossible to put on a hand.",
+    modifier: "Wildly unpredictable opponents. Beating her is worth 150%.", scale: 1.15, tighten: 0, reward: 150 },
+  { id: "scarlet", name: "Scarlet", title: "The Doubt", colour: "crimson",
+    lore: "She has never once believed the obvious move was the correct one.",
+    modifier: "Opponents play 40% sharper, and the target is 30% harder.", scale: 1.4, tighten: 30, reward: 175 },
+];
+const bossById = (id) => BOSSES.find((b) => b.id === id) || null;
+
+/* ── The daily challenge ──────────────────────────────────────────── */
+const Daily = {
+  /* The user's own calendar day. Everything below is a pure function of
+     it, so two devices on the same date get the identical challenge. */
+  today(now) { const d = now || new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; },
+  seedFor(dateStr, salt) {
+    let h = 2166136261 >>> 0;
+    for (const ch of dateStr + "|" + (salt || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    return h >>> 0;
+  },
+  for(dateStr) {
+    const pool = Object.values(GAMES).filter((g) => g.id !== "war");
+    const pick = rngFrom(this.seedFor(dateStr, "pick"));
+    const g = pool[pick.int(pool.length)];
+    const r = rngFrom(this.seedFor(dateStr, "spec"));
+    const roll = r();
+    const scale = 0.5 + Math.pow(roll, 3) * 2.5;              // −50% to +200%, long tail
+    const boss = scale > 1.8 || r.chance(0.45) ? BOSSES[rngFrom(this.seedFor(dateStr, "boss")).int(BOSSES.length)] : null;
+    const tighten = 1 + (boss ? boss.tighten : 0) / 100;
+    const objective = g.solo
+      ? (r.chance(.5) ? { kind: "moves", n: Math.max(60, Math.round(200 / (scale * tighten))) }
+                      : { kind: "win" })
+      : (r.chance(.35) ? { kind: "score", n: Math.max(20, Math.round(90 * scale * tighten)) } : { kind: "win" });
+    return {
+      date: dateStr, gameId: g.id, gameName: g.name, seed: this.seedFor(dateStr, "deal"),
+      scale, percent: Math.round((scale - 1) * 100), bossId: boss ? boss.id : null,
+      objective, players: Math.min(g.max, Math.max(g.min, g.solo ? 1 : 4)),
+    };
+  },
+  describe(c) {
+    if (c.objective.kind === "win") return "Win it.";
+    if (c.objective.kind === "score") return `Score at least ${c.objective.n}.`;
+    return `Finish in ${c.objective.n} moves or fewer.`;
+  },
+  met(c, st, seat) {
+    if (!st.done) return false;
+    const won = st.done.winners.includes(seat);
+    if (c.objective.kind === "win") return won;
+    if (c.objective.kind === "score") return (st.done.scores[seat] || 0) >= c.objective.n;
+    return won && (st.moves || 0) <= c.objective.n;
+  },
+};
+
+/* ── What is earned ───────────────────────────────────────────────── */
+const ACHIEVEMENTS = [
+  { id: "first.win", t: "Opening Hand", d: "Win your first game", target: 1, of: (p) => p.won },
+  { id: "wins.10", t: "Regular", d: "Win ten games", target: 10, of: (p) => p.won },
+  { id: "wins.50", t: "Card Sharp", d: "Win fifty games", target: 50, of: (p) => p.won },
+  { id: "wins.200", t: "House Player", d: "Win two hundred games", target: 200, of: (p) => p.won },
+  { id: "played.100", t: "Well Shuffled", d: "Play a hundred games", target: 100, of: (p) => p.played },
+  { id: "library.5", t: "Browsing", d: "Win at five different games", target: 5, of: (p) => (p.wonGames || []).length },
+  { id: "library.10", t: "Getting Around", d: "Win at ten different games", target: 10, of: (p) => (p.wonGames || []).length },
+  { id: "library.all", t: "One Deck, Every Game", d: "Win at all fifteen", target: 15, of: (p) => (p.wonGames || []).length },
+  { id: "hearts.moon", t: "Lunar", d: "Shoot the moon", target: 1, of: (p) => mOf(p, "hearts", "moons") },
+  { id: "spades.nil", t: "Nothing At All", d: "Make five nils", target: 5, of: (p) => mOf(p, "spades", "nils") },
+  { id: "euchre.loner", t: "Alone", d: "Make three loners", target: 3, of: (p) => mOf(p, "euchre", "loners") },
+  { id: "gin.gin", t: "Clean Hand", d: "Go gin five times", target: 5, of: (p) => mOf(p, "gin", "gins") },
+  { id: "gin.undercut", t: "Undercut", d: "Undercut a knocker three times", target: 3, of: (p) => mOf(p, "gin", "undercuts") },
+  { id: "cheat.caught", t: "Read Like A Book", d: "Catch twenty liars", target: 20, of: (p) => mOf(p, "cheat", "caught") },
+  { id: "president.bomb", t: "Bombardier", d: "Drop ten bombs", target: 10, of: (p) => mOf(p, "president", "bombs") },
+  { id: "gofish.books", t: "Shelved", d: "Make fifty books", target: 50, of: (p) => mOf(p, "gofish", "books") },
+  { id: "solitaire.win", t: "Patience", d: "Solve any solitaire", target: 1,
+    of: (p) => ["klondike", "freecell", "spider"].reduce((n, id) => n + ((p.byGame[id] || {}).won || 0), 0) },
+  { id: "daily.first", t: "Daily", d: "Complete a daily challenge", target: 1, of: (p) => p.dailyDone || 0 },
+  { id: "daily.streak7", t: "Seven Days", d: "A seven-day streak", target: 7, of: (p) => p.bestStreak || 0 },
+  { id: "daily.streak30", t: "A Month Of It", d: "A thirty-day streak", target: 30, of: (p) => p.bestStreak || 0 },
+  { id: "boss.one", t: "Contender", d: "Beat any of the seven", target: 1, of: (p) => (p.bosses || []).length },
+  { id: "boss.all", t: "The Whole Table", d: "Beat all seven", target: 7, of: (p) => (p.bosses || []).length },
+];
+const mOf = (p, game, key) => ((p.byGame[game] || {}).metrics || {})[key] || 0;
+
+/* ── Mastery: five bands per game, from what you have actually done ── */
+function mastery(profile, gameId) {
+  const r = profile.byGame[gameId] || {};
+  const wins = r.won || 0;
+  let pts = Math.min(4, Math.floor(wins / 3));
+  if (r.beatExpert) pts += 2;
+  if ((r.dailyWins || 0) > 0) pts += 1;
+  const level = pts === 0 ? 0 : pts <= 2 ? 1 : pts <= 4 ? 2 : pts <= 7 ? 3 : 4;
+  const bands = [1, 3, 5, 8];
+  const prev = level === 0 ? 0 : bands[level - 1];
+  const next = level >= 4 ? pts : bands[level];
+  return { level, pts, progress: level >= 4 ? 1 : Math.max(0, Math.min(1, (pts - prev) / Math.max(1, next - prev))) };
+}
+const MASTERY_NAMES = ["Unplayed", "Learning", "Competent", "Strong", "Mastered"];
+
+/* ── The profile ──────────────────────────────────────────────────── */
+const Profile = {
+  blank(name) {
+    return { v: 1, name: name || "Player", created: Date.now(), played: 0, won: 0, lost: 0,
+      seconds: 0, byGame: {}, wonGames: [], unlocked: [], bosses: [],
+      dailyDone: 0, streak: 0, bestStreak: 0, lastDaily: null, dailyHistory: [] };
+  },
+  gameRecord(p, id) {
+    if (!p.byGame[id]) p.byGame[id] = { played: 0, won: 0, seconds: 0, best: null, metrics: {}, beatExpert: false, dailyWins: 0 };
+    return p.byGame[id];
+  },
+  /* Folds one finished game in. The only place a result becomes history. */
+  record(p, { gameId, won, seconds, score, metrics, difficulty, daily, bossId }) {
+    p.played++; if (won) p.won++; else p.lost++;
+    p.seconds += Math.max(0, Math.round(seconds || 0));
+    const r = this.gameRecord(p, gameId);
+    r.played++; r.seconds += Math.max(0, Math.round(seconds || 0));
+    if (won) {
+      r.won++;
+      if (!p.wonGames.includes(gameId)) p.wonGames.push(gameId);
+      if (difficulty === "expert") r.beatExpert = true;
+      if (typeof score === "number" && (r.best === null || score > r.best)) r.best = score;
+    }
+    for (const [k, v] of Object.entries(metrics || {})) {
+      const def = (METRICS[gameId] || []).find((d) => d.k === k);
+      const agg = def ? def.agg : "sum";
+      const cur = r.metrics[k];
+      r.metrics[k] = agg === "max" ? Math.max(cur === undefined ? -Infinity : cur, v)
+        : agg === "min" ? Math.min(cur === undefined ? Infinity : cur, v)
+        : (cur || 0) + v;
+    }
+    if (daily && won) {
+      r.dailyWins = (r.dailyWins || 0) + 1;
+      this.recordDaily(p, daily);
+      if (bossId && !p.bosses.includes(bossId)) p.bosses.push(bossId);
+    }
+    return this.newlyEarned(p);
+  },
+  /* A day counts once. A streak advances once. Replaying yesterday does
+     nothing, which is what stops a streak being farmed. */
+  recordDaily(p, dateStr) {
+    if (p.dailyHistory.includes(dateStr)) return;
+    p.dailyHistory.push(dateStr);
+    if (p.dailyHistory.length > 400) p.dailyHistory.shift();
+    p.dailyDone++;
+    const gap = p.lastDaily ? Math.round((Date.parse(dateStr) - Date.parse(p.lastDaily)) / 86400000) : null;
+    p.streak = gap === 1 ? p.streak + 1 : 1;
+    p.lastDaily = dateStr;
+    if (p.streak > p.bestStreak) p.bestStreak = p.streak;
+  },
+  expireStreak(p, todayStr) {
+    if (!p.lastDaily) return;
+    const gap = Math.round((Date.parse(todayStr) - Date.parse(p.lastDaily)) / 86400000);
+    if (gap > 1) p.streak = 0;
+  },
+  earned(p) { return ACHIEVEMENTS.filter((a) => a.of(p) >= a.target).map((a) => a.id); },
+  newlyEarned(p) {
+    const now = this.earned(p);
+    const fresh = now.filter((id) => !p.unlocked.includes(id));
+    p.unlocked = now;
+    return fresh;
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════════
    PRIVACY — the Pass & Play coordinator.
    Permission is state, not a screen. `viewer` is computed and is null
    for every phase where the device is in transit, so there is no code
@@ -1988,6 +2890,7 @@ function toast(msg) {
 }
 
 /* ── Theme ───────────────────────────────────────────────────────── */
+document.getElementById("statsBtn").onclick = () => { App.view = "stats"; render(); };
 const themeBtn = document.getElementById("themeBtn");
 themeBtn.onclick = () => {
   const cur = document.documentElement.getAttribute("data-theme");
@@ -2129,15 +3032,24 @@ function viewLibrary() {
     requestAnimationFrame(() => coverArt(card, g));
   }
 
-  const stats = store.get("stats", {});
-  const played = Object.values(stats).reduce((n, x) => n + (x.played || 0), 0);
+  const p = localProfile();
   const foot = el("div", "stack");
-  foot.style.gap = "var(--s2)";
-  foot.append(el("div", "label", "On this device"));
-  foot.append(el("div", "num", `${played} game${played === 1 ? "" : "s"} played`));
-  foot.querySelector(".num").style.fontSize = "28px";
+  foot.style.gap = "var(--s3)";
+  const row = el("div", "row");
+  row.style.cssText = "gap:var(--s5);flex-wrap:wrap";
+  for (const [k, v] of [["Played", p.played], ["Won", p.won],
+      ["Win rate", p.played ? Math.round((p.won / p.played) * 100) + "%" : "—"],
+      ["Streak", p.streak]]) {
+    const c = el("div", "callout");
+    c.append(el("span", "k", k), el("span", "v num", String(v)));
+    c.querySelector(".v").style.fontSize = "26px";
+    row.append(c);
+  }
+  const seeAll = el("button", "btn ghost wide", "Statistics, achievements and mastery");
+  seeAll.onclick = () => { App.view = "stats"; render(); };
+  foot.append(el("div", "label", "On this device"), row, seeAll);
 
-  wrap.append(head, shelf, foot);
+  wrap.append(head, dailyCard(), shelf, foot);
   s.append(wrap);
   return s;
 }
@@ -2239,6 +3151,251 @@ function defaultSeats(g) {
   const out = [{ name: store.get("myname", "You"), ai: null }];
   for (let i = 1; i < n; i++) { const p = CAST[(i - 1) % CAST.length]; out.push({ name: p.name, ai: p.id }); }
   return out;
+}
+
+/* ── The daily challenge ─────────────────────────────────────────── */
+function dailyCard() {
+  const c = Daily.for(Daily.today());
+  const p = localProfile();
+  const done = p.dailyHistory.includes(c.date);
+  const boss = c.bossId ? bossById(c.bossId) : null;
+  const card = el("button", "game-card");
+  card.style.cssText = `background:var(--${boss ? boss.colour : "vermilion"});min-height:150px`;
+  const top = el("div", "gtag", `Today · ${c.date}`);
+  const nm = el("div", "gname", boss ? boss.name.toUpperCase() : c.gameName);
+  const sub = el("div", "gtag");
+  sub.style.cssText = "opacity:1;margin-top:var(--s2);font-size:11.5px";
+  sub.textContent = boss
+    ? `${boss.title} · ${c.gameName} · ${c.percent >= 0 ? "+" : ""}${c.percent}%`
+    : `${Daily.describe(c)} · ${c.percent >= 0 ? "+" : ""}${c.percent}%`;
+  card.append(top, nm, sub);
+  if (done) {
+    const stamp = el("div", "gtag", "DONE");
+    stamp.style.cssText = "position:absolute;top:12px;right:12px;font-weight:900;font-size:14px;opacity:1;border:2px solid currentColor;padding:2px 6px;border-radius:4px;transform:rotate(-8deg)";
+    card.append(stamp);
+  }
+  card.onclick = () => { App.view = "daily"; render(); };
+  return card;
+}
+
+function viewDaily() {
+  const c = Daily.for(Daily.today());
+  const p = localProfile();
+  const done = p.dailyHistory.includes(c.date);
+  const boss = c.bossId ? bossById(c.bossId) : null;
+  const g = GAMES[c.gameId];
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+
+  wrap.append(el("div", "label", `Daily challenge · ${c.date}`));
+  wrap.append(el("h1", "poster h-l", boss ? boss.name : g.name));
+  if (boss) {
+    const t = el("p", "label", boss.title.toUpperCase());
+    t.style.color = `var(--${boss.colour})`;
+    const lore = el("p", "sub", boss.lore);
+    lore.style.fontStyle = "italic";
+    wrap.append(t, lore);
+  }
+
+  const facts = el("div", "stack");
+  facts.style.gap = "var(--s3)";
+  const add = (k, v) => {
+    const r = el("div", "row");
+    r.style.cssText = "gap:var(--s4);align-items:baseline;border-top:1px solid var(--rule);padding-top:var(--s3)";
+    const kk = el("span", "label", k); kk.style.cssText = "flex:0 0 34%";
+    const vv = el("span", null, v); vv.style.cssText = "flex:1;font-weight:700";
+    r.append(kk, vv); facts.append(r);
+  };
+  add("Game", g.name);
+  add("Objective", Daily.describe(c));
+  add("Difficulty", `${c.percent >= 0 ? "+" : ""}${c.percent}%`);
+  if (boss) add("What changes", boss.modifier);
+  add("Streak", `${p.streak} day${p.streak === 1 ? "" : "s"} · best ${p.bestStreak}`);
+  wrap.append(facts);
+
+  /* Everybody who opens today gets this deal. The seed is the date. */
+  wrap.append(el("p", "label", "Everyone playing today gets this exact deal."));
+
+  const play = el("button", "btn wide", done ? "Play it again (already counted)" : "Play the challenge");
+  play.onclick = () => {
+    const cast = [.0, 1, 2, 3, 4, 5].map((i) => CAST[i % CAST.length]);
+    const seats = [{ name: p.name || "You", ai: null }];
+    for (let i = 1; i < c.players; i++) seats.push({ name: cast[i - 1].name, ai: cast[i - 1].id });
+    App.dailyRun = done ? null : c;
+    App.game = g;
+    startGame(g, seats, c.scale > 1.6 ? "expert" : c.scale > 1.0 ? "skilled" : "casual", c.seed);
+    App.dailyRun = null;
+  };
+  const back = el("button", "btn ghost wide", "Back");
+  back.onclick = () => { App.view = "library"; render(); };
+  wrap.append(play, back);
+
+  const cal = el("div", "stack");
+  cal.style.gap = "var(--s2)";
+  cal.append(el("div", "label", "The last two weeks"));
+  const strip = el("div", "row");
+  strip.style.cssText = "gap:6px;flex-wrap:wrap";
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = Daily.today(d);
+    const hit = p.dailyHistory.includes(key);
+    const cell = el("div", null, String(d.getDate()));
+    cell.style.cssText = `width:34px;height:40px;display:grid;place-items:center;border-radius:6px;font-weight:800;font-size:13px;` +
+      (hit ? "background:var(--accent);color:var(--on-accent)" : "background:var(--ground-2);color:var(--on-ground-mute)");
+    strip.append(cell);
+  }
+  cal.append(strip);
+  wrap.append(cal);
+  s.append(wrap);
+  return s;
+}
+
+/* ── Everything you have done ────────────────────────────────────── */
+function viewStats() {
+  const remoteMe = App.remote && App.remote.view && App.remote.view.me;
+  const p = remoteMe || localProfile();
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+
+  wrap.append(el("h1", "poster h-l", "Your record"));
+  if (p.address) {
+    const who = el("p", "label", `${p.name} · ${p.address}`);
+    wrap.append(who);
+    wrap.append(el("p", "sub", "Your statistics follow this device's address on the tailnet — no account, nothing to sign into."));
+  }
+
+  const big = el("div", "row");
+  big.style.cssText = "gap:var(--s5);flex-wrap:wrap";
+  const stat = (k, v) => {
+    const c = el("div", "callout");
+    c.append(el("span", "k", k), el("span", "v num", String(v)));
+    c.querySelector(".v").style.fontSize = "32px";
+    big.append(c);
+  };
+  stat("Played", p.played);
+  stat("Won", p.won);
+  stat("Win rate", p.played ? Math.round((p.won / p.played) * 100) + "%" : "—");
+  stat("Games won at", (p.wonGames || []).length + " / 15");
+  stat("Streak", p.streak);
+  stat("Best streak", p.bestStreak);
+  stat("Time played", `${Math.floor((p.seconds || 0) / 3600)}h ${Math.floor(((p.seconds || 0) % 3600) / 60)}m`);
+  wrap.append(big);
+
+  /* Per game: record, mastery band, and whatever that game asks to have
+     counted about it. */
+  const perGame = el("div", "stack");
+  perGame.style.gap = "var(--s3)";
+  perGame.append(el("div", "label", "Game by game"));
+  for (const g of Object.values(GAMES)) {
+    const r = (p.byGame || {})[g.id];
+    if (!r || !r.played) continue;
+    const m = remoteMe ? (p.mastery.find((x) => x.id === g.id) || { level: 0, progress: 0 }) : mastery(p, g.id);
+    const row = el("div", "stack");
+    row.style.cssText = "gap:var(--s2);border-top:1px solid var(--rule);padding-top:var(--s3)";
+    const head = el("div", "row");
+    head.style.cssText = "gap:var(--s3);align-items:baseline";
+    const nm = el("span", null, g.name); nm.style.cssText = "font-weight:800;flex:1";
+    const rec = el("span", "label", `${r.won}/${r.played} · ${MASTERY_NAMES[m.level]}`);
+    head.append(nm, rec);
+    const bar = el("div");
+    bar.style.cssText = "height:6px;border-radius:3px;background:var(--ground-2);overflow:hidden";
+    const fill = el("div");
+    fill.style.cssText = `height:100%;width:${Math.round(m.progress * 100)}%;background:var(--accent)`;
+    bar.append(fill);
+    row.append(head, bar);
+    const ms = (METRICS[g.id] || []).filter((d) => (r.metrics || {})[d.k] !== undefined);
+    if (ms.length) {
+      const line = el("div", "row");
+      line.style.cssText = "gap:var(--s4);flex-wrap:wrap;padding-top:var(--s1)";
+      for (const d of ms) {
+        const c = el("div", "callout");
+        c.append(el("span", "k", d.t), el("span", "v num", String(r.metrics[d.k])));
+        c.querySelector(".v").style.fontSize = "15px";
+        line.append(c);
+      }
+      row.append(line);
+    }
+    perGame.append(row);
+  }
+  if (perGame.children.length === 1) perGame.append(el("p", "sub", "Nothing yet. Play a hand."));
+  wrap.append(perGame);
+
+  const list = remoteMe ? p.achievements
+    : ACHIEVEMENTS.map((a) => ({ id: a.id, t: a.t, d: a.d, target: a.target, at: Math.min(a.target, a.of(p)) }));
+  const earned = list.filter((a) => a.at >= a.target);
+  const ach = el("div", "stack");
+  ach.style.gap = "var(--s3)";
+  ach.append(el("div", "label", `Achievements — ${earned.length} of ${list.length}`));
+  for (const a of list) {
+    const got = a.at >= a.target;
+    const row = el("div", "stack");
+    row.style.cssText = "gap:var(--s1);border-top:1px solid var(--rule);padding-top:var(--s3)";
+    const line = el("div", "row");
+    line.style.cssText = "gap:var(--s3);align-items:baseline";
+    const t = el("span", null, a.t);
+    t.style.cssText = `font-weight:800;flex:1;${got ? "color:var(--accent)" : ""}`;
+    const n = el("span", "label", got ? "EARNED" : `${a.at} / ${a.target}`);
+    line.append(t, n);
+    const d = el("span", "label", a.d);
+    d.style.cssText = "text-transform:none;letter-spacing:0;font-size:12.5px";
+    row.append(line, d);
+    if (!got) {
+      const bar = el("div");
+      bar.style.cssText = "height:4px;border-radius:2px;background:var(--ground-2);overflow:hidden;margin-top:var(--s1)";
+      const fill = el("div");
+      fill.style.cssText = `height:100%;width:${Math.round((a.at / a.target) * 100)}%;background:var(--on-ground-mute)`;
+      bar.append(fill);
+      row.append(bar);
+    }
+    ach.append(row);
+  }
+  wrap.append(ach);
+
+  const bosses = el("div", "stack");
+  bosses.style.gap = "var(--s3)";
+  bosses.append(el("div", "label", `The seven — ${(p.bosses || []).length} beaten`));
+  for (const b of BOSSES) {
+    const beat = (p.bosses || []).includes(b.id);
+    const row = el("div", "row");
+    row.style.cssText = "gap:var(--s3);align-items:center;border-top:1px solid var(--rule);padding-top:var(--s3)";
+    const dot = el("span");
+    dot.style.cssText = `width:16px;height:16px;border-radius:4px;background:var(--${b.colour});flex:none;opacity:${beat ? 1 : .35}`;
+    const nm = el("span", null, `${b.name} — ${b.title}`);
+    nm.style.cssText = `flex:1;font-weight:${beat ? 800 : 500};${beat ? "" : "color:var(--on-ground-mute)"}`;
+    row.append(dot, nm, el("span", "label", beat ? "BEATEN" : ""));
+    bosses.append(row);
+  }
+  wrap.append(bosses);
+
+  if (SERVED) {
+    const lb = el("div", "stack");
+    lb.style.gap = "var(--s3)";
+    lb.append(el("div", "label", "Everybody on this table server"));
+    const holder = el("div", "stack");
+    lb.append(holder);
+    Net.post("/api/leaderboard", {}).then((data) => {
+      holder.innerHTML = "";
+      const tbl = el("table", "scoretable");
+      const h = el("tr");
+      h.append(el("th", null, "Player"), el("th", null, "Won"));
+      tbl.append(h);
+      for (const row of data.players) {
+        const tr = el("tr", row.address === data.you ? "win" : "");
+        tr.append(el("td", null, `${row.name} · ${row.won}/${row.played} · ${row.rate}%`), el("td", null, String(row.won)));
+        tbl.append(tr);
+      }
+      holder.append(data.players.length ? tbl : el("p", "sub", "Nobody has finished a game here yet."));
+    }).catch(() => { holder.append(el("p", "sub", "Could not reach the table server.")); });
+    wrap.append(lb);
+  }
+
+  const back = el("button", "btn ghost wide", "Back");
+  back.onclick = () => { App.view = App.remote ? "lobby" : "library"; render(); };
+  wrap.append(back);
+  s.append(wrap);
+  return s;
 }
 
 /* ── Joining a table ─────────────────────────────────────────────── */
@@ -2381,14 +3538,14 @@ function viewLobby() {
 }
 
 /* ── Running a game ──────────────────────────────────────────────── */
-function startGame(g, seats, difficulty) {
-  const seed = (Math.random() * 0xFFFFFFFF) >>> 0;
+function startGame(g, seats, difficulty, forcedSeed) {
+  const seed = forcedSeed !== undefined ? forcedSeed : (Math.random() * 0xFFFFFFFF) >>> 0;
   const rng = rngFrom(seed);
   const state = g.setup({ seats }, rng);
   state.names = seats.map((s) => s.name);
   const isHuman = (i) => !seats[i].ai;
   App.run = {
-    g, seed, rng, state, seats, difficulty,
+    g, seed, rng, state, seats, difficulty, started: Date.now(), daily: App.dailyRun || null,
     privacy: Privacy.make(state.seats, isHuman),
     log: [], busy: false, sealArmed: false,
   };
@@ -2429,8 +3586,13 @@ function settle() {
     }
     if (state.done) { finishGame(); return; }
 
-    const seat = state.active;
-    if (seat === null || seat === undefined) { render(); return; }
+    /* Simultaneous games nominate nobody; anybody holding a move may take
+       one, so look for an opponent who can act rather than assuming a seat. */
+    let seat = state.active;
+    if (seat === null || seat === undefined) {
+      seat = state.seats.find((s) => run.seats[s] && run.seats[s].ai && g.legal(state, s).length);
+      if (seat === undefined) { render(); return; }
+    }
 
     if (run.seats[seat].ai) {
       Privacy.turnMoved(run.privacy, seat);
@@ -2458,16 +3620,32 @@ function settle() {
   step();
 }
 
+function localProfile() {
+  const p = store.get("profile", null);
+  const fresh = Profile.blank(store.get("myname", "You"));
+  const merged = p ? Object.assign(fresh, p) : fresh;
+  Profile.expireStreak(merged, Daily.today());
+  return merged;
+}
+function saveProfile(p) { store.set("profile", p); }
+
 function finishGame() {
   const run = App.run;
   if (!run || run.recorded) { App.view = "result"; render(); return; }
   run.recorded = true;
-  const stats = store.get("stats", {});
-  const s = stats[run.g.id] = stats[run.g.id] || { played: 0, won: 0 };
-  s.played++;
   const me = run.seats.findIndex((x) => !x.ai);
-  if (me >= 0 && run.state.done.winners.includes(me)) s.won++;
-  store.set("stats", stats);
+  if (me >= 0) {
+    const p = localProfile();
+    const secs = Math.round((Date.now() - (run.started || Date.now())) / 1000);
+    const fresh = Profile.record(p, {
+      gameId: run.g.id, won: run.state.done.winners.includes(me), seconds: secs,
+      score: run.state.done.scores[me], metrics: metricsFrom(run.g, run.state, me),
+      difficulty: run.difficulty, daily: run.daily ? run.daily.date : null,
+      bossId: run.daily ? run.daily.bossId : null,
+    });
+    saveProfile(p);
+    run.earned = fresh;
+  }
   App.view = "result";
   render();
 }
@@ -2871,6 +4049,8 @@ function renderInner() {
   document.querySelectorAll(".seal").forEach((n) => n.remove());
   screen.innerHTML = "";
 
+  if (App.view === "stats") { screen.append(viewStats()); return; }
+  if (App.view === "daily") { screen.append(viewDaily()); return; }
   if (App.view === "connect") { screen.append(viewConnect()); return; }
   if (App.view === "lobby" && rem) { screen.append(viewLobby()); return; }
   if (rem && rem.view && App.view === "result") { screen.append(viewResult()); return; }

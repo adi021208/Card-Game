@@ -12,7 +12,7 @@
 "use strict";
 const http = require("http");
 process.env.DECK_PACE = "0";           // opponents think instantly here
-const { server, rooms, GAMES, viewFor, B } = require("./server.js");
+const { server, rooms, GAMES, viewFor, B, flushProfiles, PROFILES } = require("./server.js");
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) pass++; else { fail++; console.log("  FAIL:", m); } };
@@ -213,6 +213,58 @@ const settled = async (ms = 260) => { await sleep(ms); };
     eq(again.body.seat, 1, "and lands in the same seat");
     const stranger = await post("/api/join", { code: host.code, name: "Latecomer" });
     eq(stranger.status, 409, "but a new player cannot join a game in progress");
+  }
+
+  /* ── Identity follows the address, with stats attached ─────────── */
+  {
+    const me = await post("/api/me", { name: "Ada" });
+    eq(me.status, 200, "a device can ask who it is");
+    ok(!!me.body.me, "and gets a profile back");
+    ok(!!me.body.me.address, `keyed by its address — ${me.body.me.address}`);
+    ok(me.body.me.played >= 1, `with the game just played counted — ${me.body.me.played}`);
+    ok(Array.isArray(me.body.me.achievements) && me.body.me.achievements.length > 15,
+       `and every achievement listed — ${me.body.me.achievements && me.body.me.achievements.length}`);
+    ok(me.body.me.mastery.length === 15, `and a mastery band per game — ${me.body.me.mastery.length}`);
+    ok(!!me.body.daily && me.body.daily.date === me.body.today, "today's challenge comes with it");
+    ok(me.body.bosses.length === 7, "and the seven");
+
+    const again = await post("/api/me", {});
+    eq(again.body.me.played, me.body.me.played, "asking twice does not double-count");
+    eq(again.body.me.name, "Ada", "the name sticks to the address");
+
+    const renamed = await post("/api/me", { rename: "Ada L" });
+    eq(renamed.body.me.name, "Ada L", "and can be changed");
+    ok(renamed.body.me.won + renamed.body.me.lost === renamed.body.me.played, "wins and losses account for every game");
+
+    const board = await post("/api/leaderboard", {});
+    eq(board.status, 200, "the table has a leaderboard");
+    ok(board.body.players.length >= 1, "with everybody who has played on it");
+    ok(board.body.players.every((x) => typeof x.rate === "number"), "and a win rate each");
+  }
+
+  /* ── The daily is the same for everybody, every time ────────────── */
+  {
+    const a = await post("/api/me", {});
+    const b = await post("/api/me", {});
+    eq(JSON.stringify(a.body.daily), JSON.stringify(b.body.daily), "the daily challenge is stable within a day");
+    ok(a.body.daily.percent >= -50 && a.body.daily.percent <= 200,
+       `difficulty stays in range — ${a.body.daily.percent}%`);
+    ok(!!a.body.daily.objective.kind, "and it has an objective");
+  }
+
+  /* ── Progress survives the server going away ───────────────────── */
+  {
+    /* Every device here is 127.0.0.1, so they share one record — which is
+       exactly what would happen to two people behind one router, and why
+       this identity scheme belongs on a tailnet and nowhere else. */
+    flushProfiles();
+    const fs2 = require("fs");
+    const onDisk = JSON.parse(fs2.readFileSync(PROFILES, "utf8"));
+    const mine = Object.values(onDisk)[0];
+    ok(!!mine, "the record is written to disk");
+    ok(mine.played >= 1, `with the games played — ${mine && mine.played}`);
+    ok(Array.isArray(mine.unlocked), "and what has been unlocked");
+    ok(mine.address === "127.0.0.1", `keyed by address — ${mine && mine.address}`);
   }
 
   /* ── Leaving ───────────────────────────────────────────────────── */
