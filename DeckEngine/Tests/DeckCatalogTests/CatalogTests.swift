@@ -102,10 +102,10 @@ final class GameRegistryTests: XCTestCase {
         }
     }
 
-    func testSoloGamesSeatOnePlayerAndSayTheyDoNotWantAI() {
+    func testSoloGamesSeatOnePlayerAndSayTheyDoNotWantAI() throws {
         let registry = GameCatalog.makeRegistry()
         for id in [GameID.klondike, .freeCell, .spider] {
-            let definition = try! XCTUnwrap(registry[id])
+            let definition = try XCTUnwrap(registry[id])
             XCTAssertEqual(definition.playerRange, 1...1)
             XCTAssertFalse(definition.supportsAIOpponents)
             XCTAssertFalse(definition.supportsPassAndPlay)
@@ -113,10 +113,10 @@ final class GameRegistryTests: XCTestCase {
         }
     }
 
-    func testGamesWithHiddenInformationDoNotOfferUndo() {
+    func testGamesWithHiddenInformationDoNotOfferUndo() throws {
         let registry = GameCatalog.makeRegistry()
         for id in [GameID.texasHoldem, .hearts, .spades, .cheat, .goFish] {
-            let definition = try! XCTUnwrap(registry[id])
+            let definition = try XCTUnwrap(registry[id])
             XCTAssertFalse(definition.supportsUndo,
                            "\(definition.englishName) would leak by rewinding")
         }

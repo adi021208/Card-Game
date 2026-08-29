@@ -44,10 +44,10 @@ final class SpadesTests: XCTestCase {
         XCTAssertNotEqual(state.team(state.seatOrder[0]), state.team(state.seatOrder[1]))
     }
 
-    func testBiddingComesBeforePlaying() {
+    func testBiddingComesBeforePlaying() throws {
         let state = fresh()
         XCTAssertEqual(state.phase, .bidding)
-        let seat = try! XCTUnwrap(state.activeSeat)
+        let seat = try XCTUnwrap(state.activeSeat)
         let actions = rules.legalActions(in: state, for: seat)
         XCTAssertEqual(actions.count, 14, "zero through thirteen")
         XCTAssertTrue(actions.contains(.bid(0)), "nil is always on the table")
@@ -204,10 +204,10 @@ final class SpadesTests: XCTestCase {
         XCTAssertEqual(state.nilsMade[state.seatOrder[0]] ?? 0, 0)
     }
 
-    func testAFullGameFinishes() {
+    func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.spades, humans: 1, ai: 3, teams: true)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertFalse(result.winners.isEmpty)
         XCTAssertEqual(result.winners.count, 2, "spades is won by a partnership")
         XCTAssertGreaterThan(outcome.state.roundNumber, 1, "a game takes more than one deal")
@@ -367,10 +367,10 @@ final class EuchreTests: XCTestCase {
         XCTAssertFalse(state.activePlayers.contains(partner!))
     }
 
-    func testAFullGameFinishes() {
+    func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.euchre, humans: 1, ai: 3, teams: true)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(result.winners.count, 2)
         let winningScore = outcome.state.teamScores.values.max() ?? 0
         XCTAssertGreaterThanOrEqual(winningScore, outcome.state.settings.targetScore)

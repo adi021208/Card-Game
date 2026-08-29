@@ -159,7 +159,7 @@ final class FreeCellTests: XCTestCase {
         XCTAssertNil(rules.rejection(for: .collect, in: state))
     }
 
-    func testAWonGameIsRecognised() {
+    func testAWonGameIsRecognised() throws {
         var state = fresh()
         for column in 0..<FreeCellRules.columnCount {
             stack([], into: .tableau(column), on: &state.board)
@@ -178,7 +178,7 @@ final class FreeCellTests: XCTestCase {
         var generator = SeededGenerator(seed: 3)
         _ = rules.apply(.move(card: Card(token: "KS")!.id, to: .foundation(3)),
                         to: &state, generator: &generator)
-        let result = try! XCTUnwrap(state.finalResult)
+        let result = try XCTUnwrap(state.finalResult)
         XCTAssertEqual(result.winners, [state.seat])
         XCTAssertEqual(state.foundationTotal, 52)
         XCTAssertNil(state.activeSeat)

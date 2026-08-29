@@ -150,9 +150,9 @@ final class StatisticsTests: XCTestCase {
         XCTAssertEqual(StatisticsRecord().winRateBasisPoints, 0, "no games is not a zero win rate crash")
     }
 
-    func testMetricsFoldTheWayTheirGameDeclared() {
+    func testMetricsFoldTheWayTheirGameDeclared() throws {
         // Hearts declares its own metrics; the engine reads that declaration.
-        let hearts = try! XCTUnwrap(registry[.hearts])
+        let hearts = try XCTUnwrap(registry[.hearts])
         let totals = hearts.statistics.filter { $0.aggregation == .total }
         let maxima = hearts.statistics.filter { $0.aggregation == .maximum }
         XCTAssertFalse(totals.isEmpty, "hearts declares nothing to total")
@@ -271,7 +271,7 @@ final class AchievementTests: XCTestCase {
                       "an achievement with no target can never be earned")
     }
 
-    func testAWinUnlocksTheWinAchievementsForThatGameOnly() {
+    func testAWinUnlocksTheWinAchievementsForThatGameOnly() throws {
         var statistics = StatisticsState()
         StatisticsEngine(registry: registry).record(result: makeResult(), gameID: .hearts,
                                                     seat: SeatID(0),
@@ -284,7 +284,7 @@ final class AchievementTests: XCTestCase {
                                                           seat: SeatID(0)),
                                        into: &state)
         for id in unlocked {
-            let definition = try! XCTUnwrap(engine.definition(id))
+            let definition = try XCTUnwrap(engine.definition(id))
             switch definition.tracking {
             case let .wins(gameID):
                 XCTAssertTrue(gameID == nil || gameID == .hearts,

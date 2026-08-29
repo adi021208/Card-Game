@@ -26,10 +26,10 @@ final class ChallengeGenerationTests: XCTestCase {
 
     private var generator: DailyChallengeGenerator { DailyChallengeGenerator(registry: registry) }
 
-    func testTheSameDayGeneratesTheIdenticalChallenge() {
+    func testTheSameDayGeneratesTheIdenticalChallenge() throws {
         let day = ChallengeDate(year: 2026, month: 8, day: 28)
-        let first = try! XCTUnwrap(generator.challenge(for: day))
-        let second = try! XCTUnwrap(DailyChallengeGenerator(registry: GameCatalog.makeRegistry())
+        let first = try XCTUnwrap(generator.challenge(for: day))
+        let second = try XCTUnwrap(DailyChallengeGenerator(registry: GameCatalog.makeRegistry())
             .challenge(for: day))
         XCTAssertEqual(first, second,
                        "two devices on the same day must get byte-identical challenges")
@@ -320,14 +320,14 @@ final class ChallengeLedgerTests: XCTestCase {
         XCTAssertNotNil(stored?.finishedAt)
     }
 
-    func testBeatingABossIsRecordedOnce() {
+    func testBeatingABossIsRecordedOnce() throws {
         var ledger = ChallengeLedger(hasUnlimitedAttempts: true)
         var bossDay: DailyChallenge?
         for offset in 0..<60 where bossDay == nil {
             let candidate = challenge(day(offset))
             if candidate.bossID != nil { bossDay = candidate }
         }
-        let boss = try! XCTUnwrap(bossDay, "no boss appeared in sixty days")
+        let boss = try XCTUnwrap(bossDay, "no boss appeared in sixty days")
         let attempt = ledger.beginAttempt(boss)!
         let outcome = ledger.finish(attempt: attempt, challenge: boss, result: makeResult(),
                                     seat: SeatID(0), succeeded: true, replayLog: [])

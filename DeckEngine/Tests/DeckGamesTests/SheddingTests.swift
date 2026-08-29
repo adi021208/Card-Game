@@ -156,10 +156,10 @@ final class PresidentTests: XCTestCase {
         XCTAssertTrue(state.passedSeats.isEmpty)
     }
 
-    func testAFullGameFinishesWithEveryoneRanked() {
+    func testAFullGameFinishesWithEveryoneRanked() throws {
         let configuration = TestTable.configuration(.president, humans: 1, ai: 3)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(Set(result.placements), Set(outcome.state.seatOrder),
                        "everybody gets a place, president to scum")
         XCTAssertEqual(result.winners.count, 1)
@@ -256,7 +256,7 @@ final class CheatTests: XCTestCase {
                        "duplicateCards")
     }
 
-    func testCatchingABluffGivesThePileToTheLiar() {
+    func testCatchingABluffGivesThePileToTheLiar() throws {
         var state = fresh(players: 3)
         let liar = state.seatOrder[0]
         let caller = state.seatOrder[1]
@@ -270,7 +270,7 @@ final class CheatTests: XCTestCase {
         state.activeSeat = caller
         _ = rules.apply(.challenge, to: &state, generator: &generator)
 
-        let outcome = try! XCTUnwrap(state.lastChallenge)
+        let outcome = try XCTUnwrap(state.lastChallenge)
         XCTAssertFalse(outcome.claimWasTrue)
         XCTAssertEqual(outcome.loser, liar)
         XCTAssertEqual(state.bluffsCaught[caller], 1)
@@ -281,7 +281,7 @@ final class CheatTests: XCTestCase {
                        "the liar takes their own card back, and the rest of the pile with it")
     }
 
-    func testCallingAnHonestPlayerCostsYouThePile() {
+    func testCallingAnHonestPlayerCostsYouThePile() throws {
         var state = fresh(players: 3)
         let honest = state.seatOrder[0]
         let caller = state.seatOrder[1]
@@ -295,7 +295,7 @@ final class CheatTests: XCTestCase {
         state.activeSeat = caller
         _ = rules.apply(.challenge, to: &state, generator: &generator)
 
-        let outcome = try! XCTUnwrap(state.lastChallenge)
+        let outcome = try XCTUnwrap(state.lastChallenge)
         XCTAssertTrue(outcome.claimWasTrue)
         XCTAssertEqual(outcome.loser, caller)
         XCTAssertEqual(state.badCalls[caller], 1)
@@ -336,10 +336,10 @@ final class CheatTests: XCTestCase {
                        "nobody gets to sift back through the rest of the pile")
     }
 
-    func testAFullGameFinishes() {
+    func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.cheat, humans: 1, ai: 3)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(result.winners.count, 1)
         XCTAssertTrue(outcome.state.board.isEmpty(Zone.hand(result.winners[0])),
                       "you win by getting rid of every card")

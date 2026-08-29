@@ -107,7 +107,7 @@ final class GinRummyTests: XCTestCase {
                       "throwing the eight leaves one point of deadwood")
     }
 
-    func testGinScoresTheBonusAndTheOpponentsWholeHand() {
+    func testGinScoresTheBonusAndTheOpponentsWholeHand() throws {
         var state = fresh()
         let knocker = state.seatOrder[0]
         let defender = state.seatOrder[1]
@@ -124,7 +124,7 @@ final class GinRummyTests: XCTestCase {
         var generator = SeededGenerator(seed: 5)
         _ = rules.apply(.knock(Card(token: "2H")!.id), to: &state, generator: &generator)
 
-        let summary = try! XCTUnwrap(state.lastKnock)
+        let summary = try XCTUnwrap(state.lastKnock)
         XCTAssertTrue(summary.wasGin)
         XCTAssertEqual(summary.knockerDeadwood, 0)
         let defenderPoints = 2 + 3 + 5 + 7 + 8 + 10 + 10 + 10 + 10 + 1
@@ -136,7 +136,7 @@ final class GinRummyTests: XCTestCase {
         XCTAssertEqual(state.phase, .roundOver)
     }
 
-    func testAnUndercutScoresForTheDefender() {
+    func testAnUndercutScoresForTheDefender() throws {
         var state = fresh()
         let knocker = state.seatOrder[0]
         let defender = state.seatOrder[1]
@@ -153,7 +153,7 @@ final class GinRummyTests: XCTestCase {
         var generator = SeededGenerator(seed: 6)
         _ = rules.apply(.knock(Card(token: "2H")!.id), to: &state, generator: &generator)
 
-        let summary = try! XCTUnwrap(state.lastKnock)
+        let summary = try XCTUnwrap(state.lastKnock)
         XCTAssertFalse(summary.wasGin)
         XCTAssertTrue(summary.wasUndercut, "two beats nine, so the knocker is undercut")
         XCTAssertEqual(summary.knockerDeadwood, 9)
@@ -163,7 +163,7 @@ final class GinRummyTests: XCTestCase {
         XCTAssertEqual(state.undercuts[defender], 1)
     }
 
-    func testTheDefenderLaysOffOntoTheKnockersMelds() {
+    func testTheDefenderLaysOffOntoTheKnockersMelds() throws {
         var state = fresh()
         let knocker = state.seatOrder[0]
         let defender = state.seatOrder[1]
@@ -181,7 +181,7 @@ final class GinRummyTests: XCTestCase {
         var generator = SeededGenerator(seed: 7)
         _ = rules.apply(.knock(Card(token: "KH")!.id), to: &state, generator: &generator)
 
-        let summary = try! XCTUnwrap(state.lastKnock)
+        let summary = try XCTUnwrap(state.lastKnock)
         XCTAssertFalse(summary.wasGin)
         XCTAssertEqual(summary.knockerDeadwood, 7, "only the seven of diamonds is loose")
         XCTAssertEqual(summary.defenderDeadwood, 2 + 3 + 4 + 5 + 6 + 8,
@@ -190,10 +190,20 @@ final class GinRummyTests: XCTestCase {
         XCTAssertEqual(state.scores[defender], 0)
     }
 
-    func testAFullGameReachesATargetScore() {
+    func testAFullGameReachesATargetScore() throws {
         let configuration = TestTable.configuration(.ginRummy, humans: 1, ai: 1)
-        let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        // Knocking is a judgement call, not the obvious move, so legalActions
+        // offers every discard alongside the knock that discard would allow —
+        // and the discard comes first. Take the head of the list every turn and
+        // nobody ever knocks: every deal runs the stock out, washes out at
+        // nil-nil, redeals, and the target score is never approached. Knock at
+        // the first opportunity instead. It is impatient, but it is a real way
+        // to play, and it is the only driver here that can end a Gin game.
+        let outcome = TestTable.playOut(rules, configuration: configuration) { _, legal in
+            for action in legal { if case .knock = action { return action } }
+            return legal[0]
+        }
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(result.winners.count, 1)
         let best = outcome.state.scores.values.max() ?? 0
         XCTAssertGreaterThanOrEqual(best, outcome.state.settings.targetScore)
@@ -350,10 +360,10 @@ final class RummyTests: XCTestCase {
         XCTAssertEqual(state.scores[goer], (10 + 10 + 3) * 2, "a rummy is worth double")
     }
 
-    func testAFullGameFinishes() {
+    func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.rummy, humans: 1, ai: 2)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(result.winners.count, 1)
         XCTAssertGreaterThan(outcome.moves, 0)
     }

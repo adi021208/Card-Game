@@ -61,7 +61,9 @@ enum TestTable {
                 break
             }
             let legal = rules.legalActions(in: state, for: seat)
-            guard let action = chooser.map({ $0(state, legal) }) ?? legal.first else {
+            // The chooser must return an action, so it is only consulted when
+            // there is one to return.
+            guard let action = (legal.isEmpty ? nil : chooser.map { $0(state, legal) }) ?? legal.first else {
                 XCTFail("no legal move for \(seat) after \(moves) moves")
                 break
             }

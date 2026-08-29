@@ -149,10 +149,10 @@ final class GoFishTests: XCTestCase {
         XCTAssertEqual(observation.opponentCardCounts[asker], state.board.count(in: .hand(asker)))
     }
 
-    func testAFullGameBooksAllThirteenRanks() {
+    func testAFullGameBooksAllThirteenRanks() throws {
         let configuration = TestTable.configuration(.goFish, humans: 1, ai: 2)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(outcome.state.totalBooks, 13, "all fifty-two cards end up in books")
         XCTAssertFalse(result.winners.isEmpty)
     }
@@ -253,10 +253,10 @@ final class WarTests: XCTestCase {
         XCTAssertTrue(found, "no war in twelve games, which is not credible")
     }
 
-    func testAGameAlwaysEnds() {
+    func testAGameAlwaysEnds() throws {
         let configuration = TestTable.configuration(.war, humans: 1, ai: 1)
         let outcome = TestTable.playOut(rules, configuration: configuration)
-        let result = try! XCTUnwrap(outcome.state.finalResult)
+        let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertFalse(result.winners.isEmpty)
         XCTAssertLessThanOrEqual(outcome.state.flips, outcome.state.settings.flipLimit,
                                  "the flip limit stops war from running forever")
@@ -403,7 +403,7 @@ final class SpeedTests: XCTestCase {
                        "someoneCanStillPlay")
     }
 
-    func testAFullGameFinishes() {
+    func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.speed, humans: 1, ai: 1)
         var generator = SeededGenerator(seed: configuration.seed)
         var state = rules.setup(configuration: configuration, generator: &generator)
@@ -419,7 +419,7 @@ final class SpeedTests: XCTestCase {
             _ = rules.apply(action, to: &state, generator: &generator)
             moves += 1
         }
-        let result = try! XCTUnwrap(state.finalResult, "speed did not reach an end in \(moves) moves")
+        let result = try XCTUnwrap(state.finalResult, "speed did not reach an end in \(moves) moves")
         XCTAssertEqual(result.winners.count, 1)
     }
 
