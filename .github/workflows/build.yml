@@ -11,6 +11,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  web:
+    name: Web — engine tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Test
+        run: node web/test.js
+
   engine:
     name: Engine — build and test
     runs-on: macos-15

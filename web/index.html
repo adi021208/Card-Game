@@ -1,0 +1,2124 @@
+<title>DECK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* ─── DECK design tokens ──────────────────────────────────────────────
+   Ported from DeckPalette.swift / DeckTypography.swift / DeckSpace.swift.
+   Nine press inks, a 4pt grid, and one variable grotesque doing the work
+   the system font's width axis does on iOS. Nothing here glows. */
+:root {
+  --ink: #0E0D0C; --ink-soft: #211F1D; --ink-light: #3D3A36;
+  --cream: #F2E9D8; --newsprint: #E8E0CE; --chalk: #FBF7EF;
+  --vermilion: #E33A21; --crimson: #B01030; --cobalt: #1B37C4;
+  --acid: #E4E11A; --coral: #FF6A55; --forest: #0F4F38; --orange: #F0791E;
+
+  /* Light: ink on uncoated stock. */
+  --ground: var(--cream);
+  --ground-2: var(--newsprint);
+  --on-ground: var(--ink);
+  --on-ground-mute: #6A635A;
+  --rule: rgba(14,13,12,.16);
+  --accent: var(--vermilion);
+  --on-accent: var(--cream);
+  --card-face: var(--chalk);
+  --card-ink: var(--ink);
+  --card-back: var(--cobalt);
+  --shadow: rgba(14,13,12,.26);
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --s6: 32px; --s7: 48px; --s8: 64px; --page: 20px; --section: 40px;
+  --r-tight: 4px; --r-btn: 8px; --r-panel: 12px; --r-poster: 16px;
+
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: var(--ink); --ground-2: var(--ink-soft);
+    --on-ground: var(--cream); --on-ground-mute: #9A9086;
+    --rule: rgba(242,233,216,.18);
+    --shadow: rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: var(--ink); --ground-2: var(--ink-soft);
+  --on-ground: var(--cream); --on-ground-mute: #9A9086;
+  --rule: rgba(242,233,216,.18);
+  --shadow: rgba(0,0,0,.55);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--ground); color: var(--on-ground);
+  font-family: var(--display); font-variation-settings: "wdth" 100;
+  -webkit-text-size-adjust: 100%; overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Poster type: black weight, compressed width, tracked in tight. */
+.poster {
+  font-weight: 900; font-variation-settings: "wdth" 68, "wght" 900;
+  letter-spacing: -.02em; line-height: .86; text-wrap: balance;
+  text-transform: uppercase; margin: 0;
+}
+.h-xl { font-size: clamp(48px, 17vw, 104px); }
+.h-l  { font-size: clamp(34px, 11vw, 64px); }
+.h-m  { font-size: clamp(24px, 7.5vw, 40px); }
+.h-s  { font-size: 20px; }
+.label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--on-ground-mute);
+}
+.num { font-variant-numeric: tabular-nums; font-weight: 800; }
+
+#app { min-height: 100%; display: flex; flex-direction: column; }
+.screen { flex: 1; display: flex; flex-direction: column; padding: var(--page); gap: var(--s5); }
+.wrap { width: 100%; max-width: 620px; margin: 0 auto; }
+.stack { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; }
+
+/* ─── Chrome ─────────────────────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--page); border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0; background: var(--ground); z-index: 20;
+}
+.topbar .mark { font-weight: 900; font-variation-settings: "wdth" 62, "wght" 900;
+  letter-spacing: .01em; font-size: 22px; }
+.topbar .spacer { flex: 1; }
+.icon-btn {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: var(--r-btn); font-size: 18px;
+}
+.icon-btn:hover { background: var(--ground-2); }
+
+/* ─── Buttons ────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--s2); min-height: 52px; padding: 0 var(--s5);
+  background: var(--accent); color: var(--on-accent);
+  font-weight: 800; font-variation-settings: "wdth" 88, "wght" 800;
+  text-transform: uppercase; letter-spacing: .04em; font-size: 15px;
+  border-radius: var(--r-btn); transition: transform .12s ease;
+}
+.btn:active { transform: translateY(2px); }
+.btn.ghost { background: transparent; color: var(--on-ground); box-shadow: inset 0 0 0 2px var(--rule); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--on-ground); }
+.btn.wide { width: 100%; }
+.btn[disabled] { opacity: .35; pointer-events: none; }
+
+/* ─── Library ────────────────────────────────────────────────────── */
+.masthead { padding-top: var(--s5); }
+.masthead .sub { margin-top: var(--s3); max-width: 34ch; color: var(--on-ground-mute); font-size: 15px; line-height: 1.5; }
+.shelf { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.game-card {
+  position: relative; text-align: left; padding: var(--s4);
+  min-height: 132px; border-radius: var(--r-panel); overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  color: var(--cream); transition: transform .14s ease;
+}
+.game-card:active { transform: scale(.98); }
+.game-card .gname { font-weight: 900; font-variation-settings: "wdth" 66, "wght" 900;
+  font-size: 26px; line-height: .88; text-transform: uppercase; }
+.game-card .gtag { font-family: var(--mono); font-size: 10.5px; margin-top: var(--s2);
+  opacity: .82; letter-spacing: .06em; text-transform: uppercase; }
+.game-card canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.game-card .gname, .game-card .gtag { position: relative; }
+
+/* ─── Setup ──────────────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: var(--s3); }
+.seatlist { display: flex; flex-direction: column; gap: var(--s2); }
+.seat-row {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3); border-radius: var(--r-btn); background: var(--ground-2);
+}
+.seat-row input {
+  flex: 1; min-width: 0; background: transparent; border: 0; color: inherit;
+  font-family: var(--display); font-size: 16px; font-weight: 600; padding: var(--s1) 0;
+  border-bottom: 2px solid var(--rule);
+}
+.seat-row input:focus { outline: none; border-bottom-color: var(--accent); }
+.chip {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; padding: var(--s1) var(--s2);
+  border-radius: var(--r-tight); background: var(--on-ground); color: var(--ground);
+}
+.chip.ai { background: var(--cobalt); color: var(--cream); }
+.seg { display: flex; gap: var(--s1); background: var(--ground-2); padding: var(--s1); border-radius: var(--r-btn); }
+.seg button {
+  flex: 1; padding: var(--s2) var(--s3); border-radius: var(--r-tight);
+  font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+}
+.seg button[aria-pressed="true"] { background: var(--on-ground); color: var(--ground); }
+
+/* ─── Table ──────────────────────────────────────────────────────── */
+.table { flex: 1; display: flex; flex-direction: column; gap: var(--s3); padding: var(--s3) var(--s3) var(--s4); }
+.callouts { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); align-items: baseline; min-height: 26px; }
+.callout .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--on-ground-mute); display: block; }
+.callout .v { font-weight: 800; font-size: 17px; font-variation-settings: "wdth" 88, "wght" 800; }
+.opponents { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.opp {
+  display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3); border-radius: var(--r-btn);
+  background: var(--ground-2); font-size: 13px;
+}
+.opp.active { background: var(--accent); color: var(--on-accent); }
+.opp .nm { font-weight: 700; }
+.opp .ct { font-family: var(--mono); font-size: 12px; opacity: .8; }
+.felt {
+  flex: 1; min-height: 190px; border-radius: var(--r-panel);
+  background: var(--ground-2); padding: var(--s4);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--s3); position: relative; overflow: hidden;
+}
+.zones { display: flex; flex-wrap: wrap; gap: var(--s5); justify-content: center; align-items: flex-start; }
+.zone { display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
+.zone .zlabel { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--on-ground-mute); }
+.pile { position: relative; }
+.pile.empty {
+  border: 2px dashed var(--rule); border-radius: 8px;
+}
+.handbar { display: flex; flex-direction: column; gap: var(--s3); }
+.hand { display: flex; justify-content: center; min-height: 108px; padding-top: var(--s3); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.actions .btn { flex: 1 1 auto; min-height: 46px; font-size: 13px; padding: 0 var(--s4); }
+
+/* ─── Cards ──────────────────────────────────────────────────────── */
+.card {
+  position: relative; border-radius: 7px; flex: none;
+  background: var(--card-face); color: var(--card-ink);
+  box-shadow: 0 2px 0 var(--shadow); user-select: none;
+  transition: transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s ease;
+}
+.card.back { background: var(--card-back); }
+.card.red { color: var(--vermilion); }
+.card .pip { position: absolute; font-weight: 900; line-height: .82;
+  font-variation-settings: "wdth" 78, "wght" 900; text-align: center; }
+.card .pip.tl { top: 5%; left: 7%; }
+.card .pip.br { bottom: 5%; right: 7%; transform: rotate(180deg); }
+.card .mid { position: absolute; inset: 0; display: grid; place-items: center;
+  font-weight: 900; opacity: .92; }
+.card .backmark { position: absolute; inset: 12%; border-radius: 4px;
+  border: 2px solid rgba(242,233,216,.5); display: grid; place-items: center;
+  color: rgba(242,233,216,.85); font-weight: 900; }
+.card.play { cursor: pointer; }
+.card.play:hover { transform: translateY(-10px); }
+.card.sel { transform: translateY(-16px) scale(1.04); box-shadow: 0 10px 0 var(--shadow); }
+.card.dim { opacity: .38; }
+.card.playable::after {
+  content: ""; position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: -9px; width: 20px; height: 4px; border-radius: 2px; background: var(--accent);
+}
+
+/* ─── Pass & Play seal ───────────────────────────────────────────── */
+.seal {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+  justify-content: center; gap: var(--s5); padding: var(--s6) var(--page);
+  background: var(--accent); color: var(--on-accent);
+}
+.seal .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; opacity: .85; }
+.seal .who { font-size: clamp(56px, 22vw, 150px); }
+.seal .note { max-width: 30ch; font-size: 15px; line-height: 1.5; opacity: .92; }
+.seal .btn { background: var(--on-accent); color: var(--accent); align-self: flex-start; }
+.seal.armed { animation: slam .22s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes slam { from { transform: translateY(-100%); } to { transform: none; } }
+
+/* ─── Result ─────────────────────────────────────────────────────── */
+.result .banner { padding: var(--s6) 0; }
+.scoretable { width: 100%; border-collapse: collapse; font-size: 15px; }
+.scoretable th { text-align: left; font-family: var(--mono); font-size: 10px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--on-ground-mute);
+  padding-bottom: var(--s2); font-weight: 400; }
+.scoretable td { padding: var(--s3) 0; border-top: 1px solid var(--rule); }
+.scoretable td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 800; }
+.scoretable tr.win td { color: var(--accent); }
+
+.log { display: flex; flex-direction: column; gap: var(--s1); max-height: 88px; overflow-y: auto; }
+.log div { font-family: var(--mono); font-size: 11px; color: var(--on-ground-mute); }
+.log div:last-child { color: var(--on-ground); }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 60;
+  background: var(--on-ground); color: var(--ground); padding: var(--s3) var(--s4);
+  border-radius: var(--r-btn); font-size: 14px; font-weight: 600; max-width: 90vw;
+}
+.hidden { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+</style>
+
+<div id="app">
+  <div class="topbar">
+    <span class="mark">DECK</span>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
+    <button class="icon-btn hidden" id="quitBtn" title="Leave game" aria-label="Leave game">✕</button>
+  </div>
+  <div id="screen"></div>
+</div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════
+   DECK — one deck, every game.
+   A faithful port of the Swift engine's architecture:
+     rng → cards → board+visibility → rules → privacy → ui
+   No gameplay logic lives in the render layer. A card the current
+   viewer may not see never reaches it with a face attached.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Deterministic randomness ─────────────────────────────────────── */
+function rngFrom(seed) {
+  let a = seed >>> 0;
+  const r = () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  r.int = (n) => Math.floor(r() * n);
+  r.pick = (xs) => xs[r.int(xs.length)];
+  r.chance = (p) => r() < p;
+  /* Deliberation runs on a branch, so how hard the AI thinks can never
+     change what anybody is dealt. */
+  r.branch = (salt) => rngFrom((seed ^ Math.imul(salt + 1, 0x9E3779B1)) >>> 0);
+  r.shuffle = (xs) => { for (let i = xs.length - 1; i > 0; i--) { const j = r.int(i + 1); [xs[i], xs[j]] = [xs[j], xs[i]]; } return xs; };
+  return r;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────── */
+const SUITS = ["C", "D", "H", "S"];
+const SUIT_GLYPH = { C: "♣", D: "♦", H: "♥", S: "♠" };
+const SUIT_NAME = { C: "Clubs", D: "Diamonds", H: "Hearts", S: "Spades" };
+const RANK_TOKEN = { 2:"2",3:"3",4:"4",5:"5",6:"6",7:"7",8:"8",9:"9",10:"10",11:"J",12:"Q",13:"K",14:"A" };
+const RANK_NAME = { 2:"Two",3:"Three",4:"Four",5:"Five",6:"Six",7:"Seven",8:"Eight",9:"Nine",10:"Ten",11:"Jack",12:"Queen",13:"King",14:"Ace" };
+
+const cardId = (suit, rank, deck = 0) => deck * 64 + SUITS.indexOf(suit) * 13 + (rank - 2);
+const mkCard = (suit, rank, deck = 0) => ({ id: cardId(suit, rank, deck), suit, rank, deck });
+const isRed = (c) => c.suit === "D" || c.suit === "H";
+const token = (c) => RANK_TOKEN[c.rank] + c.suit;
+const spoken = (c) => `${RANK_NAME[c.rank]} of ${SUIT_NAME[c.suit]}`;
+const aceLow = (r) => (r === 14 ? 1 : r);
+
+function buildDeck({ packs = 1, suits = SUITS, ranks = null } = {}) {
+  const rs = ranks || [2,3,4,5,6,7,8,9,10,11,12,13,14];
+  const out = [];
+  for (let d = 0; d < packs; d++) for (const s of suits) for (const r of rs) out.push(mkCard(s, r, d));
+  return out;
+}
+
+/* ── Board: piles, orientation, and who is permitted to see what ──── */
+const VIS = { ALL: "all", HIDDEN: "hidden" };
+const seatsVis = (seats) => ({ kind: "seats", seats: [...seats] });
+
+function newBoard() { return { cards: new Map(), piles: new Map(), vis: new Map(), up: new Set() }; }
+const Z = {
+  hand: (s) => `hand:${s}`, captured: (s) => `won:${s}`, meld: (s, i) => `meld:${s}:${i}`,
+  own: (kind, s) => `${kind}:${s}`, tableau: (i) => `tab:${i}`, foundation: (i) => `fnd:${i}`,
+  stock: "stock", discard: "discard", trick: "trick", reserve: "reserve", waste: "waste",
+};
+
+const B = {
+  ensure(b, zones) { for (const z of [].concat(zones)) if (!b.piles.has(z)) b.piles.set(z, []); },
+  load(b, deck, zone) {
+    B.ensure(b, zone);
+    for (const c of deck) { b.cards.set(c.id, c); b.vis.set(c.id, { kind: VIS.HIDDEN }); }
+    b.piles.get(zone).push(...deck.map((c) => c.id));
+  },
+  at(b, z) { return b.piles.get(z) || []; },
+  count(b, z) { return B.at(b, z).length; },
+  cardsIn(b, z) { return B.at(b, z).map((id) => b.cards.get(id)); },
+  top(b, z) { const p = B.at(b, z); return p.length ? b.cards.get(p[p.length - 1]) : null; },
+  zoneOf(b, id) { for (const [z, p] of b.piles) if (p.includes(id)) return z; return null; },
+  face(b, id, facing, seat) {
+    if (facing === "up") { b.up.add(id); b.vis.set(id, { kind: VIS.ALL }); }
+    else if (facing === "down") { b.up.delete(id); b.vis.set(id, { kind: VIS.HIDDEN }); }
+    else if (facing === "own") { b.up.delete(id); b.vis.set(id, seatsVis([seat])); }
+  },
+  move(b, ids, to, facing, seat) {
+    B.ensure(b, to);
+    for (const id of [].concat(ids)) {
+      for (const [, p] of b.piles) { const i = p.indexOf(id); if (i >= 0) p.splice(i, 1); }
+      b.piles.get(to).push(id);
+      if (facing) B.face(b, id, facing, seat);
+    }
+  },
+  draw(b, from, to, facing, seat) {
+    const p = B.at(b, from); if (!p.length) return null;
+    const id = p[p.length - 1]; B.move(b, id, to, facing, seat); return b.cards.get(id);
+  },
+  deal(b, n, from, to, facing, seat) { const out = []; for (let i = 0; i < n; i++) { const c = B.draw(b, from, to, facing, seat); if (c) out.push(c); } return out; },
+  sort(b, z, cmp) { const p = B.at(b, z); p.sort((x, y) => cmp(b.cards.get(x), b.cards.get(y))); },
+  canSee(b, id, viewer) {
+    const v = b.vis.get(id) || { kind: VIS.HIDDEN };
+    if (v.kind === VIS.ALL) return true;
+    if (v.kind === VIS.HIDDEN) return false;
+    return viewer !== null && viewer !== undefined && v.seats.includes(viewer);
+  },
+  /* The redaction seam. A viewer who is not entitled to a card gets an
+     object with no rank and no suit in it, so there is nothing for the
+     renderer to draw and nothing for a screen reader to read out. */
+  visible(b, id, viewer) {
+    return B.canSee(b, id, viewer) ? { known: true, ...b.cards.get(id) } : { known: false, id };
+  },
+  visiblePile(b, z, viewer) { return B.at(b, z).map((id) => B.visible(b, id, viewer)); },
+};
+
+const bySuitRank = (a, c) => (a.suit === c.suit ? a.rank - c.rank : SUITS.indexOf(a.suit) - SUITS.indexOf(c.suit));
+const byRankSuit = (a, c) => (a.rank === c.rank ? SUITS.indexOf(a.suit) - SUITS.indexOf(c.suit) : a.rank - c.rank);
+
+/* ── AI: one profile, one selector, seven personalities ───────────── */
+const CAST = [
+  { id: "hal",     name: "Hal",     colour: "cobalt",    aggression: .45, risk: .40, bluff: .06, memory: .85, mistake: .06 },
+  { id: "pedro",   name: "Pedro",   colour: "vermilion", aggression: .86, risk: .78, bluff: .30, memory: .55, mistake: .14 },
+  { id: "calvin",  name: "Calvin",  colour: "forest",    aggression: .18, risk: .15, bluff: .03, memory: .70, mistake: .09 },
+  { id: "rohan",   name: "Rohan",   colour: "acid",      aggression: .50, risk: .45, bluff: .09, memory: 1.0, mistake: .03 },
+  { id: "shayla",  name: "Shayla",  colour: "coral",     aggression: .62, risk: .58, bluff: .22, memory: .90, mistake: .06 },
+  { id: "honey",   name: "Honey",   colour: "orange",    aggression: .70, risk: .85, bluff: .44, memory: .60, mistake: .11 },
+  { id: "scarlet", name: "Scarlet", colour: "crimson",   aggression: .66, risk: .52, bluff: .26, memory: 1.0, mistake: .02 },
+];
+const DIFFICULTY = { casual: .14, skilled: 0, expert: -.04 };
+
+/* Difficulty changes how faithfully an agent follows its own evaluation.
+   It never changes what the agent is allowed to see. */
+function choose(scored, profile, rng) {
+  if (!scored.length) return null;
+  if (scored.length === 1) return scored[0].action;
+  const sorted = [...scored].sort((a, b) => b.score - a.score);
+  if (rng.chance(Math.max(0, profile.mistake))) {
+    const ceiling = Math.max(1, Math.min(sorted.length - 1, Math.floor(sorted.length * .7)));
+    return sorted[Math.min(1 + rng.int(ceiling), sorted.length - 1)].action;
+  }
+  const best = sorted[0].score, jitter = (1 - profile.memory) * .05;
+  const near = sorted.filter((m) => m.score >= best - Math.abs(best) * jitter - jitter);
+  return near.length > 1 ? near[rng.int(near.length)].action : sorted[0].action;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GAMES
+   Each is a reducer: setup / legal / apply / auto / observe / table.
+   Nothing below imports anything from the UI.
+   ═══════════════════════════════════════════════════════════════════ */
+const GAMES = {};
+const def = (g) => { GAMES[g.id] = g; return g; };
+const nextSeat = (order, s) => order[(order.indexOf(s) + 1) % order.length];
+const emptyHands = (st, s) => B.count(st.board, Z.hand(s)) === 0;
+
+/* ── HEARTS ───────────────────────────────────────────────────────── */
+def({
+  id: "hearts", name: "Hearts", tagline: "Avoid the points. Or take them all.",
+  category: "Trick taking", min: 4, max: 4, art: ["crimson", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const st = { board: newBoard(), seats, target: 100, phase: "pass", round: 1,
+      dir: 0, sel: {}, plays: [], led: null, broken: false, points: {}, taken: {},
+      scores: {}, active: null, done: null, trickNo: 1 };
+    seats.forEach((s) => { st.scores[s] = 0; st.points[s] = 0; st.taken[s] = 0; });
+    this.deal(st, rng);
+    return st;
+  },
+  deal(st, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...st.seats.map(Z.hand), ...st.seats.map(Z.captured), Z.trick]);
+    for (let i = 0; i < 13; i++) for (const s of st.seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of st.seats) B.sort(b, Z.hand(s), bySuitRank);
+    st.board = b; st.plays = []; st.led = null; st.broken = false; st.trickNo = 1;
+    st.seats.forEach((s) => { st.points[s] = 0; st.taken[s] = 0; });
+    st.sel = {};
+    if (st.dir % 4 === 3) { st.phase = "play"; st.active = this.holderOf2C(st); }
+    else { st.phase = "pass"; st.active = st.seats[0]; }
+  },
+  holderOf2C(st) { return st.seats.find((s) => B.cardsIn(st.board, Z.hand(s)).some((c) => c.suit === "C" && c.rank === 2)); },
+  offset(dir) { return [1, 3, 2, 0][dir % 4]; },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.phase === "pass") {
+      const picked = st.sel[seat] || [];
+      if (picked.length === 3) return [{ t: "confirmPass" }];
+      return B.cardsIn(st.board, Z.hand(seat)).filter((c) => !picked.includes(c.id)).map((c) => ({ t: "select", id: c.id }));
+    }
+    return this.legalCards(st, seat).map((c) => ({ t: "play", id: c.id }));
+  },
+  legalCards(st, seat) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (!hand.length) return [];
+    if (!st.plays.length) {
+      if (st.trickNo === 1) return hand.filter((c) => c.suit === "C" && c.rank === 2);
+      const ok = st.broken ? hand : hand.filter((c) => c.suit !== "H");
+      return ok.length ? ok : hand;
+    }
+    const follow = hand.filter((c) => c.suit === st.led);
+    if (follow.length) return follow;
+    if (st.trickNo === 1) {
+      const safe = hand.filter((c) => c.suit !== "H" && !(c.suit === "S" && c.rank === 12));
+      if (safe.length) return safe;
+    }
+    return hand;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "select") {
+      st.sel[seat] = [...(st.sel[seat] || []), a.id];
+      return ev;
+    }
+    if (a.t === "confirmPass") {
+      st.active = nextSeat(st.seats, seat);
+      if (st.seats.every((s) => (st.sel[s] || []).length === 3)) {
+        const off = this.offset(st.dir);
+        const moves = st.seats.map((s) => ({ to: st.seats[(st.seats.indexOf(s) + off) % 4], ids: st.sel[s] }));
+        for (const m of moves) B.move(st.board, m.ids, Z.hand(m.to), "own", m.to);
+        for (const s of st.seats) B.sort(st.board, Z.hand(s), bySuitRank);
+        st.sel = {}; st.phase = "play"; st.active = this.holderOf2C(st);
+        ev.push("Cards passed.");
+      }
+      return ev;
+    }
+    const card = st.board.cards.get(a.id);
+    B.move(st.board, a.id, Z.trick, "up");
+    st.plays.push({ seat, id: a.id });
+    if (st.plays.length === 1) st.led = card.suit;
+    if (card.suit === "H" && !st.broken) { st.broken = true; ev.push("Hearts are broken."); }
+    if (st.plays.length === st.seats.length) {
+      let win = st.plays[0];
+      for (const p of st.plays) {
+        const c = st.board.cards.get(p.id), w = st.board.cards.get(win.id);
+        if (c.suit === st.led && (w.suit !== st.led || c.rank > w.rank)) win = p;
+      }
+      let pts = 0;
+      for (const p of st.plays) { const c = st.board.cards.get(p.id); if (c.suit === "H") pts += 1; if (c.suit === "S" && c.rank === 12) pts += 13; }
+      st.points[win.seat] += pts; st.taken[win.seat] += 1;
+      B.move(st.board, st.plays.map((p) => p.id), Z.captured(win.seat), "up");
+      ev.push(`${st.names[win.seat]} takes the trick${pts ? ` — ${pts} point${pts > 1 ? "s" : ""}` : ""}.`);
+      st.plays = []; st.led = null; st.trickNo++;
+      st.active = st.seats.every((s) => emptyHands(st, s)) ? null : win.seat;
+      if (st.active === null) st.dealDone = true;
+    } else st.active = nextSeat(st.seats, seat);
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.dealDone) return [];
+    st.dealDone = false;
+    const ev = [];
+    const moon = st.seats.find((s) => st.points[s] === 26);
+    if (moon) { st.seats.forEach((s) => { if (s !== moon) st.scores[s] += 26; }); ev.push(`${st.names[moon]} shot the moon.`); }
+    else st.seats.forEach((s) => { st.scores[s] += st.points[s]; });
+    ev.push("Hand scored.");
+    if (Math.max(...st.seats.map((s) => st.scores[s])) >= st.target) {
+      const low = Math.min(...st.seats.map((s) => st.scores[s]));
+      st.done = { winners: st.seats.filter((s) => st.scores[s] === low), scores: { ...st.scores }, lowWins: true };
+      return ev;
+    }
+    st.round++; st.dir++; this.deal(st, rng);
+    ev.push(`Deal ${st.round}.`);
+    return ev;
+  },
+  observe(st, seat) { return { hand: B.cardsIn(st.board, Z.hand(seat)), led: st.led, plays: st.plays.map((p) => ({ seat: p.seat, card: st.board.cards.get(p.id) })), broken: st.broken, points: st.points, scores: st.scores, trickNo: st.trickNo, phase: st.phase }; },
+  agent(st, seat, legal, prof, rng) {
+    const o = this.observe(st, seat);
+    if (st.phase === "pass") {
+      if (legal[0] && legal[0].t === "confirmPass") return legal[0];
+      const rank = (c) => (c.suit === "S" && c.rank >= 12 ? 100 + c.rank : c.suit === "H" ? 40 + c.rank : c.rank);
+      return choose(legal.map((a) => ({ action: a, score: rank(st.board.cards.get(a.id)) })), prof, rng);
+    }
+    const scored = legal.map((a) => {
+      const c = st.board.cards.get(a.id);
+      let s = 0;
+      const pts = o.plays.reduce((n, p) => n + (p.card.suit === "H" ? 1 : 0) + (p.card.suit === "S" && p.card.rank === 12 ? 13 : 0), 0);
+      if (!o.plays.length) s = -c.rank * .5 - (c.suit === "S" && c.rank >= 12 ? 30 : 0);
+      else {
+        const best = Math.max(...o.plays.filter((p) => p.card.suit === o.led).map((p) => p.card.rank), 0);
+        const wins = c.suit === o.led && c.rank > best;
+        s = wins ? -(pts * 6) - c.rank * .4 : 10 + c.rank * .3;
+        if (c.suit !== o.led) s += (c.suit === "S" && c.rank === 12) ? 60 : (c.suit === "H" ? 25 : c.rank * .5);
+      }
+      return { action: a, score: s + rng() * 2 * prof.risk };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    const co = [];
+    if (st.phase === "pass") co.push({ k: "Passing", v: ["Left", "Right", "Across", "Hold"][st.dir % 4] });
+    else { co.push({ k: "Trick", v: `${st.trickNo} of 13` }); co.push({ k: "Hearts", v: st.broken ? "Broken" : "Not broken" }); }
+    if (st.led) co.push({ k: "Led", v: SUIT_GLYPH[st.led] });
+    return {
+      callouts: co,
+      zones: [{ label: "Trick", cards: st.plays.map((p) => B.visible(st.board, p.id, viewer)), spread: true }],
+      counts: (s) => `${B.count(st.board, Z.hand(s))} · ${st.points[s]}pt`,
+      handHint: st.phase === "pass" ? `Choose ${3 - ((st.sel[viewer] || []).length)} more to pass` : null,
+      selected: st.sel[viewer] || [],
+    };
+  },
+});
+
+/* ── CRAZY EIGHTS ─────────────────────────────────────────────────── */
+def({
+  id: "crazy8", name: "Crazy Eights", tagline: "Match it, change it, or draw.",
+  category: "Shedding", min: 2, max: 6, art: ["orange", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const st = { board: newBoard(), seats, active: seats[0], done: null, suit: null, drawn: 0, pending: null, round: 1 };
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), Z.discard]);
+    const size = seats.length === 2 ? 7 : 5;
+    for (let i = 0; i < size; i++) for (const s of seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of seats) B.sort(b, Z.hand(s), bySuitRank);
+    let starter = B.draw(b, Z.stock, Z.discard, "up");
+    let guard = 0;
+    while (starter && starter.rank === 8 && guard++ < 40) { B.move(b, starter.id, Z.stock, "down"); rng.shuffle(B.at(b, Z.stock)); starter = B.draw(b, Z.stock, Z.discard, "up"); }
+    st.board = b; st.suit = starter ? starter.suit : "S";
+    return st;
+  },
+  playable(st, c) { const top = B.top(st.board, Z.discard); return c.rank === 8 || c.suit === st.suit || (top && c.rank === top.rank); },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.pending) return SUITS.map((s) => ({ t: "suit", suit: s }));
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const out = hand.filter((c) => this.playable(st, c)).map((c) => ({ t: "play", id: c.id }));
+    if (B.count(st.board, Z.stock) > 0 && st.drawn < 3) out.push({ t: "draw" });
+    if (!out.length) out.push({ t: "pass" });
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "suit") { st.suit = a.suit; st.pending = null; ev.push(`${st.names[seat]} calls ${SUIT_NAME[a.suit].toLowerCase()}.`); st.active = nextSeat(st.seats, seat); st.drawn = 0; return ev; }
+    if (a.t === "draw") {
+      const c = B.draw(st.board, Z.stock, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), bySuitRank);
+      st.drawn++;
+      if (!B.count(st.board, Z.stock)) this.recycle(st, rng);
+      return ev;
+    }
+    if (a.t === "pass") { st.drawn = 0; st.active = nextSeat(st.seats, seat); return ev; }
+    const card = st.board.cards.get(a.id);
+    B.move(st.board, a.id, Z.discard, "up");
+    st.suit = card.suit; st.drawn = 0;
+    if (emptyHands(st, seat)) { st.done = { winners: [seat], scores: this.score(st), lowWins: false }; ev.push(`${st.names[seat]} is out.`); return ev; }
+    if (card.rank === 8) { st.pending = seat; return ev; }
+    st.active = nextSeat(st.seats, seat);
+    if (!B.count(st.board, Z.stock)) this.recycle(st, rng);
+    return ev;
+  },
+  recycle(st, rng) {
+    const pile = B.at(st.board, Z.discard);
+    if (pile.length <= 1) return;
+    const keep = pile[pile.length - 1];
+    const rest = pile.slice(0, -1);
+    B.move(st.board, rng.shuffle([...rest]), Z.stock, "down");
+  },
+  score(st) { const sc = {}; for (const s of st.seats) sc[s] = B.cardsIn(st.board, Z.hand(s)).reduce((n, c) => n + (c.rank === 8 ? 50 : c.rank >= 11 ? 10 : c.rank === 14 ? 1 : c.rank), 0); return sc; },
+  observe(st, seat) { return { hand: B.cardsIn(st.board, Z.hand(seat)), top: B.top(st.board, Z.discard), suit: st.suit, counts: st.seats.map((s) => B.count(st.board, Z.hand(s))) }; },
+  agent(st, seat, legal, prof, rng) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const bySuit = {}; hand.forEach((c) => { bySuit[c.suit] = (bySuit[c.suit] || 0) + 1; });
+    const scored = legal.map((a) => {
+      if (a.t === "draw") return { action: a, score: -5 };
+      if (a.t === "pass") return { action: a, score: -20 };
+      if (a.t === "suit") return { action: a, score: (bySuit[a.suit] || 0) * 10 + rng() };
+      const c = st.board.cards.get(a.id);
+      let s = 20 - c.rank * .2;
+      if (c.rank === 8) s -= 25 - prof.aggression * 12;   // keep the wild card back
+      s += (bySuit[c.suit] || 0) * 1.4;
+      return { action: a, score: s + rng() * 3 * prof.risk };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    return {
+      callouts: [{ k: "Suit in play", v: SUIT_GLYPH[st.suit] + " " + SUIT_NAME[st.suit] }, { k: "Stock", v: B.count(st.board, Z.stock) }],
+      zones: [
+        { label: "Stock", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -1 }] : [], stack: true },
+        { label: "Discard", cards: [B.top(st.board, Z.discard)].filter(Boolean).map((c) => ({ known: true, ...c })) },
+      ],
+      counts: (s) => `${B.count(st.board, Z.hand(s))}`,
+      handHint: st.pending === viewer ? "Your eight — name the suit" : null,
+      dimUnplayable: (c) => !this.playable(st, c),
+    };
+  },
+});
+
+/* ── CHEAT ────────────────────────────────────────────────────────── */
+def({
+  id: "cheat", name: "Cheat", tagline: "Everybody lies. Somebody gets caught.",
+  category: "Bluff", min: 3, max: 6, art: ["forest", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), Z.discard]);
+    let i = 0;
+    while (B.count(b, Z.stock)) { B.draw(b, Z.stock, Z.hand(seats[i % seats.length]), "own", seats[i % seats.length]); i++; }
+    for (const s of seats) B.sort(b, Z.hand(s), byRankSuit);
+    return { board: b, seats, active: seats[0], done: null, phase: "lay", need: 14, claim: null, claimN: 0, laid: [], queue: [], layer: null, sweep: null, out: [], sel: {} };
+  },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.phase === "call") return [{ t: "believe" }, { t: "challenge" }];
+    const picked = st.sel[seat] || [];
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const out = hand.filter((c) => !picked.includes(c.id)).slice(0, 40).map((c) => ({ t: "select", id: c.id }));
+    if (picked.length && picked.length <= 4) out.push({ t: "lay" });
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "select") { st.sel[seat] = [...(st.sel[seat] || []), a.id]; return ev; }
+    if (a.t === "lay") {
+      st.turns = (st.turns || 0) + 1;
+      const ids = st.sel[seat]; st.sel[seat] = [];
+      B.move(st.board, ids, Z.discard, "down");
+      st.laid = ids; st.layer = seat; st.claim = st.need; st.claimN = ids.length;
+      ev.push(`${st.names[seat]} claims ${ids.length} × ${RANK_TOKEN[st.need]}.`);
+      st.queue = st.seats.filter((s) => s !== seat && !st.out.includes(s));
+      if (!st.queue.length) return this.finishLay(st, seat, ev);
+      st.phase = "call"; st.active = st.queue[0];
+      return ev;
+    }
+    if (a.t === "believe") {
+      st.queue = st.queue.filter((s) => s !== seat);
+      if (st.queue.length) { st.active = st.queue[0]; return ev; }
+      return this.finishLay(st, st.layer, ev);
+    }
+    // challenge
+    const truthful = st.laid.every((id) => st.board.cards.get(id).rank === st.claim);
+    for (const id of st.laid) B.face(st.board, id, "up");
+    const loser = truthful ? seat : st.layer;
+    ev.push(truthful
+      ? `${st.names[seat]} calls — and ${st.names[st.layer]} was telling the truth.`
+      : `${st.names[seat]} calls — ${st.names[st.layer]} was lying.`);
+    st.sweep = loser;
+    return ev;
+  },
+  finishLay(st, layer, ev) {
+    st.phase = "lay"; st.queue = [];
+    st.need = st.need === 14 ? 2 : st.need + 1;
+    this.recordOut(st, ev);
+    if (this.checkEnd(st, ev)) return ev;
+    if (this.timeUp(st, ev)) return ev;
+    st.active = this.nextIn(st, layer);
+    return ev;
+  },
+  nextIn(st, from) { let s = from; for (let i = 0; i < st.seats.length; i++) { s = nextSeat(st.seats, s); if (!st.out.includes(s)) return s; } return from; },
+  /* Cheat between players who count perfectly is a treadmill: what you lay
+     comes back on the next call, so a round can run indefinitely. Real
+     tables call it and count hands, and so does this. */
+  timeUp(st, ev) {
+    if ((st.turns || 0) < 120) return false;
+    const rank = [...st.seats].sort((a, b) => B.count(st.board, Z.hand(a)) - B.count(st.board, Z.hand(b)));
+    const sc = {}; rank.forEach((s, i) => { sc[s] = rank.length - i; });
+    st.done = { winners: rank.slice(0, 1), scores: sc, lowWins: false };
+    ev.push("Round called — fewest cards wins.");
+    return true;
+  },
+  recordOut(st, ev) { for (const s of st.seats) if (emptyHands(st, s) && !st.out.includes(s)) { st.out.push(s); ev.push(`${st.names[s]} is out.`); } },
+  checkEnd(st, ev) {
+    const left = st.seats.filter((s) => !st.out.includes(s));
+    if (left.length > 1) return false;
+    const order = [...st.out, ...left];
+    const sc = {}; order.forEach((s, i) => { sc[s] = order.length - i; });
+    st.done = { winners: order.slice(0, 1), scores: sc, lowWins: false };
+    return true;
+  },
+  auto(st, rng) {
+    if (st.done || st.sweep === null || st.sweep === undefined) return [];
+    const loser = st.sweep; st.sweep = null;
+    const pile = B.at(st.board, Z.discard).slice();
+    B.move(st.board, pile, Z.hand(loser), "own", loser);
+    B.sort(st.board, Z.hand(loser), byRankSuit);
+    const ev = [`${st.names[loser]} picks up ${pile.length}.`];
+    /* The rank sequence keeps marching after a pickup. Snapping it back to
+       aces means players are only ever asked for a rank they hold four of
+       between them, so nobody can ever put down a truthful handful. */
+    st.laid = []; st.claim = null; st.claimN = 0; st.phase = "lay";
+    st.need = st.need === 14 ? 2 : st.need + 1;
+    this.recordOut(st, ev);
+    if (this.checkEnd(st, ev)) return ev;
+    if (this.timeUp(st, ev)) return ev;
+    st.active = st.out.includes(loser) ? this.nextIn(st, loser) : loser;
+    return ev;
+  },
+  observe(st, seat) {
+    const counts = {}; B.cardsIn(st.board, Z.hand(seat)).forEach((c) => { counts[c.rank] = (counts[c.rank] || 0) + 1; });
+    return { hand: B.cardsIn(st.board, Z.hand(seat)), need: st.need, pile: B.count(st.board, Z.discard), claim: st.claim, claimN: st.claimN, layer: st.layer, own: counts };
+  },
+  agent(st, seat, legal, prof, rng) {
+    const o = this.observe(st, seat);
+    if (st.phase === "call") {
+      const held = o.own[o.claim] || 0;
+      // Four of a rank exist; if I hold enough that their claim is impossible, call.
+      /* Holding enough of the rank to make the claim arithmetically
+         impossible is a certain catch — but only a player who is actually
+         counting spots it every time. Memory decides who does. */
+      const impossible = held + o.claimN > 4;
+      const closing = B.count(st.board, Z.hand(o.layer)) === 0;
+      const p = impossible ? (.5 + prof.memory * .45)
+        : closing ? (.55 + prof.aggression * .3)
+        : (.04 + prof.aggression * .13);
+      return rng.chance(p) ? legal.find((a) => a.t === "challenge") : legal.find((a) => a.t === "believe");
+    }
+    const picked = st.sel[seat] || [];
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const truthful = hand.filter((c) => c.rank === o.need);
+    // Decide the size of the drop once per turn, then fill it.
+    if (!st.intent || st.intent.seat !== seat || !picked.length) {
+      /* Bluff small. Dropping two or three cards you do not hold is what
+         makes a claim arithmetically impossible for anybody holding the
+         rank, and that is exactly what gets you caught.
+         The exception is the endgame: with a handful left, shovelling all
+         of it out and hoping nobody calls is the only way to finish, and
+         it is what a person does too. */
+      const n = hand.length <= 4 ? hand.length
+        : truthful.length ? Math.min(4, truthful.length)
+        : (rng.chance(prof.bluff * .45) ? 2 : 1);
+      st.intent = { seat, n: Math.max(1, Math.min(n, hand.length)) };
+    }
+    if (picked.length >= st.intent.n) return legal.find((a) => a.t === "lay") || legal[0];
+    const junk = hand.filter((c) => c.rank !== o.need).sort((a, b) => b.rank - a.rank);
+    const pool = [...truthful, ...junk];
+    const want = pool.find((c) => !picked.includes(c.id));
+    const pick = legal.find((a) => a.t === "select" && a.id === (want && want.id));
+    return pick || legal.find((a) => a.t === "lay") || legal[0];
+  },
+  table(st, viewer) {
+    return {
+      callouts: [
+        { k: "Claim the rank", v: RANK_NAME[st.need] + "s" },
+        { k: "Pile", v: B.count(st.board, Z.discard) },
+        ...(st.phase === "call" ? [{ k: "On the table", v: `${st.claimN} × ${RANK_TOKEN[st.claim]}` }] : []),
+      ],
+      /* The pile is face down for everybody, including whoever put the
+         cards there. Nobody at a real table gets to sift back through it. */
+      zones: [{ label: "Pile — face down", cards: B.visiblePile(st.board, Z.discard, viewer).slice(-5) }],
+      counts: (s) => (st.out.includes(s) ? "out" : `${B.count(st.board, Z.hand(s))}`),
+      handHint: st.phase === "lay" ? `Put down any cards and call them ${RANK_NAME[st.need].toLowerCase()}s` : null,
+      selected: st.sel[viewer] || [],
+    };
+  },
+});
+
+/* ── GO FISH ──────────────────────────────────────────────────────── */
+def({
+  id: "gofish", name: "Go Fish", tagline: "Ask well. Remember better.",
+  category: "Family", min: 2, max: 6, art: ["cobalt", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), ...seats.map(Z.captured), Z.stock]);
+    const size = seats.length >= 4 ? 5 : 7;
+    for (let i = 0; i < size; i++) for (const s of seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of seats) B.sort(b, Z.hand(s), byRankSuit);
+    const st = { board: b, seats, active: seats[0], done: null, books: {}, history: [], ask: null };
+    seats.forEach((s) => { st.books[s] = []; });
+    for (const s of seats) this.collect(st, s, []);
+    return st;
+  },
+  collect(st, seat, ev) {
+    const byRank = {};
+    for (const c of B.cardsIn(st.board, Z.hand(seat))) (byRank[c.rank] = byRank[c.rank] || []).push(c.id);
+    for (const r of Object.keys(byRank)) if (byRank[r].length === 4) {
+      B.move(st.board, byRank[r], Z.captured(seat), "up");
+      st.books[seat].push(Number(r));
+      ev.push(`${st.names ? st.names[seat] : "Player"} books the ${RANK_NAME[r].toLowerCase()}s.`);
+    }
+  },
+  legal(st, seat) {
+    if (st.done || st.active !== seat) return [];
+    if (st.ask) return [{ t: "ok" }];
+    if (!B.count(st.board, Z.hand(seat))) return B.count(st.board, Z.stock) ? [{ t: "refill" }] : [];
+    const ranks = [...new Set(B.cardsIn(st.board, Z.hand(seat)).map((c) => c.rank))].sort((a, b) => a - b);
+    const targets = st.seats.filter((s) => s !== seat && B.count(st.board, Z.hand(s)) > 0);
+    const out = [];
+    for (const t of targets) for (const r of ranks) out.push({ t: "ask", target: t, rank: r });
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "ok") { st.ask = null; if (!st.goAgain) st.active = this.nextPlayable(st, seat); st.goAgain = false; this.checkEnd(st, ev); return ev; }
+    if (a.t === "refill") {
+      const drawn = B.draw(st.board, Z.stock, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), byRankSuit);
+      if (drawn) { this.collect(st, seat, ev); ev.push(`${st.names[seat]} draws back in.`); }
+      if (!B.count(st.board, Z.hand(seat))) st.active = this.nextPlayable(st, seat);
+      this.checkEnd(st, ev);
+      return ev;
+    }
+    const match = B.at(st.board, Z.hand(a.target)).filter((id) => st.board.cards.get(id).rank === a.rank);
+    st.history.push({ asker: seat, target: a.target, rank: a.rank, hit: match.length > 0 });
+    let again = false;
+    if (match.length) {
+      B.move(st.board, match, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), byRankSuit);
+      ev.push(`${st.names[seat]} asks ${st.names[a.target]} for ${RANK_NAME[a.rank].toLowerCase()}s — got ${match.length}.`);
+      again = true;
+      st.ask = { hit: true, n: match.length, rank: a.rank, target: a.target };
+    } else {
+      const drawn = B.draw(st.board, Z.stock, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), byRankSuit);
+      ev.push(`${st.names[seat]} asks ${st.names[a.target]} for ${RANK_NAME[a.rank].toLowerCase()}s — go fish.`);
+      if (drawn && drawn.rank === a.rank) { again = true; ev.push(`${st.names[seat]} drew it anyway.`); }
+      st.ask = { hit: false, rank: a.rank, target: a.target, lucky: !!(drawn && drawn.rank === a.rank) };
+    }
+    this.collect(st, seat, ev);
+    st.goAgain = again && B.count(st.board, Z.hand(seat)) > 0;
+    return ev;
+  },
+  canAct(st, s) { return B.count(st.board, Z.hand(s)) > 0 || B.count(st.board, Z.stock) > 0; },
+  nextPlayable(st, from) {
+    let s = from;
+    for (let i = 0; i < st.seats.length; i++) { s = nextSeat(st.seats, s); if (this.canAct(st, s)) return s; }
+    return st.seats.find((x) => this.canAct(st, x)) ?? from;
+  },
+  checkEnd(st, ev) {
+    const booked = st.seats.reduce((n, s) => n + st.books[s].length, 0);
+    const stalled = st.seats.every((s) => !this.canAct(st, s));
+    if (booked < 13 && !stalled) return;
+    const sc = {}; st.seats.forEach((s) => { sc[s] = st.books[s].length; });
+    const best = Math.max(...Object.values(sc));
+    st.done = { winners: st.seats.filter((s) => sc[s] === best), scores: sc, lowWins: false };
+  },
+  observe(st, seat) { return { hand: B.cardsIn(st.board, Z.hand(seat)), history: st.history, books: st.books, stock: B.count(st.board, Z.stock) }; },
+  agent(st, seat, legal, prof, rng) {
+    if (legal[0] && (legal[0].t === "ok" || legal[0].t === "refill")) return legal[0];
+    const counts = {}; B.cardsIn(st.board, Z.hand(seat)).forEach((c) => { counts[c.rank] = (counts[c.rank] || 0) + 1; });
+    const belief = {};
+    for (const h of st.history) {
+      if (!rng.chance(prof.memory)) continue;               // weak memory forgets
+      belief[h.asker] = belief[h.asker] || {};
+      belief[h.asker][h.rank] = (belief[h.asker][h.rank] || 0) + (h.hit ? -.4 : 1.2);
+    }
+    const scored = legal.map((a) => {
+      let s = (counts[a.rank] || 0) * 3;
+      s += ((belief[a.target] || {})[a.rank] || 0) * 2.5;
+      s += B.count(st.board, Z.hand(a.target)) * .12;
+      return { action: a, score: s + rng() * 1.5 };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    const last = st.history[st.history.length - 1];
+    return {
+      callouts: [
+        { k: "Pond", v: B.count(st.board, Z.stock) },
+        { k: "Books", v: st.seats.reduce((n, s) => n + st.books[s].length, 0) + " of 13" },
+        ...(last ? [{ k: "Last ask", v: `${RANK_TOKEN[last.rank]} → ${last.hit ? "hit" : "go fish"}` }] : []),
+      ],
+      zones: [{ label: "Pond", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -2 }] : [], stack: true }],
+      counts: (s) => `${B.count(st.board, Z.hand(s))} · ${st.books[s].length}bk`,
+      handHint: st.ask ? null : "Tap a card to ask for that rank",
+      askMode: !st.ask,
+    };
+  },
+});
+
+/* ── PRESIDENT ────────────────────────────────────────────────────── */
+def({
+  id: "president", name: "President", tagline: "Shed everything. Twos beat the world.",
+  category: "Shedding", min: 3, max: 6, art: ["acid", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), Z.discard, Z.reserve]);
+    let i = 0;
+    while (B.count(b, Z.stock)) { B.draw(b, Z.stock, Z.hand(seats[i % seats.length]), "own", seats[i % seats.length]); i++; }
+    for (const s of seats) B.sort(b, Z.hand(s), byRankSuit);
+    const st = { board: b, seats, done: null, leadRank: null, leadN: 0, last: null, passed: [], finish: [], sel: {}, active: null };
+    st.active = seats.find((s) => B.cardsIn(b, Z.hand(s)).some((c) => c.suit === "C" && c.rank === 3)) ?? seats[0];
+    return st;
+  },
+  power(r) { return r === 2 ? 100 : r; },
+  legal(st, seat) {
+    if (st.done || st.active !== seat || st.finish.includes(seat)) return [];
+    const picked = st.sel[seat] || [];
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const out = [];
+    if (picked.length) {
+      const rank = st.board.cards.get(picked[0]).rank;
+      const beats = st.leadRank === null || this.power(rank) > this.power(st.leadRank);
+      const sized = st.leadRank === null || picked.length === st.leadN || rank === 2;
+      if (beats && sized) out.push({ t: "play" });
+      for (const c of hand) if (c.rank === rank && !picked.includes(c.id)) out.push({ t: "select", id: c.id });
+    } else {
+      const groups = {};
+      hand.forEach((c) => (groups[c.rank] = groups[c.rank] || []).push(c));
+      for (const c of hand) {
+        const rank = c.rank;
+        const beats = st.leadRank === null || this.power(rank) > this.power(st.leadRank);
+        const enough = st.leadRank === null || groups[rank].length >= st.leadN || rank === 2;
+        if (beats && enough) out.push({ t: "select", id: c.id });
+      }
+    }
+    if (st.leadRank !== null) out.push({ t: "pass" });
+    if (picked.length) out.push({ t: "clear" });
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "select") { st.sel[seat] = [...(st.sel[seat] || []), a.id]; return ev; }
+    if (a.t === "clear") { st.sel[seat] = []; return ev; }
+    if (a.t === "pass") { st.passed.push(seat); ev.push(`${st.names[seat]} passes.`); return this.advance(st, seat, ev); }
+    const ids = st.sel[seat]; st.sel[seat] = [];
+    const rank = st.board.cards.get(ids[0]).rank;
+    B.move(st.board, ids, Z.discard, "up");
+    st.leadRank = rank; st.leadN = ids.length; st.last = seat; st.passed = [];
+    ev.push(`${st.names[seat]} plays ${ids.length} × ${RANK_TOKEN[rank]}.`);
+    if (emptyHands(st, seat)) { st.finish.push(seat); ev.push(`${st.names[seat]} is out — place ${st.finish.length}.`); }
+    if (rank === 2 || ids.length === 4) { ev.push("Pile swept."); return this.clearPile(st, seat, ev); }
+    return this.advance(st, seat, ev);
+  },
+  clearPile(st, leader, ev) {
+    B.move(st.board, B.at(st.board, Z.discard).slice(), Z.reserve, "down");
+    st.leadRank = null; st.leadN = 0; st.last = null; st.passed = [];
+    const left = st.seats.filter((s) => !st.finish.includes(s));
+    if (left.length <= 1) return this.finish(st, left, ev);
+    st.active = left.includes(leader) ? leader : this.nextIn(st, leader);
+    return ev;
+  },
+  nextIn(st, from) { let s = from; for (let i = 0; i < st.seats.length; i++) { s = nextSeat(st.seats, s); if (!st.finish.includes(s)) return s; } return from; },
+  advance(st, seat, ev) {
+    const left = st.seats.filter((s) => !st.finish.includes(s));
+    if (left.length <= 1) return this.finish(st, left, ev);
+    const waiting = left.filter((s) => !st.passed.includes(s));
+    if (st.last !== null && waiting.length <= 1 && (waiting[0] === st.last || !waiting.length)) {
+      return this.clearPile(st, st.finish.includes(st.last) ? this.nextIn(st, st.last) : st.last, ev);
+    }
+    let n = seat, guard = 0;
+    do { n = nextSeat(st.seats, n); guard++; } while ((st.finish.includes(n) || st.passed.includes(n)) && guard < st.seats.length * 2);
+    st.active = n;
+    return ev;
+  },
+  finish(st, left, ev) {
+    const order = [...st.finish, ...left];
+    const sc = {}; order.forEach((s, i) => { sc[s] = order.length - i; });
+    st.done = { winners: order.slice(0, 1), scores: sc, lowWins: false, titles: order };
+    ev.push(`${st.names[order[0]]} is President.`);
+    return ev;
+  },
+  observe(st, seat) { return { hand: B.cardsIn(st.board, Z.hand(seat)), leadRank: st.leadRank, leadN: st.leadN, counts: st.seats.map((s) => B.count(st.board, Z.hand(s))) }; },
+  agent(st, seat, legal, prof, rng) {
+    const picked = st.sel[seat] || [];
+    if (picked.length) {
+      const rank = st.board.cards.get(picked[0]).rank;
+      const need = st.leadRank === null ? Math.min(2, picked.length + 1) : st.leadN;
+      if (picked.length >= need || rank === 2) return legal.find((a) => a.t === "play") || legal.find((a) => a.t === "clear");
+      const more = legal.find((a) => a.t === "select");
+      return more || legal.find((a) => a.t === "play") || legal[0];
+    }
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    const groups = {}; hand.forEach((c) => (groups[c.rank] = groups[c.rank] || []).push(c));
+    const scored = legal.map((a) => {
+      if (a.t === "pass") return { action: a, score: 4 - prof.aggression * 8 };
+      if (a.t !== "select") return { action: a, score: -50 };
+      const c = st.board.cards.get(a.id);
+      let s = 30 - this.power(c.rank) * .6;                 // spend low cards first
+      if (c.rank === 2) s -= 22 - prof.aggression * 14;     // hold the bomb
+      s += (groups[c.rank].length - 1) * 1.2;
+      return { action: a, score: s + rng() * 3 * prof.risk };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    return {
+      callouts: [
+        { k: "Pile", v: st.leadRank === null ? "Open" : `${st.leadN} × ${RANK_TOKEN[st.leadRank]}` },
+        ...(st.finish.length ? [{ k: "Out", v: st.finish.map((s) => st.names[s]).join(", ") }] : []),
+      ],
+      zones: [{ label: "Pile", cards: B.visiblePile(st.board, Z.discard, viewer).slice(-4), spread: true }],
+      counts: (s) => (st.finish.includes(s) ? `#${st.finish.indexOf(s) + 1}` : `${B.count(st.board, Z.hand(s))}`),
+      handHint: "Tap cards of one rank, then play them",
+      selected: st.sel[viewer] || [],
+    };
+  },
+});
+
+/* ── TEXAS HOLD'EM ────────────────────────────────────────────────── */
+const HAND_NAMES = ["High card", "Pair", "Two pair", "Three of a kind", "Straight", "Flush", "Full house", "Four of a kind", "Straight flush"];
+function evaluate(cards) {
+  const byRank = {}, bySuit = {};
+  for (const c of cards) { (byRank[c.rank] = byRank[c.rank] || []).push(c); (bySuit[c.suit] = bySuit[c.suit] || []).push(c); }
+  const ranksDesc = Object.keys(byRank).map(Number).sort((a, b) => b - a);
+  const flushSuit = Object.keys(bySuit).find((s) => bySuit[s].length >= 5);
+  const straightTop = (rs) => {
+    const u = [...new Set(rs)].sort((a, b) => b - a);
+    if (u.includes(14)) u.push(1);
+    let run = 1;
+    for (let i = 1; i < u.length; i++) {
+      if (u[i] === u[i - 1] - 1) { run++; if (run >= 5) return u[i] + 4; }
+      else if (u[i] !== u[i - 1]) run = 1;
+    }
+    return 0;
+  };
+  if (flushSuit) {
+    const sf = straightTop(bySuit[flushSuit].map((c) => c.rank));
+    if (sf) return { cat: 8, tie: [sf], name: sf === 14 ? "Royal flush" : "Straight flush" };
+  }
+  const quads = ranksDesc.find((r) => byRank[r].length === 4);
+  if (quads) return { cat: 7, tie: [quads, ranksDesc.find((r) => r !== quads)], name: HAND_NAMES[7] };
+  const trips = ranksDesc.filter((r) => byRank[r].length === 3);
+  const pairs = ranksDesc.filter((r) => byRank[r].length === 2);
+  if (trips.length && (pairs.length || trips.length > 1)) {
+    const pair = pairs.length ? pairs[0] : trips[1];
+    return { cat: 6, tie: [trips[0], pair], name: HAND_NAMES[6] };
+  }
+  if (flushSuit) return { cat: 5, tie: bySuit[flushSuit].map((c) => c.rank).sort((a, b) => b - a).slice(0, 5), name: HAND_NAMES[5] };
+  const st = straightTop(cards.map((c) => c.rank));
+  if (st) return { cat: 4, tie: [st], name: HAND_NAMES[4] };
+  if (trips.length) return { cat: 3, tie: [trips[0], ...ranksDesc.filter((r) => r !== trips[0]).slice(0, 2)], name: HAND_NAMES[3] };
+  if (pairs.length >= 2) return { cat: 2, tie: [pairs[0], pairs[1], ranksDesc.filter((r) => r !== pairs[0] && r !== pairs[1])[0]], name: HAND_NAMES[2] };
+  if (pairs.length === 1) return { cat: 1, tie: [pairs[0], ...ranksDesc.filter((r) => r !== pairs[0]).slice(0, 3)], name: HAND_NAMES[1] };
+  return { cat: 0, tie: ranksDesc.slice(0, 5), name: HAND_NAMES[0] };
+}
+function cmpHands(a, b) {
+  if (a.cat !== b.cat) return a.cat - b.cat;
+  for (let i = 0; i < Math.max(a.tie.length, b.tie.length); i++) {
+    const x = a.tie[i] || 0, y = b.tie[i] || 0;
+    if (x !== y) return x - y;
+  }
+  return 0;
+}
+
+def({
+  id: "holdem", name: "Texas Hold'em", tagline: "Two down. Five up. All in.",
+  category: "Poker", min: 2, max: 6, art: ["vermilion", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const st = { seats, board: newBoard(), done: null, stacks: {}, button: 0, blind: 20,
+      hand: 1, street: "pre", pot: 0, bet: 0, committed: {}, folded: [], allIn: [], acted: [],
+      active: null, lastRaise: 0, showdown: null, names: null };
+    seats.forEach((s) => { st.stacks[s] = 1000; });
+    this.deal(st, rng);
+    return st;
+  },
+  deal(st, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...st.seats.map(Z.hand), Z.discard, Z.reserve]);
+    for (let i = 0; i < 2; i++) for (const s of st.seats) if (st.stacks[s] > 0) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    st.board = b; st.street = "pre"; st.pot = 0; st.bet = 0; st.committed = {}; st.folded = [];
+    st.allIn = []; st.acted = []; st.showdown = null; st.community = [];
+    const live = st.seats.filter((s) => st.stacks[s] > 0);
+    st.live = live;
+    const bIdx = st.button % live.length;
+    const sbSeat = live[(bIdx + (live.length === 2 ? 0 : 1)) % live.length];
+    const bbSeat = live[(bIdx + (live.length === 2 ? 1 : 2)) % live.length];
+    this.post(st, sbSeat, st.blind / 2); this.post(st, bbSeat, st.blind);
+    st.bet = st.blind; st.lastRaise = st.blind;
+    st.active = live[(live.indexOf(bbSeat) + 1) % live.length];
+  },
+  post(st, seat, amount) {
+    const a = Math.min(amount, st.stacks[seat]);
+    st.stacks[seat] -= a; st.committed[seat] = (st.committed[seat] || 0) + a; st.pot += a;
+    if (st.stacks[seat] === 0) st.allIn.push(seat);
+  },
+  toCall(st, seat) { return Math.max(0, st.bet - (st.committed[seat] || 0)); },
+  legal(st, seat) {
+    if (st.done || st.showdown || st.active !== seat) return [];
+    const call = this.toCall(st, seat), stack = st.stacks[seat];
+    if (stack <= 0) return [];
+    const out = [];
+    if (call === 0) out.push({ t: "check" });
+    else { out.push({ t: "fold" }); out.push({ t: "call", amount: Math.min(call, stack) }); }
+    const minRaise = call + st.lastRaise;
+    if (stack > call) {
+      if (stack > minRaise) out.push({ t: "raise", amount: Math.min(minRaise, stack) });
+      const pot = Math.min(stack, call + Math.max(st.blind, Math.floor(st.pot * .75)));
+      if (pot > minRaise && pot < stack) out.push({ t: "raise", amount: pot });
+      out.push({ t: "allin", amount: stack });
+    }
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "fold") { st.folded.push(seat); ev.push(`${st.names[seat]} folds.`); }
+    else if (a.t === "check") ev.push(`${st.names[seat]} checks.`);
+    else if (a.t === "call") { this.post(st, seat, a.amount); ev.push(`${st.names[seat]} calls ${a.amount}.`); }
+    else {
+      this.post(st, seat, a.amount);
+      const newBet = st.committed[seat];
+      st.lastRaise = Math.max(st.lastRaise, newBet - st.bet);
+      st.bet = Math.max(st.bet, newBet);
+      st.acted = [];
+      ev.push(`${st.names[seat]} ${a.t === "allin" ? "is all in for" : "raises to"} ${newBet}.`);
+    }
+    if (!st.acted.includes(seat)) st.acted.push(seat);
+    const contenders = st.live.filter((s) => !st.folded.includes(s));
+    if (contenders.length === 1) { st.showdown = { winners: contenders, uncontested: true }; return ev; }
+    const canAct = contenders.filter((s) => st.stacks[s] > 0);
+    const settled = canAct.every((s) => st.acted.includes(s) && this.toCall(st, s) === 0);
+    if (settled) { st.streetDone = true; return ev; }
+    let n = seat, guard = 0;
+    do { n = st.live[(st.live.indexOf(n) + 1) % st.live.length]; guard++; }
+    while ((st.folded.includes(n) || st.stacks[n] <= 0) && guard < st.live.length * 2);
+    st.active = n;
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done) return [];
+    if (st.showdown) return this.settle(st, rng);
+    if (!st.streetDone) return [];
+    st.streetDone = false;
+    const ev = [];
+    st.acted = []; st.bet = 0; st.committed = {}; st.lastRaise = st.blind;
+    const burn = () => B.draw(st.board, Z.stock, Z.discard, "down");
+    if (st.street === "pre") { burn(); st.community.push(...B.deal(st.board, 3, Z.stock, Z.reserve, "up")); st.street = "flop"; ev.push("Flop."); }
+    else if (st.street === "flop") { burn(); st.community.push(...B.deal(st.board, 1, Z.stock, Z.reserve, "up")); st.street = "turn"; ev.push("Turn."); }
+    else if (st.street === "turn") { burn(); st.community.push(...B.deal(st.board, 1, Z.stock, Z.reserve, "up")); st.street = "river"; ev.push("River."); }
+    else { st.showdown = { winners: null }; return ev.concat(this.settle(st, rng)); }
+    const contenders = st.live.filter((s) => !st.folded.includes(s) && st.stacks[s] > 0);
+    if (contenders.length <= 1) { st.streetDone = true; return ev; }
+    st.active = contenders[0];
+    return ev;
+  },
+  settle(st, rng) {
+    const ev = [];
+    const contenders = st.live.filter((s) => !st.folded.includes(s));
+    let winners;
+    if (contenders.length === 1) { winners = contenders; ev.push(`${st.names[winners[0]]} takes it uncontested.`); }
+    else {
+      for (const s of contenders) for (const id of B.at(st.board, Z.hand(s))) B.face(st.board, id, "up");
+      const ranked = contenders.map((s) => ({ s, r: evaluate([...B.cardsIn(st.board, Z.hand(s)), ...st.community]) }));
+      ranked.sort((a, b) => cmpHands(b.r, a.r));
+      winners = ranked.filter((x) => cmpHands(x.r, ranked[0].r) === 0).map((x) => x.s);
+      ev.push(`${winners.map((s) => st.names[s]).join(" and ")} — ${ranked[0].r.name}.`);
+    }
+    const share = Math.floor(st.pot / winners.length);
+    winners.forEach((s, i) => { st.stacks[s] += share + (i === 0 ? st.pot - share * winners.length : 0); });
+    st.showdown = null; st.pot = 0;
+    const solvent = st.seats.filter((s) => st.stacks[s] > 0);
+    if (solvent.length <= 1 || st.hand >= 12) {
+      const best = Math.max(...st.seats.map((s) => st.stacks[s]));
+      st.done = { winners: st.seats.filter((s) => st.stacks[s] === best), scores: { ...st.stacks }, lowWins: false };
+      return ev;
+    }
+    st.hand++; st.button++; this.deal(st, rng);
+    ev.push(`Hand ${st.hand}.`);
+    return ev;
+  },
+  observe(st, seat) { return { hole: B.cardsIn(st.board, Z.hand(seat)), community: st.community, pot: st.pot, call: this.toCall(st, seat), stack: st.stacks[seat], street: st.street }; },
+  agent(st, seat, legal, prof, rng) {
+    const o = this.observe(st, seat);
+    const known = [...o.hole, ...o.community];
+    /* Equity by sampling from the cards this seat cannot see. The agent
+       never touches another player's hole cards. */
+    const seen = new Set(known.map((c) => c.id));
+    const unseen = buildDeck().filter((c) => !seen.has(c.id));
+    const trials = prof.memory > .8 ? 120 : 60;
+    let wins = 0;
+    const opponents = Math.max(1, st.live.filter((s) => !st.folded.includes(s)).length - 1);
+    for (let t = 0; t < trials; t++) {
+      const pool = rng.shuffle([...unseen]);
+      const board = [...o.community];
+      let k = 0;
+      while (board.length < 5) board.push(pool[k++]);
+      const mine = evaluate([...o.hole, ...board]);
+      let best = true;
+      for (let p = 0; p < opponents; p++) {
+        const theirs = evaluate([pool[k++], pool[k++], ...board]);
+        if (cmpHands(theirs, mine) > 0) { best = false; break; }
+      }
+      if (best) wins++;
+    }
+    const equity = wins / trials;
+    const potOdds = o.call > 0 ? o.call / (o.pot + o.call) : 0;
+    const scored = legal.map((a) => {
+      let s = 0;
+      if (a.t === "fold") s = potOdds > equity ? 30 : -20;
+      else if (a.t === "check") s = 22 + equity * 20;
+      else if (a.t === "call") s = (equity - potOdds) * 120 + 12;
+      else {
+        const bluff = rng.chance(prof.bluff) ? .28 : 0;
+        s = (equity + bluff - .5) * 150 * (0.6 + prof.aggression) - (a.t === "allin" ? 30 * (1 - prof.risk) : 0);
+      }
+      return { action: a, score: s + rng() * 6 };
+    });
+    return choose(scored, prof, rng);
+  },
+  table(st, viewer) {
+    return {
+      callouts: [
+        { k: "Pot", v: st.pot },
+        { k: "To call", v: viewer === null ? "—" : this.toCall(st, viewer) },
+        { k: "Street", v: { pre: "Pre-flop", flop: "Flop", turn: "Turn", river: "River" }[st.street] },
+        { k: "Hand", v: `${st.hand} of 12` },
+      ],
+      zones: [{ label: "Community", cards: st.community.map((c) => ({ known: true, ...c })), spread: true }],
+      counts: (s) => (st.folded.includes(s) ? "folded" : `${st.stacks[s]}`),
+      handHint: null,
+      noCardPlay: true,
+    };
+  },
+});
+
+/* ── WAR ──────────────────────────────────────────────────────────── */
+def({
+  id: "war", name: "War", tagline: "No decisions. Just fate.",
+  category: "Family", min: 2, max: 2, art: ["crimson", "ink"],
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map((s) => Z.own("deck", s)), ...seats.map(Z.captured), Z.trick]);
+    let i = 0;
+    while (B.count(b, Z.stock)) { B.draw(b, Z.stock, Z.own("deck", seats[i % 2]), "down"); i++; }
+    return { board: b, seats, active: seats[0], done: null, atWar: false, flips: 0, battle: {}, pending: false, wars: 0 };
+  },
+  total(st, s) { return B.count(st.board, Z.own("deck", s)) + B.count(st.board, Z.captured(s)); },
+  refill(st, s, rng) {
+    if (B.count(st.board, Z.own("deck", s))) return;
+    const won = B.at(st.board, Z.captured(s)).slice();
+    if (!won.length) return;
+    B.move(st.board, rng.shuffle(won), Z.own("deck", s), "down");
+  },
+  legal(st, seat) { return st.done || st.pending || st.active !== seat ? [] : [{ t: "flip" }]; },
+  apply(st, a, rng) {
+    const ev = []; st.flips++;
+    st.battle = {};
+    for (const s of st.seats) {
+      if (st.atWar) for (let i = 0; i < 3; i++) { this.refill(st, s, rng); const c = B.draw(st.board, Z.own("deck", s), Z.trick, "down"); if (c) (st.battle[s] = st.battle[s] || []).push(c.id); }
+      this.refill(st, s, rng);
+      const c = B.draw(st.board, Z.own("deck", s), Z.trick, "up");
+      if (c) (st.battle[s] = st.battle[s] || []).push(c.id);
+    }
+    st.pending = true;
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.pending) return [];
+    st.pending = false;
+    const ev = [];
+    const shown = st.seats.map((s) => {
+      const ids = st.battle[s] || [];
+      const last = ids[ids.length - 1];
+      return { s, rank: last ? st.board.cards.get(last).rank : 0 };
+    });
+    const best = Math.max(...shown.map((x) => x.rank));
+    const tied = shown.filter((x) => x.rank === best);
+    if (tied.length > 1 && best > 0) {
+      st.atWar = true; st.wars++;
+      ev.push("War! Three down, one up.");
+    } else {
+      const win = tied[0].s;
+      const spoils = B.at(st.board, Z.trick).slice();
+      B.move(st.board, spoils, Z.captured(win), "down");
+      st.atWar = false;
+      ev.push(`${st.names[win]} takes ${spoils.length}.`);
+    }
+    st.active = st.seats[0];
+    const alive = st.seats.filter((s) => this.total(st, s) > 0);
+    if (alive.length <= 1 || st.flips >= 400) {
+      const best2 = Math.max(...st.seats.map((s) => this.total(st, s)));
+      const sc = {}; st.seats.forEach((s) => { sc[s] = this.total(st, s); });
+      st.done = { winners: st.seats.filter((s) => this.total(st, s) === best2), scores: sc, lowWins: false };
+    }
+    return ev;
+  },
+  observe(st, seat) { return { own: this.total(st, seat), atWar: st.atWar }; },
+  agent(st, seat, legal) { return legal[0] || null; },
+  table(st, viewer) {
+    return {
+      callouts: [{ k: "Flips", v: st.flips }, { k: "Wars", v: st.wars }, ...(st.atWar ? [{ k: "Status", v: "AT WAR" }] : [])],
+      zones: [{ label: "Battle", cards: B.visiblePile(st.board, Z.trick, viewer).slice(-6), spread: true }],
+      counts: (s) => `${this.total(st, s)}`,
+      handHint: null, noCardPlay: true,
+    };
+  },
+});
+
+/* ── KLONDIKE (solo) ──────────────────────────────────────────────── */
+def({
+  id: "klondike", name: "Klondike", tagline: "The one everybody means.",
+  category: "Solitaire", min: 1, max: 1, solo: true, art: ["forest", "ink"],
+  setup(cfg, rng) {
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...Array(7).keys()].map(Z.tableau).concat([...Array(4).keys()].map(Z.foundation), [Z.stock, Z.waste]));
+    for (let col = 0; col < 7; col++)
+      for (let row = 0; row <= col; row++)
+        B.draw(b, Z.stock, Z.tableau(col), row === col ? "up" : "down");
+    return { board: b, seats: [0], active: 0, done: null, moves: 0, sel: null, redeals: 0 };
+  },
+  canFoundation(st, c, f) {
+    const top = B.top(st.board, Z.foundation(f));
+    if (!top) return c.rank === 14;
+    return top.suit === c.suit && c.rank === top.rank + 1;
+  },
+  canTableau(st, c, col) {
+    const top = B.top(st.board, Z.tableau(col));
+    if (!top) return c.rank === 13;
+    return st.board.up.has(top.id) && isRed(top) !== isRed(c) && c.rank === top.rank - 1;
+  },
+  runFrom(st, id) {
+    const z = B.zoneOf(st.board, id);
+    if (!z || !z.startsWith("tab:")) return B.top(st.board, z) && B.top(st.board, z).id === id ? [id] : null;
+    const pile = B.at(st.board, z), i = pile.indexOf(id);
+    if (i < 0 || !st.board.up.has(id)) return null;
+    const run = pile.slice(i);
+    for (let k = 1; k < run.length; k++) {
+      const a = st.board.cards.get(run[k - 1]), c = st.board.cards.get(run[k]);
+      if (!st.board.up.has(run[k]) || isRed(a) === isRed(c) || c.rank !== a.rank - 1) return null;
+    }
+    return run;
+  },
+  legal(st) {
+    if (st.done) return [];
+    const out = [];
+    const sources = [];
+    const w = B.top(st.board, Z.waste); if (w) sources.push(w);
+    for (let col = 0; col < 7; col++) for (const id of B.at(st.board, Z.tableau(col))) if (st.board.up.has(id)) sources.push(st.board.cards.get(id));
+    for (const c of sources) {
+      for (let f = 0; f < 4; f++) if (this.runFrom(st, c.id) && this.runFrom(st, c.id).length === 1 && this.canFoundation(st, c, f)) out.push({ t: "move", id: c.id, to: Z.foundation(f) });
+      for (let col = 0; col < 7; col++) if (this.runFrom(st, c.id) && this.canTableau(st, c, col) && B.zoneOf(st.board, c.id) !== Z.tableau(col)) out.push({ t: "move", id: c.id, to: Z.tableau(col) });
+    }
+    if (B.count(st.board, Z.stock)) out.push({ t: "draw" });
+    else if (B.count(st.board, Z.waste)) out.push({ t: "redeal" });
+    return out;
+  },
+  apply(st, a) {
+    const ev = [];
+    if (a.t === "draw") { B.draw(st.board, Z.stock, Z.waste, "up"); st.moves++; return ev; }
+    if (a.t === "redeal") { B.move(st.board, B.at(st.board, Z.waste).slice().reverse(), Z.stock, "down"); st.redeals++; st.moves++; return ev; }
+    const run = this.runFrom(st, a.id) || [a.id];
+    const from = B.zoneOf(st.board, a.id);
+    B.move(st.board, run, a.to, "up");
+    st.moves++;
+    const nt = B.top(st.board, from);
+    if (nt && !st.board.up.has(nt.id)) { B.face(st.board, nt.id, "up"); ev.push("Turned a card."); }
+    const home = [0, 1, 2, 3].reduce((n, f) => n + B.count(st.board, Z.foundation(f)), 0);
+    if (home === 52) { st.done = { winners: [0], scores: { 0: Math.max(0, 1000 - st.moves * 2) }, lowWins: false }; ev.push("Solved."); }
+    return ev;
+  },
+  observe(st) { return {}; },
+  agent(st, seat, legal) { return legal[0] || null; },
+  table(st) {
+    const zones = [
+      { label: "Stock", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -3 }] : [], stack: true, action: B.count(st.board, Z.stock) ? { t: "draw" } : { t: "redeal" } },
+      { label: "Waste", cards: [B.top(st.board, Z.waste)].filter(Boolean).map((c) => ({ known: true, ...c })), pick: true },
+    ];
+    for (let f = 0; f < 4; f++) zones.push({ label: "", cards: [B.top(st.board, Z.foundation(f))].filter(Boolean).map((c) => ({ known: true, ...c })), foundation: f, small: true });
+    return {
+      callouts: [{ k: "Moves", v: st.moves }, { k: "Home", v: [0,1,2,3].reduce((n, f) => n + B.count(st.board, Z.foundation(f)), 0) + " of 52" }],
+      zones, tableau: true, counts: () => "", handHint: null, noCardPlay: true,
+    };
+  },
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRIVACY — the Pass & Play coordinator.
+   Permission is state, not a screen. `viewer` is computed and is null
+   for every phase where the device is in transit, so there is no code
+   path that renders a hand mid-handoff.
+   ═══════════════════════════════════════════════════════════════════ */
+const Privacy = {
+  make(seats, isHuman) { return { phase: "open", seat: null, next: null, seats, isHuman }; },
+  viewer(p) { return p.phase === "playing" || p.phase === "revealing" ? p.seat : null; },
+  acceptsInput(p) { return p.phase === "playing"; },
+  open(p, seat) {
+    if (!p.isHuman(seat)) { p.phase = "playing"; p.seat = seat; return "resume"; }
+    const humans = p.seats.filter(p.isHuman);
+    if (humans.length <= 1) { p.phase = "playing"; p.seat = seat; return "resume"; }
+    p.phase = "handoff"; p.next = seat; return "handoff";
+  },
+  /* Called when the turn moves. An AI seat, or the same human twice in a
+     row, never triggers the ritual — the device has not changed hands. */
+  turnMoved(p, seat) {
+    if (seat === null || seat === undefined) return "none";
+    if (!p.isHuman(seat)) { p.phase = "playing"; p.seat = seat; return "none"; }
+    const humans = p.seats.filter(p.isHuman);
+    if (humans.length <= 1) { p.phase = "playing"; p.seat = seat; return "none"; }
+    if (p.seat === seat && p.phase === "playing") return "none";
+    p.phase = "handoff"; p.next = seat; p.seat = null; return "handoff";
+  },
+  confirm(p) { p.phase = "playing"; p.seat = p.next; p.next = null; },
+  shield(p) { if (p.phase === "playing" && p.isHuman(p.seat)) { p.next = p.seat; p.seat = null; p.phase = "handoff"; return true; } return false; },
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   UI
+   ═══════════════════════════════════════════════════════════════════ */
+const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt !== undefined) n.textContent = txt; return n; };
+const screen = document.getElementById("screen");
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("deck." + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("deck." + k, JSON.stringify(v)); } catch {} },
+};
+
+let App = { view: "library", game: null, run: null };
+
+function toast(msg) {
+  const t = el("div", "toast", msg);
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+/* ── Theme ───────────────────────────────────────────────────────── */
+const themeBtn = document.getElementById("themeBtn");
+themeBtn.onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : cur === "light" ? null : "dark";
+  if (next) document.documentElement.setAttribute("data-theme", next);
+  else document.documentElement.removeAttribute("data-theme");
+  store.set("theme", next);
+};
+{ const t = store.get("theme", null); if (t) document.documentElement.setAttribute("data-theme", t); }
+
+document.getElementById("quitBtn").onclick = () => {
+  if (App.view === "setup") { App.view = "library"; App.game = null; render(); return; }
+  if (App.run && !App.run.state.done && !confirm("Leave this game? Progress is lost.")) return;
+  App.run = null; App.view = "library"; render();
+};
+
+/* ── Card rendering ──────────────────────────────────────────────── */
+function cardEl(vc, w, opts = {}) {
+  const h = Math.round(w / (2.5 / 3.5));
+  const n = el("button", "card");
+  n.style.width = w + "px"; n.style.height = h + "px";
+  n.type = "button";
+  n.tabIndex = opts.play ? 0 : -1;
+  if (!opts.play) n.style.cursor = "default";
+  if (vc.known) {
+    if (isRed(vc)) n.classList.add("red");
+    const pip = (cls) => {
+      const p = el("div", "pip " + cls);
+      p.style.fontSize = Math.round(w * .30) + "px";
+      p.innerHTML = `${RANK_TOKEN[vc.rank]}<br>${SUIT_GLYPH[vc.suit]}`;
+      return p;
+    };
+    n.append(pip("tl"), pip("br"));
+    const mid = el("div", "mid", SUIT_GLYPH[vc.suit]);
+    mid.style.fontSize = Math.round(w * .5) + "px";
+    n.append(mid);
+    n.setAttribute("aria-label", spoken(vc));
+  } else {
+    n.classList.add("back");
+    const m = el("div", "backmark", "◆");
+    m.style.fontSize = Math.round(w * .3) + "px";
+    n.append(m);
+    n.setAttribute("aria-label", "Face-down card");
+  }
+  if (opts.sel) n.classList.add("sel");
+  if (opts.dim) n.classList.add("dim");
+  if (opts.playable) n.classList.add("playable");
+  if (opts.play) { n.classList.add("play"); n.onclick = opts.play; }
+  if (opts.tilt !== undefined) n.style.transform = `rotate(${opts.tilt}deg)`;
+  return n;
+}
+const seededTilt = (id, spread = 3) => {
+  const x = Math.sin(id * 12.9898) * 43758.5453;
+  return ((x - Math.floor(x)) * 2 - 1) * spread;
+};
+
+/* ── Cover art: a seeded screen-print composition per game ───────── */
+function coverArt(node, game) {
+  const c = el("canvas");
+  node.prepend(c);
+  const paint = () => {
+    const r = node.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = Math.max(1, r.width * dpr); c.height = Math.max(1, r.height * dpr);
+    const g = c.getContext("2d");
+    g.scale(dpr, dpr);
+    const css = getComputedStyle(document.documentElement);
+    const ink = css.getPropertyValue("--" + game.art[1]).trim() || "#0E0D0C";
+    const hue = css.getPropertyValue("--" + game.art[0]).trim() || "#E33A21";
+    g.fillStyle = ink; g.fillRect(0, 0, r.width, r.height);
+    const rng = rngFrom(game.id.split("").reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0);
+    g.fillStyle = hue;
+    // A sprayed field, then two overprinted card shapes: press, not gradient.
+    for (let i = 0; i < 90; i++) {
+      const a = rng() * Math.PI * 2, d = Math.pow(rng(), 1.6) * r.width * .75;
+      g.globalAlpha = .10 + rng() * .16;
+      g.beginPath();
+      g.arc(r.width * .68 + Math.cos(a) * d, r.height * .35 + Math.sin(a) * d * .7, 1 + rng() * 5, 0, 7);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+    for (let i = 0; i < 2; i++) {
+      const w = r.width * .34, h = w / (2.5 / 3.5);
+      g.save();
+      g.translate(r.width * (.66 + i * .13), r.height * (.30 + i * .06));
+      g.rotate((i ? 13 : -9) * Math.PI / 180);
+      g.fillStyle = i ? hue : css.getPropertyValue("--cream").trim();
+      g.globalAlpha = i ? .95 : .18;
+      g.beginPath();
+      const rr = 6;
+      g.roundRect(-w / 2, -h / 2, w, h, rr);
+      g.fill();
+      g.restore();
+    }
+    g.globalAlpha = 1;
+  };
+  paint();
+  new ResizeObserver(paint).observe(node);
+}
+
+/* ── Library ─────────────────────────────────────────────────────── */
+function viewLibrary() {
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--section)";
+
+  const head = el("div", "masthead stack");
+  const h1 = el("h1", "poster h-xl", "One deck.\nEvery game.");
+  h1.style.whiteSpace = "pre-line";
+  const sub = el("p", "sub", "Pass one device around the table. Nobody sees a hand that isn't theirs — the app removes it, it doesn't just cover it.");
+  head.append(h1, sub);
+
+  const shelf = el("div", "shelf");
+  for (const g of Object.values(GAMES)) {
+    const card = el("button", "game-card");
+    card.style.background = `var(--${g.art[1]})`;
+    const nm = el("div", "gname", g.name);
+    const tg = el("div", "gtag", `${g.category} · ${g.min === g.max ? g.min : g.min + "–" + g.max} player${g.max > 1 ? "s" : ""}`);
+    card.append(nm, tg);
+    card.onclick = () => { App.game = g; App.view = "setup"; render(); };
+    shelf.append(card);
+    requestAnimationFrame(() => coverArt(card, g));
+  }
+
+  const stats = store.get("stats", {});
+  const played = Object.values(stats).reduce((n, x) => n + (x.played || 0), 0);
+  const foot = el("div", "stack");
+  foot.style.gap = "var(--s2)";
+  foot.append(el("div", "label", "On this device"));
+  foot.append(el("div", "num", `${played} game${played === 1 ? "" : "s"} played`));
+  foot.querySelector(".num").style.fontSize = "28px";
+
+  wrap.append(head, shelf, foot);
+  s.append(wrap);
+  return s;
+}
+
+/* ── Setup ───────────────────────────────────────────────────────── */
+function viewSetup() {
+  const g = App.game;
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+
+  const head = el("div", "stack");
+  head.style.gap = "var(--s3)";
+  head.append(el("h1", "poster h-l", g.name));
+  head.append(el("p", "label", g.tagline));
+
+  const saved = store.get("seats." + g.id, null);
+  let seats = saved && saved.length >= g.min && saved.length <= g.max
+    ? saved.map((x) => ({ ...x }))
+    : defaultSeats(g);
+
+  const field = el("div", "field");
+  const list = el("div", "seatlist");
+  field.append(el("div", "label", "Who's playing"), list);
+
+  const drawSeats = () => {
+    list.innerHTML = "";
+    if (typeof refreshNote === "function") refreshNote();
+    seats.forEach((seat, i) => {
+      const row = el("div", "seat-row");
+      const chip = el("span", "chip" + (seat.ai ? " ai" : ""), seat.ai ? "AI" : "You");
+      chip.style.background = seat.ai ? `var(--${CAST.find((c) => c.id === seat.ai).colour})` : "";
+      const input = el("input");
+      input.value = seat.name; input.setAttribute("aria-label", `Player ${i + 1} name`);
+      input.oninput = () => { seat.name = input.value; };
+      const swap = el("button", "icon-btn", seat.ai ? "👤" : "🤖");
+      swap.title = seat.ai ? "Make this a person" : "Make this an opponent";
+      swap.onclick = () => {
+        if (seat.ai) { seat.ai = null; seat.name = "Player " + (i + 1); }
+        else { const p = CAST[i % CAST.length]; seat.ai = p.id; seat.name = p.name; }
+        drawSeats();
+      };
+      row.append(chip, input);
+      if (!g.solo) row.append(swap);
+      if (seats.length > g.min && !g.solo) {
+        const rm = el("button", "icon-btn", "−");
+        rm.title = "Remove"; rm.onclick = () => { seats.splice(i, 1); drawSeats(); };
+        row.append(rm);
+      }
+      list.append(row);
+    });
+    if (seats.length < g.max) {
+      const add = el("button", "btn ghost wide", "Add player");
+      add.onclick = () => {
+        const i = seats.length;
+        const p = CAST[i % CAST.length];
+        seats.push({ name: p.name, ai: p.id });
+        drawSeats();
+      };
+      list.append(add);
+    }
+  };
+  drawSeats();
+
+  const diffField = el("div", "field");
+  let difficulty = store.get("difficulty", "skilled");
+  const seg = el("div", "seg");
+  for (const d of ["casual", "skilled", "expert"]) {
+    const b = el("button", null, d);
+    b.setAttribute("aria-pressed", String(d === difficulty));
+    b.onclick = () => { difficulty = d; store.set("difficulty", d); [...seg.children].forEach((c) => c.setAttribute("aria-pressed", String(c.textContent === d))); };
+    seg.append(b);
+  }
+  diffField.append(el("div", "label", "Opponent skill"), seg);
+
+  const note = el("p", "label");
+  const refreshNote = () => {
+    const humans = seats.filter((x) => !x.ai).length;
+    note.textContent = humans > 1
+      ? `Pass & Play — the device goes round ${humans} people.`
+      : humans === 1 ? "Solo against the machine." : "Everyone is an opponent; you're watching.";
+  };
+  const start = el("button", "btn wide", "Deal");
+  start.onclick = () => {
+    const names = seats.map((x, i) => (x.name || "").trim() || `Player ${i + 1}`);
+    store.set("seats." + g.id, seats.map((x, i) => ({ name: names[i], ai: x.ai })));
+    startGame(g, seats.map((x, i) => ({ name: names[i], ai: x.ai })), difficulty);
+  };
+
+  refreshNote();
+
+  wrap.append(head, field, ...(g.solo ? [] : [diffField]), el("div", "stack"), note, start);
+  s.append(wrap);
+  return s;
+}
+function defaultSeats(g) {
+  const n = Math.min(Math.max(g.min, g.solo ? 1 : Math.min(4, g.max)), g.max);
+  const out = [{ name: store.get("myname", "You"), ai: null }];
+  for (let i = 1; i < n; i++) { const p = CAST[(i - 1) % CAST.length]; out.push({ name: p.name, ai: p.id }); }
+  return out;
+}
+
+/* ── Running a game ──────────────────────────────────────────────── */
+function startGame(g, seats, difficulty) {
+  const seed = (Math.random() * 0xFFFFFFFF) >>> 0;
+  const rng = rngFrom(seed);
+  const state = g.setup({ seats }, rng);
+  state.names = seats.map((s) => s.name);
+  const isHuman = (i) => !seats[i].ai;
+  App.run = {
+    g, seed, rng, state, seats, difficulty,
+    privacy: Privacy.make(state.seats, isHuman),
+    log: [], busy: false, sealArmed: false,
+  };
+  store.set("myname", seats.find((s) => !s.ai)?.name || "You");
+  const first = state.active;
+  const mode = Privacy.open(App.run.privacy, first === null || first === undefined ? state.seats[0] : first);
+  App.run.sealArmed = mode === "handoff";
+  App.view = "table";
+  render();
+  settle();
+}
+
+function profileFor(run, seat) {
+  const p = CAST.find((c) => c.id === run.seats[seat].ai) || CAST[0];
+  return { ...p, mistake: Math.max(0, p.mistake + DIFFICULTY[run.difficulty]) };
+}
+
+function push(run, events) {
+  for (const e of events) if (e) run.log.push(e);
+  if (run.log.length > 40) run.log.splice(0, run.log.length - 40);
+}
+
+/* Runs everything that happens without a person deciding: automatic
+   scoring, dealing, AI turns. Stops the moment a human is on the clock. */
+function settle() {
+  const run = App.run;
+  if (!run || run.busy) return;
+  const { g, state } = run;
+  let guard = 0;
+  const step = () => {
+    if (!App.run || App.run !== run) return;
+    if (state.done) { finishGame(); return; }
+    if (guard++ > 4000) return;
+
+    if (g.auto) {
+      const ev = g.auto(state, run.rng);
+      if (ev.length) { push(run, ev); render(); run.busy = true; setTimeout(() => { run.busy = false; step(); }, 420); return; }
+    }
+    if (state.done) { finishGame(); return; }
+
+    const seat = state.active;
+    if (seat === null || seat === undefined) { render(); return; }
+
+    if (run.seats[seat].ai) {
+      Privacy.turnMoved(run.privacy, seat);
+      const legal = g.legal(state, seat);
+      if (!legal.length) { render(); return; }
+      const prof = profileFor(run, seat);
+      const think = run.rng.branch(state.moves || run.log.length);
+      const action = g.agent(state, seat, legal, prof, think) || legal[0];
+      run.busy = true;
+      render();
+      setTimeout(() => {
+        run.busy = false;
+        if (!App.run || App.run !== run) return;
+        push(run, g.apply(state, action, run.rng));
+        step();
+      }, 260 + Math.random() * 320);
+      return;
+    }
+
+    // A person is up. Hand the device over if it needs to change hands.
+    const mode = Privacy.turnMoved(run.privacy, seat);
+    if (mode === "handoff") run.sealArmed = true;
+    render();
+  };
+  step();
+}
+
+function finishGame() {
+  const run = App.run;
+  if (!run || run.recorded) { App.view = "result"; render(); return; }
+  run.recorded = true;
+  const stats = store.get("stats", {});
+  const s = stats[run.g.id] = stats[run.g.id] || { played: 0, won: 0 };
+  s.played++;
+  const me = run.seats.findIndex((x) => !x.ai);
+  if (me >= 0 && run.state.done.winners.includes(me)) s.won++;
+  store.set("stats", stats);
+  App.view = "result";
+  render();
+}
+
+function act(action) {
+  const run = App.run;
+  if (!run || run.busy || !Privacy.acceptsInput(run.privacy)) return;
+  push(run, run.g.apply(run.state, action, run.rng));
+  render();
+  settle();
+}
+
+/* ── Table ───────────────────────────────────────────────────────── */
+function viewTable() {
+  const run = App.run;
+  const { g, state, privacy } = run;
+  const viewer = Privacy.viewer(privacy);
+  const t = g.table(state, viewer);
+  const s = el("div", "table");
+
+  const co = el("div", "callouts");
+  for (const c of t.callouts || []) {
+    const n = el("div", "callout");
+    n.append(el("span", "k", c.k), el("span", "v", String(c.v)));
+    co.append(n);
+  }
+  s.append(co);
+
+  if (!g.solo) {
+    const opp = el("div", "opponents");
+    for (const seat of state.seats) {
+      const o = el("div", "opp" + (state.active === seat ? " active" : ""));
+      o.append(el("span", "nm", state.names[seat]));
+      o.append(el("span", "ct", t.counts ? t.counts(seat) : ""));
+      opp.append(o);
+    }
+    s.append(opp);
+  }
+
+  const felt = el("div", "felt");
+  if (t.tableau) felt.append(tableauView(run, t));
+  else {
+    const zs = el("div", "zones");
+    for (const z of t.zones || []) {
+      const zn = el("div", "zone");
+      const pile = el("div", "pile row");
+      pile.style.gap = z.spread ? "6px" : "0";
+      if (!z.cards.length) { pile.classList.add("empty"); pile.style.width = "56px"; pile.style.height = "78px"; }
+      z.cards.forEach((vc, i) => {
+        const c = cardEl(vc, 56, { tilt: z.spread ? seededTilt(vc.id ?? i, 4) : 0 });
+        if (!z.spread && i) c.style.marginLeft = "-40px";
+        pile.append(c);
+      });
+      if (z.action) { pile.style.cursor = "pointer"; pile.onclick = () => act(z.action); }
+      zn.append(pile);
+      if (z.label) zn.append(el("div", "zlabel", z.label));
+      zs.append(zn);
+    }
+    felt.append(zs);
+  }
+  s.append(felt);
+
+  if (run.log.length) {
+    const lg = el("div", "log");
+    for (const line of run.log.slice(-3)) lg.append(el("div", null, line));
+    s.append(lg);
+  }
+
+  s.append(handbar(run, t, viewer));
+  return s;
+}
+
+function handbar(run, t, viewer) {
+  const { g, state } = run;
+  const bar = el("div", "handbar");
+  const legal = viewer === null ? [] : g.legal(state, viewer);
+  const canAct = Privacy.acceptsInput(run.privacy) && !run.busy && legal.length > 0;
+
+  if (t.handHint && canAct) bar.append(el("div", "label", t.handHint));
+
+  if (viewer !== null) {
+    const hand = B.at(state.board, Z.hand(viewer)).map((id) => B.visible(state.board, id, viewer));
+    const wrapH = el("div", "hand");
+    const n = hand.length || 1;
+    const w = Math.max(40, Math.min(62, Math.floor((Math.min(window.innerWidth - 40, 560) - 20) / Math.max(4, n) + 16)));
+    const overlap = n > 7 ? -Math.round(w * .42) : n > 5 ? -Math.round(w * .22) : 4;
+    hand.forEach((vc, i) => {
+      const selected = (t.selected || []).includes(vc.id);
+      const playable = t.noCardPlay ? false
+        : t.askMode ? legal.some((a) => a.t === "ask" && a.rank === vc.rank)
+        : legal.some((a) => a.id === vc.id);
+      const dim = t.dimUnplayable && vc.known ? t.dimUnplayable(vc) : false;
+      const c = cardEl(vc, w, {
+        sel: selected, dim: dim && !playable, playable: playable && canAct,
+        tilt: selected ? 0 : seededTilt(vc.id, 2),
+        play: canAct && playable ? () => {
+          if (t.askMode) { askFor(run, vc.rank); return; }
+          const a = legal.find((x) => x.id === vc.id);
+          if (a) act(a);
+        } : null,
+      });
+      if (i) c.style.marginLeft = overlap + "px";
+      c.style.zIndex = String(i);
+      wrapH.append(c);
+    });
+    if (hand.length) bar.append(wrapH);
+  }
+
+  const acts = el("div", "actions");
+  const seen = new Set();
+  for (const a of legal) {
+    if (a.id !== undefined && !t.noCardPlay) continue;
+    const label = actionLabel(g, state, a);
+    if (!label || seen.has(label)) continue;
+    seen.add(label);
+    const b = el("button", "btn" + (a.t === "fold" || a.t === "pass" || a.t === "believe" ? " ghost" : ""), label);
+    b.disabled = !canAct;
+    b.onclick = () => act(a);
+    acts.append(b);
+  }
+  if (acts.children.length) bar.append(acts);
+
+  if (viewer === null && !run.sealArmed && !run.busy) {
+    bar.append(el("div", "label", "Waiting…"));
+  }
+  return bar;
+}
+
+function actionLabel(g, st, a) {
+  switch (a.t) {
+    case "play": return g.id === "president" || g.id === "cheat" ? "Play selected" : null;
+    case "lay": return "Put them down";
+    case "select": return null;
+    case "clear": return "Clear";
+    case "draw": return g.id === "klondike" ? "Turn" : "Draw a card";
+    case "redeal": return "Turn the pile over";
+    case "pass": return "Pass";
+    case "confirmPass": return "Pass these three";
+    case "suit": return SUIT_GLYPH[a.suit] + " " + SUIT_NAME[a.suit];
+    case "believe": return "Believe them";
+    case "challenge": return "Call it";
+    case "flip": return "Flip";
+    case "ok": return "Continue";
+    case "refill": return "Draw back in";
+    case "check": return "Check";
+    case "fold": return "Fold";
+    case "call": return `Call ${a.amount}`;
+    case "raise": return `Raise to ${a.amount + (st.committed[st.active] || 0)}`;
+    case "allin": return `All in (${a.amount})`;
+    case "ask": return null;
+    case "move": return null;
+    default: return null;
+  }
+}
+
+/* Go Fish asks a person, so tapping a rank opens the choice of who. */
+function askFor(run, rank) {
+  const { g, state } = run;
+  const viewer = Privacy.viewer(run.privacy);
+  const targets = g.legal(state, viewer).filter((a) => a.t === "ask" && a.rank === rank);
+  if (!targets.length) return;
+  if (targets.length === 1) return act(targets[0]);
+  const sheet = el("div", "seal");
+  sheet.style.background = "var(--ground)";
+  sheet.style.color = "var(--on-ground)";
+  sheet.append(el("div", "eyebrow", `Asking for ${RANK_NAME[rank].toLowerCase()}s`));
+  sheet.append(el("h2", "poster h-m", "Who has them?"));
+  const list = el("div", "stack"); list.style.gap = "var(--s2)";
+  for (const a of targets) {
+    const b = el("button", "btn wide", state.names[a.target]);
+    b.onclick = () => { sheet.remove(); act(a); };
+    list.append(b);
+  }
+  const cancel = el("button", "btn ghost wide", "Never mind");
+  cancel.onclick = () => sheet.remove();
+  sheet.append(list, cancel);
+  document.body.append(sheet);
+}
+
+/* ── Klondike tableau ────────────────────────────────────────────── */
+function tableauView(run, t) {
+  const { g, state } = run;
+  const wrapT = el("div", "stack");
+  wrapT.style.gap = "var(--s4)";
+  wrapT.style.width = "100%";
+
+  const top = el("div", "row");
+  top.style.cssText = "gap:var(--s3);justify-content:space-between;width:100%;flex-wrap:wrap";
+  for (const z of t.zones) {
+    const zn = el("div", "zone");
+    const pile = el("div", "pile");
+    if (!z.cards.length) { pile.classList.add("empty"); pile.style.width = "44px"; pile.style.height = "62px"; }
+    z.cards.forEach((vc) => {
+      const isSel = run.pick === vc.id;
+      pile.append(cardEl(vc, 44, {
+        sel: isSel,
+        play: z.pick || z.foundation !== undefined ? () => selectOrMove(run, vc, z) : null,
+      }));
+    });
+    if (z.action) { pile.style.cursor = "pointer"; pile.onclick = () => act(z.action); }
+    if (z.foundation !== undefined && !z.cards.length) pile.onclick = () => selectOrMove(run, null, z);
+    zn.append(pile);
+    if (z.label) zn.append(el("div", "zlabel", z.label));
+    top.append(zn);
+  }
+  wrapT.append(top);
+
+  const cols = el("div", "row");
+  cols.style.cssText = "gap:4px;align-items:flex-start;width:100%;justify-content:center";
+  for (let col = 0; col < 7; col++) {
+    const c = el("div", "stack");
+    c.style.cssText = "gap:0;min-width:40px;align-items:center";
+    const ids = B.at(state.board, Z.tableau(col));
+    if (!ids.length) {
+      const slot = el("div", "pile empty");
+      slot.style.cssText = "width:40px;height:56px";
+      slot.onclick = () => selectOrMove(run, null, { tab: col });
+      c.append(slot);
+    }
+    ids.forEach((id, i) => {
+      const vc = B.visible(state.board, id, 0);
+      const n = cardEl(vc, 40, {
+        sel: run.pick === id,
+        play: () => selectOrMove(run, vc.known ? vc : { id }, { tab: col }),
+      });
+      if (i) n.style.marginTop = state.board.up.has(id) ? "-38px" : "-46px";
+      n.style.zIndex = String(i);
+      c.append(n);
+    });
+    cols.append(c);
+  }
+  wrapT.append(cols);
+  return wrapT;
+}
+function selectOrMove(run, vc, z) {
+  const { g, state } = run;
+  const legal = g.legal(state);
+  if (run.pick !== null && run.pick !== undefined) {
+    const to = z.foundation !== undefined ? Z.foundation(z.foundation) : Z.tableau(z.tab);
+    const m = legal.find((a) => a.t === "move" && a.id === run.pick && a.to === to);
+    run.pick = null;
+    if (m) { act(m); return; }
+    render(); return;
+  }
+  if (!vc || !vc.known) { render(); return; }
+  const any = legal.some((a) => a.t === "move" && a.id === vc.id);
+  run.pick = any ? vc.id : null;
+  if (!any) toast("That card has nowhere to go.");
+  render();
+}
+
+/* ── The seal ────────────────────────────────────────────────────── */
+function viewSeal() {
+  const run = App.run;
+  const name = run.state.names[run.privacy.next];
+  const s = el("div", "seal armed");
+  s.append(el("div", "eyebrow", "Pass the device"));
+  const who = el("h1", "poster who", name);
+  s.append(who);
+  s.append(el("p", "note", "Everything from the last turn has been cleared. Hand the device over before you tap."));
+  const b = el("button", "btn", `I'm ${name}`);
+  b.onclick = () => {
+    Privacy.confirm(run.privacy);
+    run.sealArmed = false;
+    render();
+    settle();
+  };
+  s.append(b);
+  return s;
+}
+
+/* ── Result ──────────────────────────────────────────────────────── */
+function viewResult() {
+  const run = App.run;
+  const { state } = run;
+  const d = state.done;
+  const s = el("div", "screen result");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+
+  const me = run.seats.findIndex((x) => !x.ai);
+  const iWon = me >= 0 && d.winners.includes(me);
+  const banner = el("div", "banner stack");
+  banner.style.gap = "var(--s3)";
+  banner.append(el("div", "label", run.g.name));
+  const headline = d.winners.length > 1
+    ? "Split."
+    : me >= 0 ? (iWon ? "You win." : `${state.names[d.winners[0]]} wins.`)
+      : `${state.names[d.winners[0]]} wins.`;
+  const h = el("h1", "poster h-xl", headline);
+  if (iWon) h.style.color = "var(--accent)";
+  banner.append(h);
+
+  const tbl = el("table", "scoretable");
+  const head = el("tr");
+  head.append(el("th", null, "Player"), el("th", null, d.lowWins ? "Points (low wins)" : "Score"));
+  tbl.append(head);
+  const order = [...state.seats].sort((a, b) => d.lowWins ? (d.scores[a] - d.scores[b]) : (d.scores[b] - d.scores[a]));
+  for (const seat of order) {
+    const tr = el("tr", d.winners.includes(seat) ? "win" : "");
+    tr.append(el("td", null, state.names[seat]), el("td", null, String(d.scores[seat])));
+    tbl.append(tr);
+  }
+
+  const again = el("button", "btn wide", "Play again");
+  again.onclick = () => startGame(run.g, run.seats, run.difficulty);
+  const back = el("button", "btn ghost wide", "Back to the library");
+  back.onclick = () => { App.run = null; App.view = "library"; render(); };
+
+  wrap.append(banner, tbl, el("div", "stack"), again, back);
+  s.append(wrap);
+  return s;
+}
+
+/* ── Render ──────────────────────────────────────────────────────── */
+function render() {
+  const run = App.run;
+  const inGame = !!run && App.view === "table";
+  document.getElementById("quitBtn").classList.toggle("hidden", !inGame && App.view !== "setup");
+  document.querySelectorAll(".seal").forEach((n) => n.remove());
+  screen.innerHTML = "";
+  if (App.view === "setup" && App.game) { screen.append(viewSetup()); return; }
+  if (!run) { App.view = "library"; screen.append(viewLibrary()); return; }
+  if (App.view === "result") { screen.append(viewResult()); return; }
+  screen.append(viewTable());
+  if (run.sealArmed) document.body.append(viewSeal());
+}
+render();
+
+/* Backgrounding the app re-seals it: coming back needs another
+   confirmation, because we cannot know who is holding it now. */
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "hidden") return;
+  const run = App.run;
+  if (!run || App.view !== "table") return;
+  if (Privacy.shield(run.privacy)) { run.sealArmed = true; render(); }
+});
+window.addEventListener("resize", () => { if (App.run && App.view === "table") render(); });
+</script>
