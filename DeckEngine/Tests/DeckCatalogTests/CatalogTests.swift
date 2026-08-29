@@ -157,12 +157,20 @@ final class GameRegistryTests: XCTestCase {
 /// Most games nominate an active seat; Speed does not, because both players may
 /// move at once. Everything that drives a session generically has to cope with
 /// both, which is exactly what this models.
-private func nextMove(in session: GameSessionProtocol) -> ActionToken? {
+/// Picks an arbitrary legal move rather than always the first.
+///
+/// Always taking the head of the list is one pathological line, not play:
+/// in Spades it bids nil every hand and fails it, so both teams run further
+/// and further negative and neither ever reaches the target. Seeded, so the
+/// sweep stays reproducible.
+private func nextMove(in session: GameSessionProtocol,
+                      using generator: inout SeededGenerator) -> ActionToken? {
     if let seat = session.activeSeat {
-        return session.availableActions(for: seat).first
+        return session.availableActions(for: seat).randomElement(using: &generator)
     }
     for seat in session.seating.ids {
-        if let token = session.availableActions(for: seat).first { return token }
+        let offered = session.availableActions(for: seat)
+        if let token = offered.randomElement(using: &generator) { return token }
     }
     return nil
 }
@@ -189,8 +197,9 @@ final class CatalogSessionTests: XCTestCase {
             session.settle()
 
             var moves = 0
+            var picker = SeededGenerator(seed: 20260828)
             while session.result == nil && moves < 6000 {
-                guard let token = nextMove(in: session) else {
+                guard let token = nextMove(in: session, using: &picker) else {
                     XCTFail("\(name) offered nobody a move after \(moves)")
                     break
                 }

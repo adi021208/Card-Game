@@ -26,6 +26,8 @@ enum AgentHarness {
         var moves: Int
         var decisions: Int
         var longestDecision: TimeInterval
+        /// Why the run stopped, so a failing agent test says something useful.
+        var stop: String = "reached a result"
     }
 
     @discardableResult
@@ -72,7 +74,14 @@ enum AgentHarness {
             _ = rules.apply(action, to: &state, generator: &generator)
             moves += 1
         }
-        return Run(state: state, moves: moves, decisions: decisions, longestDecision: longest)
+        var stop = "reached a result"
+        if state.finalResult == nil {
+            stop = moves >= maximumMoves
+                ? "hit the \(maximumMoves)-move cap with the game still running"
+                : "stopped after \(moves) moves with no result"
+        }
+        return Run(state: state, moves: moves, decisions: decisions,
+                   longestDecision: longest, stop: stop)
     }
 
     static func profiles(_ ids: [AIPersonalityID],
@@ -258,7 +267,7 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: HeartsAgent.choose,
                                     profiles: AgentHarness.profiles(cast))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
         XCTAssertGreaterThan(run.decisions, 40)
     }
 
@@ -269,7 +278,7 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: SpadesAgent.choose,
                                     profiles: AgentHarness.profiles(cast))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
     }
 
     func testEuchreAgentsPlayALegalGameToTheEnd() {
@@ -279,7 +288,7 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: EuchreAgent.choose,
                                     profiles: AgentHarness.profiles(cast))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
     }
 
     func testCrazyEightsAgentsPlayALegalGameToTheEnd() {
@@ -289,18 +298,25 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: CrazyEightsAgent.choose,
                                     profiles: AgentHarness.profiles(cast))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
     }
 
     func testPokerAgentsPlayALegalGameToTheEnd() {
         let seating = AgentHarness.seating([.hal, .pedro, .calvin, .scarlet, .rohan, .shayla])
-        let configuration = GameConfiguration(gameID: .texasHoldem, seating: seating, seed: 5678)
+        // No hand limit means the game is over only when one of six agents
+        // holds all six thousand chips, which can outlast any move cap. Bound it
+        // the way a tournament does.
+        let configuration = GameConfiguration(gameID: .texasHoldem, seating: seating,
+                                              options: ["handLimit": 60,
+                                                        "blindIncreaseEvery": 6,
+                                                        "blindIncreasePercent": 50],
+                                              seed: 5678)
         let run = AgentHarness.play(TexasHoldemRules(),
                                     configuration: configuration,
                                     agent: PokerAgent.choose,
                                     profiles: AgentHarness.profiles([.hal, .pedro, .calvin,
                                                                      .scarlet, .rohan, .shayla]))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
         XCTAssertLessThan(run.longestDecision, 2.0,
                           "no single poker decision may stall the table")
     }
@@ -312,7 +328,7 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: GinRummyAgent.choose,
                                     profiles: AgentHarness.profiles([.rohan, .shayla]))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
     }
 
     func testRummyAgentsPlayALegalGameToTheEnd() {
@@ -322,7 +338,7 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: RummyAgent.choose,
                                     profiles: AgentHarness.profiles([.hal, .honey, .calvin]))
-        XCTAssertNotNil(run.state.finalResult)
+        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
     }
 
     func testPresidentCheatGoFishAndWarAgentsAllFinish() {

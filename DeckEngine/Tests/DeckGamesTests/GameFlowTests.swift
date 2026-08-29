@@ -41,6 +41,19 @@ enum TestTable {
     /// A blunt driver, but it proves the rules never deadlock, never offer an
     /// illegal move, and always reach a result.
     @discardableResult
+    /// Plays a legal move at random rather than always the first.
+    ///
+    /// "The game ends however it is played" is the property a full-game test
+    /// wants. Always taking the head of the list is not play, it is one
+    /// pathological line: in Spades it bids nil every hand and fails it, in
+    /// Gin Rummy it takes the discard every turn whatever the card is, so the
+    /// hand never improves and nobody can ever knock. Both run legally for
+    /// ever without approaching a target score. Seeded, so it is reproducible.
+    static func anyLegal<R: GameRules>(seed: UInt64) -> (R.State, [R.Action]) -> R.Action {
+        var generator = SeededGenerator(seed: seed)
+        return { _, legal in legal.randomElement(using: &generator) ?? legal[0] }
+    }
+
     static func playOut<R: GameRules>(_ rules: R,
                                       configuration: GameConfiguration,
                                       maximumMoves: Int = 6000,

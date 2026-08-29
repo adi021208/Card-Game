@@ -199,9 +199,15 @@ final class GinRummyTests: XCTestCase {
         // nil-nil, redeals, and the target score is never approached. Knock at
         // the first opportunity instead. It is impatient, but it is a real way
         // to play, and it is the only driver here that can end a Gin game.
-        let outcome = TestTable.playOut(rules, configuration: configuration) { _, legal in
+        // Knock the moment it is legal, and otherwise play arbitrarily rather
+        // than always taking the head of the list — which means taking the
+        // discard every turn whatever it is, so the hand never improves and the
+        // knock never becomes legal at all.
+        let otherwise: (GinRummyRules.State, [GinRummyRules.Action]) -> GinRummyRules.Action
+            = TestTable.anyLegal(seed: 31337)
+        let outcome = TestTable.playOut(rules, configuration: configuration) { state, legal in
             for action in legal { if case .knock = action { return action } }
-            return legal[0]
+            return otherwise(state, legal)
         }
         let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(result.winners.count, 1)
