@@ -109,9 +109,13 @@ public enum MeldSolver {
                             points: (Card) -> Int = CardScoring.deadwoodPoints) -> MeldSolution {
         let melds = enumerateMelds(hand)
         guard !melds.isEmpty else {
+            // Sorted here as well as below: a hand that melds nothing still
+            // wants its worst card first, which is the whole reason callers
+            // read this list.
+            let loose = hand.sorted { points($0) > points($1) }
             return MeldSolution(melds: [],
-                                deadwood: hand,
-                                deadwoodPoints: hand.reduce(0) { $0 + points($1) })
+                                deadwood: loose,
+                                deadwoodPoints: loose.reduce(0) { $0 + points($1) })
         }
 
         // Index the hand so each meld becomes a bitmask.

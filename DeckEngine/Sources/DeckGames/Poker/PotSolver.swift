@@ -37,6 +37,9 @@ public enum PotSolver {
 
         var pots: [Pot] = []
         var previousLevel = 0
+        // Chips at a level nobody still in the hand can contest. They are
+        // real money and must end up in somebody's stack.
+        var orphaned = 0
         for level in levels {
             var amount = 0
             for (_, contribution) in positive {
@@ -49,17 +52,30 @@ public enum PotSolver {
             let eligible = contenders
                 .filter { (contributions[$0] ?? 0) >= level }
                 .sorted()
-            // Money nobody can win (everyone who could contest it folded) still
-            // has to go somewhere; it is folded into the previous pot.
             if eligible.isEmpty {
+                // Fold it into the pot below, or carry it up to the next one.
+                // Dropping it — which is what happens if you reach for a
+                // previous pot that is not there — is chips leaving the table.
                 if var last = pots.popLast() {
                     last.amount += amount
                     pots.append(last)
+                } else {
+                    orphaned += amount
                 }
             } else {
-                pots.append(Pot(amount: amount, contenders: eligible, isSidePot: !pots.isEmpty))
+                pots.append(Pot(amount: amount + orphaned,
+                                contenders: eligible,
+                                isSidePot: !pots.isEmpty))
+                orphaned = 0
             }
             previousLevel = level
+        }
+        // Every level was uncontested: the blinds of players who all folded,
+        // say. It goes to whoever is left, or back to the people who put it
+        // in if the hand somehow has nobody in it.
+        if orphaned > 0 {
+            let takers = contenders.sorted().isEmpty ? positive.keys.sorted() : contenders.sorted()
+            pots.append(Pot(amount: orphaned, contenders: takers, isSidePot: !pots.isEmpty))
         }
         return pots
     }

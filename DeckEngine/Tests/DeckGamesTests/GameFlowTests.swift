@@ -145,7 +145,12 @@ final class CrazyEightsTests: XCTestCase {
         XCTAssertNil(rules.rejection(for: .playWild(eight.id, .clubs), in: state))
 
         let actions = rules.legalActions(in: state, for: seat)
-        let wildActions = actions.filter { if case .playWild = $0 { return true }; return false }
+        // Scoped to this eight: load appends, and the dealt hand may hold an
+        // eight of its own, which would legitimately offer four more.
+        let wildActions = actions.filter {
+            if case let .playWild(id, _) = $0 { return id == eight.id }
+            return false
+        }
         XCTAssertEqual(wildActions.count, 4, "every suit is offered for the eight")
     }
 
