@@ -56,6 +56,18 @@ ever plain inside your own network.
 address instead. It works the same; it just won't reach anybody who isn't
 in the building.
 
+## On an iPhone
+
+Open the address in Safari, then **Share → Add to Home Screen**. It gets
+its own icon and opens without the browser bars, which is worth the twenty
+seconds: a card table wants the whole screen.
+
+The page is built for a phone held either way. Cards size themselves to
+the screen you are on — Spider's ten columns fit an iPhone SE, and turning
+the phone sideways makes them bigger rather than wider. It does not bounce,
+zoom on a double tap, or wait to find out whether you meant to tap twice,
+and it keeps its content clear of the notch and the home indicator.
+
 ## Playing
 
 One person taps **Play with friends** → **Start a table** and reads out the

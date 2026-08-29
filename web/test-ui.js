@@ -191,6 +191,42 @@ for (const id of Object.keys(GAMES)) {
   ok(screenText().length > 0, `${id}: the screen is never blank`);
 }
 
+/* ── A solitaire must put every one of its columns on the screen ────
+ * Spider deals ten columns and FreeCell eight. A renderer that assumes
+ * Klondike's seven drops the rest without any error, and the game simply
+ * cannot be won. Count what reaches the DOM against what the board holds.
+ */
+for (const id of ["klondike", "freecell", "spider"]) {
+  api.App.run = null; api.App.game = null; api.App.view = "library";
+  api.render(); drain();
+  const tile = shelfTiles().find((n) => n.textContent.includes(GAMES[id].name));
+  click(tile); click(byText("Deal")); drain();
+
+  const run = api.App.run;
+  ok(!!run, `${id}: dealt`);
+  if (!run) continue;
+
+  const t = GAMES[id].table(run.state, null);
+  const nCols = t.columns || 7;
+  let inPlay = 0;
+  for (let c = 0; c < nCols; c++) inPlay += B.at(run.state.board, Z.tableau(c)).length;
+  ok(inPlay > 0, `${id}: the board deals into ${nCols} columns`);
+  for (const z of t.zones) inPlay += z.cards.length;
+
+  const felt = all(body).find((n) => n.classList.contains("felt") && n.classList.contains("tableau"));
+  ok(!!felt, `${id}: the tableau felt is on screen`);
+  const drawn = felt ? all(felt).filter((n) => n.classList.contains("card")).length : 0;
+  ok(drawn === inPlay,
+     `${id}: every card in play is drawn — board holds ${inPlay}, screen shows ${drawn}`);
+
+  // And an empty column still has to be a target you can drop onto.
+  let empties = 0;
+  for (let c = 0; c < nCols; c++) if (!B.at(run.state.board, Z.tableau(c)).length) empties++;
+  const slots = felt ? all(felt).filter((n) => n.classList.contains("pile") && n.classList.contains("empty")) : [];
+  ok(slots.length >= empties, `${id}: empty columns get a slot to drop onto`);
+}
+api.App.run = null; api.App.game = null; api.App.view = "library"; api.render(); drain();
+
 /* ── The screens that show what you have done ──────────────────────── */
 {
   api.App.run = null; api.App.game = null; api.App.remote = null;

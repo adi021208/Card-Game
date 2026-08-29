@@ -50,14 +50,21 @@
 }
 
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; overscroll-behavior-y: none; }
 body {
   margin: 0; background: var(--ground); color: var(--on-ground);
   font-family: var(--display); font-variation-settings: "wdth" 100;
   -webkit-text-size-adjust: 100%; overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  /* A card table should not bounce, zoom on a double tap, or wait 300ms
+     to find out whether you meant to. */
+  touch-action: manipulation;
 }
-button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button {
+  font: inherit; color: inherit; background: none; border: 0; cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* Poster type: black weight, compressed width, tracked in tight. */
@@ -76,8 +83,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .num { font-variant-numeric: tabular-nums; font-weight: 800; }
 
-#app { min-height: 100%; display: flex; flex-direction: column; }
-.screen { flex: 1; display: flex; flex-direction: column; padding: var(--page); gap: var(--s5); }
+#app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+#screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.screen {
+  flex: 1; display: flex; flex-direction: column; gap: var(--s5);
+  padding: var(--page) max(var(--page), env(safe-area-inset-right, 0px))
+           calc(var(--page) + env(safe-area-inset-bottom, 0px))
+           max(var(--page), env(safe-area-inset-left, 0px));
+}
 .wrap { width: 100%; max-width: 620px; margin: 0 auto; }
 .stack { display: flex; flex-direction: column; }
 .row { display: flex; align-items: center; }
@@ -85,17 +98,21 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ─── Chrome ─────────────────────────────────────────────────────── */
 .topbar {
   display: flex; align-items: center; gap: var(--s3);
-  padding: var(--s3) var(--page); border-bottom: 1px solid var(--rule);
+  padding: max(var(--s3), env(safe-area-inset-top, 0px))
+           max(var(--page), env(safe-area-inset-right, 0px))
+           var(--s3)
+           max(var(--page), env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--rule);
   position: sticky; top: 0; background: var(--ground); z-index: 20;
 }
 .topbar .mark { font-weight: 900; font-variation-settings: "wdth" 62, "wght" 900;
   letter-spacing: .01em; font-size: 22px; }
 .topbar .spacer { flex: 1; }
 .icon-btn {
-  width: 40px; height: 40px; display: grid; place-items: center;
+  width: 44px; height: 44px; display: grid; place-items: center;
   border-radius: var(--r-btn); font-size: 18px;
 }
-.icon-btn:hover { background: var(--ground-2); }
+@media (hover: hover) { .icon-btn:hover { background: var(--ground-2); } }
 
 /* ─── Buttons ────────────────────────────────────────────────────── */
 .btn {
@@ -108,7 +125,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .btn:active { transform: translateY(2px); }
 .btn.ghost { background: transparent; color: var(--on-ground); box-shadow: inset 0 0 0 2px var(--rule); }
-.btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--on-ground); }
+@media (hover: hover) { .btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--on-ground); } }
 .btn.wide { width: 100%; }
 .btn[disabled] { opacity: .35; pointer-events: none; }
 
@@ -157,7 +174,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .seg button[aria-pressed="true"] { background: var(--on-ground); color: var(--ground); }
 
 /* ─── Table ──────────────────────────────────────────────────────── */
-.table { flex: 1; display: flex; flex-direction: column; gap: var(--s3); padding: var(--s3) var(--s3) var(--s4); }
+.table {
+  flex: 1; display: flex; flex-direction: column; gap: var(--s3);
+  padding: var(--s3) max(var(--s3), env(safe-area-inset-right, 0px))
+           calc(var(--s4) + env(safe-area-inset-bottom, 0px))
+           max(var(--s3), env(safe-area-inset-left, 0px));
+}
 .callouts { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); align-items: baseline; min-height: 26px; }
 .callout .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--on-ground-mute); display: block; }
@@ -177,6 +199,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--s3); position: relative; overflow: hidden;
 }
+/* A solitaire layout is taller than the felt: let it scroll, from the top. */
+.felt.tableau { justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
 .zones { display: flex; flex-wrap: wrap; gap: var(--s5); justify-content: center; align-items: flex-start; }
 .zone { display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
 .zone .zlabel { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
@@ -186,7 +210,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border: 2px dashed var(--rule); border-radius: 8px;
 }
 .handbar { display: flex; flex-direction: column; gap: var(--s3); }
-.hand { display: flex; justify-content: center; min-height: 108px; padding-top: var(--s3); }
+.hand { display: flex; justify-content: center; min-height: 108px; padding: var(--s3) 0 var(--s2); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .actions .btn { flex: 1 1 auto; min-height: 46px; font-size: 13px; padding: 0 var(--s4); }
 
@@ -194,7 +218,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .card {
   position: relative; border-radius: 7px; flex: none;
   background: var(--card-face); color: var(--card-ink);
-  box-shadow: 0 2px 0 var(--shadow); user-select: none;
+  box-shadow: 0 2px 0 var(--shadow);
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   transition: transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s ease;
 }
 .card.back { background: var(--card-back); }
@@ -209,7 +234,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border: 2px solid rgba(242,233,216,.5); display: grid; place-items: center;
   color: rgba(242,233,216,.85); font-weight: 900; }
 .card.play { cursor: pointer; }
-.card.play:hover { transform: translateY(-10px); }
+@media (hover: hover) { .card.play:hover { transform: translateY(-10px); } }
 .card.sel { transform: translateY(-16px) scale(1.04); box-shadow: 0 10px 0 var(--shadow); }
 .card.dim { opacity: .38; }
 .card.playable::after {
@@ -220,7 +245,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ─── Pass & Play seal ───────────────────────────────────────────── */
 .seal {
   position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
-  justify-content: center; gap: var(--s5); padding: var(--s6) var(--page);
+  justify-content: center; gap: var(--s5);
+  padding: calc(var(--s6) + env(safe-area-inset-top, 0px))
+           max(var(--page), env(safe-area-inset-right, 0px))
+           calc(var(--s6) + env(safe-area-inset-bottom, 0px))
+           max(var(--page), env(safe-area-inset-left, 0px));
   background: var(--accent); color: var(--on-accent);
 }
 .seal .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; opacity: .85; }
@@ -244,7 +273,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .log div { font-family: var(--mono); font-size: 11px; color: var(--on-ground-mute); }
 .log div:last-child { color: var(--on-ground); }
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 60;
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 60;
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
   background: var(--on-ground); color: var(--ground); padding: var(--s3) var(--s4);
   border-radius: var(--r-btn); font-size: 14px; font-weight: 600; max-width: 90vw;
 }
@@ -271,6 +301,19 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-size: 30px; text-transform: uppercase; line-height: .9; }
 .modepick .d { font-size: 14px; color: var(--on-ground-mute); line-height: 1.45; }
 .hidden { display: none !important; }
+/* A phone held sideways: about 350px of height once Safari takes its cut. */
+@media (orientation: landscape) and (max-height: 460px) {
+  :root { --page: 14px; --s5: 16px; --s6: 20px; --s7: 28px; --section: 24px; }
+  .topbar { position: static; }
+  .h-xl { font-size: clamp(34px, 9vw, 56px); }
+  .h-l  { font-size: clamp(28px, 7vw, 44px); }
+  .masthead { padding-top: var(--s3); }
+  .seal { gap: var(--s3); }
+  .seal .who { font-size: clamp(38px, 13vh, 76px); }
+  .hand { min-height: 84px; }
+  .felt { min-height: 130px; padding: var(--s3); }
+  .log { max-height: 44px; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
@@ -2570,6 +2613,7 @@ function tableFor(g, st, viewer) {
       : [],
     handHint: t.handHint || null, selected: t.selected || [],
     askMode: !!t.askMode, noCardPlay: !!t.noCardPlay, tableau: !!t.tableau,
+    columns: t.columns || 0,
   };
 }
 
@@ -3092,6 +3136,9 @@ function viewSetup() {
       chip.style.background = seat.ai ? `var(--${CAST.find((c) => c.id === seat.ai).colour})` : "";
       const input = el("input");
       input.value = seat.name; input.setAttribute("aria-label", `Player ${i + 1} name`);
+      input.setAttribute("autocorrect", "off");
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("enterkeyhint", "done");
       input.oninput = () => { seat.name = input.value; };
       const swap = el("button", "icon-btn", seat.ai ? "👤" : "🤖");
       swap.title = seat.ai ? "Make this a person" : "Make this an opponent";
@@ -3413,6 +3460,9 @@ function viewConnect() {
   nameIn.value = store.get("myname", "");
   nameIn.setAttribute("placeholder", "Your name");
   nameIn.setAttribute("aria-label", "Your name");
+  nameIn.setAttribute("autocorrect", "off");
+  nameIn.setAttribute("autocomplete", "nickname");
+  nameIn.setAttribute("enterkeyhint", "done");
   nameField.append(el("div", "label", "You are"), nameIn);
 
   const err = el("p", "label");
@@ -3438,6 +3488,13 @@ function viewConnect() {
   codeIn.setAttribute("placeholder", "CODE");
   codeIn.setAttribute("aria-label", "Table code");
   codeIn.setAttribute("maxlength", "4");
+  // Four letters read out across a room: no autocorrect, no lowercase
+  // keyboard, and a Go key rather than a return key.
+  codeIn.setAttribute("autocapitalize", "characters");
+  codeIn.setAttribute("autocorrect", "off");
+  codeIn.setAttribute("autocomplete", "off");
+  codeIn.setAttribute("spellcheck", "false");
+  codeIn.setAttribute("enterkeyhint", "go");
   codeField.append(el("div", "label", "Or join one"), codeIn);
 
   const join = el("button", "btn ghost wide", "Join the table");
@@ -3708,7 +3765,7 @@ function viewTable() {
     s.append(opp);
   }
 
-  const felt = el("div", "felt");
+  const felt = el("div", "felt" + (t.tableau ? " tableau" : ""));
   if (t.tableau && !m.remote) felt.append(tableauView(App.run, t));
   else {
     const zs = el("div", "zones");
@@ -3851,22 +3908,38 @@ function askFor(m, rank) {
   document.body.append(sheet);
 }
 
-/* ── Klondike tableau ────────────────────────────────────────────── */
+/* ── Solitaire tableau ───────────────────────────────────────────── */
+/* Klondike lays out seven columns, FreeCell eight and Spider ten, and
+   they all have to fit whatever screen you are holding. Everything below
+   is sized from the real viewport rather than assumed. */
 function tableauView(run, t) {
   const { g, state } = run;
+  const nCols = t.columns || 7;
   const wrapT = el("div", "stack");
   wrapT.style.gap = "var(--s4)";
   wrapT.style.width = "100%";
 
+  const room = Math.min(window.innerWidth, 620) - 76;   // table and felt padding
+  const gap = nCols > 8 ? 3 : 4;
+  const colW = Math.max(26, Math.min(46, Math.floor((room - (nCols - 1) * gap) / nCols)));
+  const colH = Math.round(colW / (2.5 / 3.5));
+  const topN = Math.max(1, t.zones.length);
+  const topGap = topN > 6 ? 6 : 10;
+  const topW = Math.max(24, Math.min(44, Math.floor((room - (topN - 1) * topGap) / topN)));
+
   const top = el("div", "row");
-  top.style.cssText = "gap:var(--s3);justify-content:space-between;width:100%;flex-wrap:wrap";
+  top.style.cssText = `gap:${topGap}px;justify-content:center;align-items:flex-start;width:100%;flex-wrap:wrap`;
   for (const z of t.zones) {
     const zn = el("div", "zone");
     const pile = el("div", "pile");
-    if (!z.cards.length) { pile.classList.add("empty"); pile.style.width = "44px"; pile.style.height = "62px"; }
+    if (!z.cards.length) {
+      pile.classList.add("empty");
+      pile.style.width = topW + "px";
+      pile.style.height = Math.round(topW / (2.5 / 3.5)) + "px";
+    }
     z.cards.forEach((vc) => {
       const isSel = run.pick === vc.id;
-      pile.append(cardEl(vc, 44, {
+      pile.append(cardEl(vc, topW, {
         sel: isSel,
         play: z.pick || z.foundation !== undefined ? () => selectOrMove(run, vc, z) : null,
       }));
@@ -3879,30 +3952,40 @@ function tableauView(run, t) {
   }
   wrapT.append(top);
 
+  /* Ten narrow columns still beat a phone on its narrowest edge, so the
+     row scrolls sideways rather than losing the columns off the end. */
   const cols = el("div", "row");
-  cols.style.cssText = "gap:4px;align-items:flex-start;width:100%;justify-content:center";
-  for (let col = 0; col < 7; col++) {
+  // A sideways scroller clips vertically too, so leave the lifted-card
+  // travel inside it as padding rather than losing the top of a card.
+  cols.style.cssText = "width:100%;overflow-x:auto;overflow-y:hidden;padding:18px 0 6px;margin-top:-18px";
+  const track = el("div", "row");
+  const spread = nCols * colW + (nCols - 1) * gap;
+  track.style.cssText = `gap:${gap}px;align-items:flex-start;padding-bottom:4px;` +
+    (spread <= room ? "margin:0 auto" : "margin:0");
+  for (let col = 0; col < nCols; col++) {
     const c = el("div", "stack");
-    c.style.cssText = "gap:0;min-width:40px;align-items:center";
+    c.style.cssText = `gap:0;min-width:${colW}px;align-items:center`;
     const ids = B.at(state.board, Z.tableau(col));
     if (!ids.length) {
       const slot = el("div", "pile empty");
-      slot.style.cssText = "width:40px;height:56px";
+      slot.style.cssText = `width:${colW}px;height:${colH}px`;
       slot.onclick = () => selectOrMove(run, null, { tab: col });
       c.append(slot);
     }
     ids.forEach((id, i) => {
       const vc = B.visible(state.board, id, 0);
-      const n = cardEl(vc, 40, {
+      const n = cardEl(vc, colW, {
         sel: run.pick === id,
         play: () => selectOrMove(run, vc.known ? vc : { id }, { tab: col }),
       });
-      if (i) n.style.marginTop = state.board.up.has(id) ? "-38px" : "-46px";
+      // A face-up card shows its index; a face-down one only needs an edge.
+      if (i) n.style.marginTop = -Math.round(colH * (state.board.up.has(id) ? .68 : .82)) + "px";
       n.style.zIndex = String(i);
       c.append(n);
     });
-    cols.append(c);
+    track.append(c);
   }
+  cols.append(track);
   wrapT.append(cols);
   return wrapT;
 }

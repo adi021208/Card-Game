@@ -310,7 +310,29 @@ function pageHtml() {
   const html = fs.readFileSync(HTML_PATH, "utf8");
   // Tell the page it is being served by a table, so it offers to play
   // with other devices as well as on this one.
-  return html.replace("<script>\n\"use strict\";", "<script>window.DECK_SERVER = true;</script>\n<script>\n\"use strict\";");
+  const body = html.replace("<script>\n\"use strict\";", "<script>window.DECK_SERVER = true;</script>\n<script>\n\"use strict\";");
+  // index.html is a fragment: it carries no document shell so it can also
+  // be published as a hosted page. Serving it to a phone needs one, and
+  // the viewport line is the difference between a card table and a
+  // 980px-wide postage stamp.
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2E9D8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0D0C" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DECK">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+${body}
+</body>
+</html>
+`;
 }
 
 const ROUTES = {
