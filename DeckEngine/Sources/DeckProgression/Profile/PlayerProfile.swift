@@ -199,7 +199,7 @@ public struct HistoryState: Codable, Sendable, PersistablePayload {
 }
 
 /// Everything else the player has chosen.
-public struct SettingsState: Codable, Sendable, PersistablePayload {
+public struct SettingsState: Codable, Equatable, Sendable, PersistablePayload {
     public static let schemaVersion = 1
     public static let storeKey = "deck.settings"
 
