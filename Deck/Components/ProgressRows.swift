@@ -84,13 +84,11 @@ public struct AchievementRow: View {
     }
 
     private var title: String {
-        String(localized: String.LocalizationValue(definition.titleKey),
-               defaultValue: String.LocalizationValue(CalloutRow.humanised(definition.titleKey)))
+        String.deck(definition.titleKey, or: CalloutRow.humanised(definition.titleKey))
     }
 
     private var detail: String {
-        String(localized: String.LocalizationValue(definition.descriptionKey),
-               defaultValue: String.LocalizationValue(CalloutRow.humanised(definition.descriptionKey)))
+        String.deck(definition.descriptionKey, or: CalloutRow.humanised(definition.descriptionKey))
     }
 }
 

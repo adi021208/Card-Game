@@ -46,8 +46,7 @@ public struct RejectionBanner: View {
     }
 
     private var text: String {
-        let format = String(localized: String.LocalizationValue(reason.localizationKey),
-                            defaultValue: String.LocalizationValue(reason.englishExplanation))
+        let format = String.deck(reason.localizationKey, or: reason.englishExplanation)
         return CalloutRow.interpolate(format, arguments: reason.arguments)
     }
 }
@@ -106,8 +105,7 @@ public struct HintCard: View {
     }
 
     private var text: String {
-        let format = String(localized: String.LocalizationValue(hint.messageKey),
-                            defaultValue: String.LocalizationValue(hint.english))
+        let format = String.deck(hint.messageKey, or: hint.english)
         return CalloutRow.interpolate(format, arguments: hint.arguments)
     }
 }
@@ -199,9 +197,7 @@ public struct MoveChoiceSheet: View {
     }
 
     private func labelText(_ token: ActionToken) -> String {
-        let format = String(localized: String.LocalizationValue(token.labelKey),
-                            defaultValue: String.LocalizationValue(
-                                CalloutRow.humanised(token.labelKey)))
+        let format = String.deck(token.labelKey, or: CalloutRow.humanised(token.labelKey))
         return CalloutRow.interpolate(format, arguments: token.labelArguments).uppercased()
     }
 }

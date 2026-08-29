@@ -1,4 +1,5 @@
 import SwiftUI
+import DeckCore
 import DeckProgression
 
 /// A boss's page.

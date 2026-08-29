@@ -43,8 +43,11 @@ public final class GameCoordinator {
     private let progress: ProgressStore
     private let settings: SettingsState
     private var attempt: ChallengeAttempt?
-    private var aiTask: Task<Void, Never>?
-    private var autoSaveTask: Task<Void, Never>?
+    /// Both are cancelled from `deinit`, which is nonisolated. Cancelling a
+    /// task handle is safe from any thread; both are assigned only on the
+    /// main actor.
+    private nonisolated(unsafe) var aiTask: Task<Void, Never>?
+    private nonisolated(unsafe) var autoSaveTask: Task<Void, Never>?
     private let cardBackID: String
 
     /// The seat the person holding the device is playing.

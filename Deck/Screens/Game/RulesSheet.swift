@@ -80,13 +80,9 @@ public struct RulesSheet: View {
         HStack(spacing: DeckSpace.l) {
             fact(String(localized: "rules.players", defaultValue: "Players"), playerText)
             fact(String(localized: "rules.length", defaultValue: "Length"),
-                 String(localized: String.LocalizationValue(definition.duration.localizationKey),
-                        defaultValue: String.LocalizationValue(
-                            CalloutRow.humanised(definition.duration.localizationKey))))
+                 String.deck(definition.duration.localizationKey, or: CalloutRow.humanised(definition.duration.localizationKey)))
             fact(String(localized: "rules.complexity", defaultValue: "Learning"),
-                 String(localized: String.LocalizationValue(definition.complexity.localizationKey),
-                        defaultValue: String.LocalizationValue(
-                            CalloutRow.humanised(definition.complexity.localizationKey))))
+                 String.deck(definition.complexity.localizationKey, or: CalloutRow.humanised(definition.complexity.localizationKey)))
         }
     }
 

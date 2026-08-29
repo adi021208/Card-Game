@@ -183,10 +183,8 @@ public enum CardNaming {
     public static func spoken(_ card: Card) -> String {
         switch card.kind {
         case let .standard(suit, rank):
-            let rankName = String(localized: String.LocalizationValue(rank.localizationKey),
-                                  defaultValue: String.LocalizationValue(rank.englishName))
-            let suitName = String(localized: String.LocalizationValue(suit.localizationKey),
-                                  defaultValue: String.LocalizationValue(suit.englishName))
+            let rankName = String.deck(rank.localizationKey, or: rank.englishName)
+            let suitName = String.deck(suit.localizationKey, or: suit.englishName)
             return String(format: String(localized: "card.name.format", defaultValue: "%@ of %@"),
                           rankName, suitName)
         case let .joker(colour):

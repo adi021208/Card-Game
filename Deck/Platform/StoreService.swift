@@ -74,7 +74,9 @@ public final class StoreService {
     private let progress: ProgressStore
     #if canImport(StoreKit)
     private var products: [String: Product] = [:]
-    private var updatesTask: Task<Void, Never>?
+    /// `deinit` is nonisolated and has to cancel this, and cancelling a
+    /// task handle is safe from any thread. Assigned only on the main actor.
+    private nonisolated(unsafe) var updatesTask: Task<Void, Never>?
     #endif
 
     public init(progress: ProgressStore) {
@@ -218,9 +220,13 @@ public final class StoreService {
                     let yearlyAsMonthly = storeProduct.price / 12
                     let ratio = 1 - (yearlyAsMonthly / monthlyPrice)
                     if ratio > 0.05 {
+                        // Prices are Decimal, which does not round; go through
+                        // Double for the percentage rather than the arithmetic
+                        // the compiler has to guess at.
+                        let percent = (NSDecimalNumber(decimal: ratio).doubleValue * 100).rounded()
                         saving = String(format: String(localized: "store.save",
                                                        defaultValue: "Save %d%%"),
-                                        Int((ratio * 100).rounded()))
+                                        Int(percent))
                     }
                 }
             }

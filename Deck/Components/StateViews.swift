@@ -160,8 +160,7 @@ public struct CalloutRow: View {
 
     /// Renders a callout's localised text with its arguments substituted.
     private func text(for callout: TableCallout) -> String {
-        let format = String(localized: String.LocalizationValue(callout.labelKey),
-                            defaultValue: String.LocalizationValue(fallback(for: callout)))
+        let format = String.deck(callout.labelKey, or: fallback(for: callout))
         return CalloutRow.interpolate(format, arguments: callout.arguments)
     }
 
@@ -185,8 +184,7 @@ public struct CalloutRow: View {
         var result = format
         for argument in arguments {
             let value = argument.contains(".")
-                ? String(localized: String.LocalizationValue(argument),
-                         defaultValue: String.LocalizationValue(Self.humanised(argument)))
+                ? String.deck(argument, or: Self.humanised(argument))
                 : argument
             if let range = result.range(of: "%@") {
                 result.replaceSubrange(range, with: value)

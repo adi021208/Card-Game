@@ -197,9 +197,7 @@ public struct GameScreen: View {
 
     private func phaseText(_ coordinator: GameCoordinator) -> String {
         let presentation = coordinator.presentation
-        let format = String(localized: String.LocalizationValue(presentation.phaseKey),
-                            defaultValue: String.LocalizationValue(
-                                CalloutRow.humanised(presentation.phaseKey)))
+        let format = String.deck(presentation.phaseKey, or: CalloutRow.humanised(presentation.phaseKey))
         return CalloutRow.interpolate(format, arguments: presentation.phaseArguments)
     }
 
@@ -249,9 +247,7 @@ public struct GameScreen: View {
     }
 
     private func label(for token: ActionToken) -> String {
-        let format = String(localized: String.LocalizationValue(token.labelKey),
-                            defaultValue: String.LocalizationValue(
-                                CalloutRow.humanised(token.labelKey)))
+        let format = String.deck(token.labelKey, or: CalloutRow.humanised(token.labelKey))
         return CalloutRow.interpolate(format, arguments: token.labelArguments).uppercased()
     }
 

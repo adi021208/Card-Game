@@ -234,8 +234,7 @@ public struct PileView: View {
         let known = cards.filter(\.isKnown).count
         let base: String
         if let title = slot.titleKey {
-            base = String(localized: String.LocalizationValue(title),
-                          defaultValue: String.LocalizationValue(slot.zone.kind.rawValue))
+            base = String.deck(title, or: slot.zone.kind.rawValue)
         } else {
             base = slot.zone.kind.rawValue
         }
