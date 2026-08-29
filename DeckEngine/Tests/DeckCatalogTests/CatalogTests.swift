@@ -196,9 +196,14 @@ final class CatalogSessionTests: XCTestCase {
             XCTAssertEqual(session.gameID, definition.id, "\(name) built the wrong session")
             session.settle()
 
+            // Generous, because arbitrary play is slow at the games that need a
+            // particular move to finish: Gin Rummy ends on a knock, which is only
+            // legal with ten deadwood or less and is then one option among a dozen
+            // discards, so a random hand takes a while to find one.
+            let moveLimit = 30_000
             var moves = 0
             var picker = SeededGenerator(seed: 20260828)
-            while session.result == nil && moves < 6000 {
+            while session.result == nil && moves < moveLimit {
                 guard let token = nextMove(in: session, using: &picker) else {
                     XCTFail("\(name) offered nobody a move after \(moves)")
                     break
@@ -223,7 +228,7 @@ final class CatalogSessionTests: XCTestCase {
             if definition.playerRange.upperBound > 1 {
                 XCTAssertNotNil(result, "\(name) never reached a result in \(moves) moves")
             } else {
-                XCTAssertEqual(moves, 6000,
+                XCTAssertEqual(moves, moveLimit,
                                "\(name) stopped early at \(moves) with no result — a solitaire "
                                + "should either be solved or still have something to offer")
             }

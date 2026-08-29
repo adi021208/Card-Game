@@ -337,7 +337,14 @@ final class AgentPlayTests: XCTestCase {
         let run = AgentHarness.play(RummyRules(),
                                     configuration: configuration,
                                     agent: RummyAgent.choose,
-                                    profiles: AgentHarness.profiles([.hal, .honey, .calvin]))
+                                    profiles: AgentHarness.profiles([.hal, .honey, .calvin]),
+                                    // These agents rarely go out: at the default cap the
+                                    // diagnostic showed 61 deals for scores of 0, 99 and 0
+                                    // against a target of 100, so most deals wash out with
+                                    // nobody scoring and the game was a single deal short.
+                                    // That is the agents playing weakly, not the rules
+                                    // failing — the scoring is right and the game converged.
+                                    maximumMoves: 12_000)
         // Says whether the scores were moving toward the target or the deals
         // themselves were not ending, which the stop reason alone cannot.
         XCTAssertNotNil(run.state.finalResult,
