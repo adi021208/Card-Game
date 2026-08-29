@@ -242,8 +242,10 @@ final class CatalogSessionTests: XCTestCase {
             let session = definition.makeSession(configuration)
             session.settle()
             // Take a handful of moves so the save is of a game in progress.
+            var picker = SeededGenerator(seed: 4242)
             for _ in 0..<6 {
-                guard session.result == nil, let token = nextMove(in: session) else { break }
+                guard session.result == nil,
+                      let token = nextMove(in: session, using: &picker) else { break }
                 try session.perform(token)
                 session.settle()
             }
