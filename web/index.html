@@ -2993,6 +2993,15 @@ const seededTilt = (id, spread = 3) => {
 };
 
 /* ── Cover art: a seeded screen-print composition per game ───────── */
+/* A press ink as rgba, so it can fade. Falls back to the near-black the
+   whole palette is built on if the token is not a plain hex. */
+function tint(hex, a) {
+  const h = String(hex).trim().replace("#", "");
+  const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+  const n = /^[0-9a-fA-F]{6}$/.test(full) ? parseInt(full, 16) : 0x0E0D0C;
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
 function coverArt(node, game) {
   const c = el("canvas");
   node.prepend(c);
@@ -3018,9 +3027,9 @@ function coverArt(node, game) {
     }
     g.globalAlpha = 1;
     for (let i = 0; i < 2; i++) {
-      const w = r.width * .34, h = w / (2.5 / 3.5);
+      const w = r.width * .32, h = w / (2.5 / 3.5);
       g.save();
-      g.translate(r.width * (.66 + i * .13), r.height * (.30 + i * .06));
+      g.translate(r.width * (.68 + i * .12), r.height * (.25 + i * .05));
       g.rotate((i ? 13 : -9) * Math.PI / 180);
       g.fillStyle = i ? hue : css.getPropertyValue("--cream").trim();
       g.globalAlpha = i ? .95 : .18;
@@ -3031,6 +3040,17 @@ function coverArt(node, game) {
       g.restore();
     }
     g.globalAlpha = 1;
+    /* The title sits on this art, so the art gives it a ground to sit on:
+       a block of the same ink deepening under the type, the way a poster
+       would print it rather than hoping the word lands on a dark patch. */
+    const grad = g.createLinearGradient ? g.createLinearGradient(0, r.height * .34, 0, r.height) : null;
+    if (grad && grad.addColorStop) {
+      grad.addColorStop(0, tint(ink, 0));
+      grad.addColorStop(.55, tint(ink, .74));
+      grad.addColorStop(1, tint(ink, .94));
+      g.fillStyle = grad;
+      g.fillRect(0, r.height * .34, r.width, r.height * .66);
+    }
   };
   paint();
   new ResizeObserver(paint).observe(node);
