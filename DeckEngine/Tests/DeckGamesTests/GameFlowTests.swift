@@ -49,7 +49,7 @@ enum TestTable {
     /// Gin Rummy it takes the discard every turn whatever the card is, so the
     /// hand never improves and nobody can ever knock. Both run legally for
     /// ever without approaching a target score. Seeded, so it is reproducible.
-    static func anyLegal<R: GameRules>(seed: UInt64) -> (R.State, [R.Action]) -> R.Action {
+    static func anyLegal<R: GameRules>(_ rules: R, seed: UInt64) -> (R.State, [R.Action]) -> R.Action {
         var generator = SeededGenerator(seed: seed)
         return { _, legal in legal.randomElement(using: &generator) ?? legal[0] }
     }

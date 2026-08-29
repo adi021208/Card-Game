@@ -207,7 +207,7 @@ final class SpadesTests: XCTestCase {
     func testAFullGameFinishes() throws {
         let configuration = TestTable.configuration(.spades, humans: 1, ai: 3, teams: true)
         let outcome = TestTable.playOut(rules, configuration: configuration,
-                                        chooser: TestTable.anyLegal(seed: 4242))
+                                        chooser: TestTable.anyLegal(rules, seed: 4242))
         let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertFalse(result.winners.isEmpty)
         XCTAssertEqual(result.winners.count, 2, "spades is won by a partnership")

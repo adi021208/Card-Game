@@ -155,7 +155,7 @@ final class GoFishTests: XCTestCase {
     func testAFullGameBooksAllThirteenRanks() throws {
         let configuration = TestTable.configuration(.goFish, humans: 1, ai: 2)
         let outcome = TestTable.playOut(rules, configuration: configuration,
-                                        chooser: TestTable.anyLegal(seed: 909))
+                                        chooser: TestTable.anyLegal(rules, seed: 909))
         let result = try XCTUnwrap(outcome.state.finalResult, "stopped because it \(outcome.stop)")
         XCTAssertEqual(outcome.state.totalBooks, 13, "all fifty-two cards end up in books")
         XCTAssertFalse(result.winners.isEmpty)
