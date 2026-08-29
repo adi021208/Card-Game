@@ -105,7 +105,7 @@ public struct SpiderRules: GameRules {
         guard let rank = card.rank else { return false }
         guard let top = state.board.top(of: column) else { return true }
         guard state.board.isFaceUp(top.id), let topRank = top.rank else { return false }
-        return rank.rawValue == topRank.rawValue - 1
+        return rank.aceLowValue == topRank.aceLowValue - 1
     }
 
     public func liftableRun(from card: CardID, in state: State) -> [CardID]? {
@@ -119,7 +119,7 @@ public struct SpiderRules: GameRules {
             if let previous {
                 guard let previousRank = previous.rank, let currentRank = current.rank,
                       previous.suit == current.suit,
-                      currentRank.rawValue == previousRank.rawValue - 1 else { return nil }
+                      currentRank.aceLowValue == previousRank.aceLowValue - 1 else { return nil }
             }
             previous = current
         }

@@ -95,14 +95,14 @@ public struct FreeCellRules: GameRules {
         guard let rank = card.rank, card.suit != nil else { return false }
         guard let top = state.board.top(of: foundation) else { return rank == .ace }
         guard top.suit == card.suit, let topRank = top.rank else { return false }
-        return rank.rawValue == topRank.rawValue + 1
+        return rank.aceLowValue == topRank.aceLowValue + 1
     }
 
     public func canPlaceOnTableau(_ card: Card, column: Zone, in state: State) -> Bool {
         guard let rank = card.rank else { return false }
         guard let top = state.board.top(of: column) else { return true }
         guard let topRank = top.rank, top.isRed != card.isRed else { return false }
-        return rank.rawValue == topRank.rawValue - 1
+        return rank.aceLowValue == topRank.aceLowValue - 1
     }
 
     /// How many cards can be lifted at once.
@@ -136,7 +136,7 @@ public struct FreeCellRules: GameRules {
                 if let previous {
                     guard let previousRank = previous.rank, let currentRank = current.rank,
                           previous.isRed != current.isRed,
-                          currentRank.rawValue == previousRank.rawValue - 1 else { return nil }
+                          currentRank.aceLowValue == previousRank.aceLowValue - 1 else { return nil }
                 }
                 previous = current
             }
@@ -341,8 +341,8 @@ public struct FreeCellRules: GameRules {
             let height = (0..<Self.foundationCount)
                 .compactMap { state.board.top(of: .foundation($0)) }
                 .first { $0.suit == opposite }?
-                .rank?.rawValue ?? 1
-            if height < rank.rawValue - 1 { return false }
+                .rank?.aceLowValue ?? 0
+            if height < rank.aceLowValue - 1 { return false }
         }
         return true
     }

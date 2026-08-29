@@ -124,7 +124,7 @@ public struct KlondikeRules: GameRules {
         guard let rank = card.rank, card.suit != nil else { return false }
         guard let top = state.board.top(of: foundation) else { return rank == .ace }
         guard top.suit == card.suit else { return false }
-        return rank.rawValue == top.rank.map({ $0.rawValue + 1 })
+        return rank.aceLowValue == top.rank.map({ $0.aceLowValue + 1 })
     }
 
     /// Tableau piles build down in alternating colours; a King, or a run headed
@@ -134,7 +134,7 @@ public struct KlondikeRules: GameRules {
         guard let top = state.board.top(of: column) else { return rank == .king }
         guard state.board.isFaceUp(top.id), let topRank = top.rank else { return false }
         guard top.isRed != card.isRed else { return false }
-        return rank.rawValue == topRank.rawValue - 1
+        return rank.aceLowValue == topRank.aceLowValue - 1
     }
 
     /// The face-up run starting at `card` and running to the bottom of its pile.
@@ -158,7 +158,7 @@ public struct KlondikeRules: GameRules {
                 if let previous {
                     guard let previousRank = previous.rank, let currentRank = current.rank else { return nil }
                     guard previous.isRed != current.isRed,
-                          currentRank.rawValue == previousRank.rawValue - 1 else { return nil }
+                          currentRank.aceLowValue == previousRank.aceLowValue - 1 else { return nil }
                 }
                 previous = current
             }

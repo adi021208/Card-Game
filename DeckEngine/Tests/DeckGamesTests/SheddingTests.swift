@@ -341,8 +341,20 @@ final class CheatTests: XCTestCase {
         let outcome = TestTable.playOut(rules, configuration: configuration)
         let result = try XCTUnwrap(outcome.state.finalResult)
         XCTAssertEqual(result.winners.count, 1)
-        XCTAssertTrue(outcome.state.board.isEmpty(Zone.hand(result.winners[0])),
-                      "you win by getting rid of every card")
+        let winner = result.winners[0]
+        let held = outcome.state.board.count(in: Zone.hand(winner))
+        let limit = outcome.state.settings.turnLimit
+        if limit > 0 && outcome.state.turnsTaken >= limit {
+            // The round was called. Cheat between players who count well is a
+            // treadmill, so most games end this way rather than with somebody
+            // going out, and the winner is whoever is holding fewest.
+            for seat in outcome.state.seatOrder {
+                XCTAssertLessThanOrEqual(held, outcome.state.board.count(in: Zone.hand(seat)),
+                                         "a called round is won on the fewest cards")
+            }
+        } else {
+            XCTAssertEqual(held, 0, "you win by getting rid of every card")
+        }
     }
 
     func testObservationNeverNamesThePileOrAnotherHand() {
