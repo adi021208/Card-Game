@@ -180,17 +180,22 @@ final class CatalogSessionTests: XCTestCase {
     func testEveryGameDealsOffersMovesAndFinishes() {
         for definition in GameCatalog.makeRegistry().all {
             let name = definition.englishName
+            // This sweep is about the engine dealing, offering and finishing —
+            // not about strategy. It plays an arbitrary legal move, which no
+            // game is obliged to make short work of: poker with no hand limit
+            // is a stable cycle nobody busts out of, and Rummy to a hundred
+            // needs somebody to keep going out, which random play rarely does.
+            // So bound the long games. This only ever shortens: a game that
+            // asks for a target below the ceiling keeps its own, and anything
+            // that does not read these options ignores them.
+            var options = definition.defaultOptions
+            options["handLimit"] = min(options["handLimit"] ?? 40, 40)
+            if let target = options["targetScore"] {
+                options["targetScore"] = min(target, 25)
+            }
             let configuration = GameConfiguration(gameID: definition.id,
                                                   seating: seating(for: definition),
-                                                  // This sweep is about the engine dealing, offering
-                                                  // and finishing — not about strategy. It plays the
-                                                  // first legal action, which in poker means folding
-                                                  // to the blind every hand, and a table that always
-                                                  // folds is a stable cycle nobody ever busts out of.
-                                                  // Bound the games that can legitimately run forever;
-                                                  // anything that does not read handLimit ignores it.
-                                                  options: definition.defaultOptions
-                                                      .merging(["handLimit": 40]) { declared, _ in declared },
+                                                  options: options,
                                                   seed: 20260828)
             let session = definition.makeSession(configuration)
             XCTAssertEqual(session.gameID, definition.id, "\(name) built the wrong session")
