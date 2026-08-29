@@ -401,6 +401,109 @@ function choose(scored, profile, rng) {
   return near.length > 1 ? near[rng.int(near.length)].action : sorted[0].action;
 }
 
+
+/* ── Melds: the exact minimum-deadwood solver ─────────────────────
+   Greedily taking the longest meld gets this wrong — a four-card run
+   can be worth less than a three-card run plus a set that reuses one
+   of its cards. This searches every combination of disjoint melds,
+   which is cheap at rummy hand sizes and always exact. */
+const deadwoodPoints = (c) => (c.rank === 14 ? 1 : c.rank >= 11 ? 10 : c.rank);
+
+const Melds = {
+  enumerate(hand) {
+    const out = [];
+    const byRank = {};
+    for (const c of hand) (byRank[c.rank] = byRank[c.rank] || []).push(c);
+    for (const r of Object.keys(byRank).sort((a, b) => a - b)) {
+      const set = byRank[r].slice().sort((a, b) => SUITS.indexOf(a.suit) - SUITS.indexOf(b.suit));
+      if (set.length < 3) continue;
+      out.push(set);
+      // Every three-card subset of a four-card set is a meld too, and
+      // sometimes the better one.
+      if (set.length === 4) for (let i = 0; i < 4; i++) out.push(set.filter((_, k) => k !== i));
+    }
+    const bySuit = {};
+    for (const c of hand) (bySuit[c.suit] = bySuit[c.suit] || []).push(c);
+    for (const suit of Object.keys(bySuit)) {
+      const uniq = {};
+      for (const c of bySuit[suit]) { const v = aceLow(c.rank); if (!uniq[v]) uniq[v] = c; }
+      const vals = Object.keys(uniq).map(Number).sort((a, b) => a - b);
+      for (let i = 0; i < vals.length; i++) {
+        const seq = [uniq[vals[i]]];
+        let prev = vals[i];
+        for (let k = i + 1; k < vals.length; k++) {
+          if (vals[k] !== prev + 1) break;
+          seq.push(uniq[vals[k]]); prev = vals[k];
+          if (seq.length >= 3) out.push(seq.slice());
+        }
+      }
+    }
+    return out;
+  },
+
+  best(hand) {
+    const melds = this.enumerate(hand);
+    const points = (cards) => cards.reduce((n, c) => n + deadwoodPoints(c), 0);
+    if (!melds.length) return { melds: [], deadwood: hand.slice().sort((a, b) => deadwoodPoints(b) - deadwoodPoints(a)), points: points(hand) };
+    const index = new Map(hand.map((c, i) => [c.id, i]));
+    const masks = melds.map((m) => m.reduce((acc, c) => acc | (1 << index.get(c.id)), 0));
+    const cardPts = hand.map(deadwoodPoints);
+    let bestPts = Infinity, bestMask = 0, bestPick = [];
+    const seen = new Set();
+    const left = (mask) => { let t = 0; for (let i = 0; i < hand.length; i++) if (!(mask & (1 << i))) t += cardPts[i]; return t; };
+    const search = (start, used, pick) => {
+      const key = start * (1 << hand.length) + used;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const d = left(used);
+      if (d < bestPts) { bestPts = d; bestMask = used; bestPick = pick; }
+      for (let i = start; i < masks.length; i++) if (!(masks[i] & used)) search(i + 1, used | masks[i], pick.concat(i));
+    };
+    search(0, 0, []);
+    const deadwood = hand.filter((_, i) => !(bestMask & (1 << i))).sort((a, b) => deadwoodPoints(b) - deadwoodPoints(a));
+    return { melds: bestPick.map((i) => melds[i]), deadwood, points: bestPts };
+  },
+
+  /* Is this a meld in its own right? Sets need distinct suits. */
+  valid(cards) {
+    if (cards.length < 3) return null;
+    const ranks = new Set(cards.map((c) => c.rank));
+    if (ranks.size === 1) return new Set(cards.map((c) => c.suit)).size === cards.length ? "set" : null;
+    if (new Set(cards.map((c) => c.suit)).size !== 1) return null;
+    const vals = cards.map((c) => aceLow(c.rank)).sort((a, b) => a - b);
+    if (new Set(vals).size !== vals.length) return null;
+    for (let i = 1; i < vals.length; i++) if (vals[i] !== vals[i - 1] + 1) return null;
+    return "run";
+  },
+
+  canLayOff(card, meld) {
+    if (meld.length < 3) return false;
+    const ranks = new Set(meld.map((c) => c.rank));
+    if (ranks.size === 1) return ranks.has(card.rank) && meld.length < 4 && !meld.some((c) => c.suit === card.suit);
+    if (!meld.every((c) => c.suit === card.suit)) return false;
+    const vals = meld.map((c) => aceLow(c.rank)).sort((a, b) => a - b);
+    const v = aceLow(card.rank);
+    return v === vals[0] - 1 || v === vals[vals.length - 1] + 1;
+  },
+
+  /* Deadwood after laying everything that will go. Repeats, because
+     extending a run can open the next card. */
+  layOff(deadwood, melds) {
+    const work = melds.map((m) => m.slice());
+    let pool = deadwood.slice(), laid = [], moved = true;
+    while (moved) {
+      moved = false;
+      const rest = [];
+      for (const c of pool) {
+        const i = work.findIndex((m) => Melds.canLayOff(c, m));
+        if (i >= 0) { work[i].push(c); laid.push(c); moved = true; } else rest.push(c);
+      }
+      pool = rest;
+    }
+    return { remaining: pool, laid };
+  },
+};
+
 /* ═══════════════════════════════════════════════════════════════════
    GAMES
    Each is a reducer: setup / legal / apply / auto / observe / table.
@@ -1411,6 +1514,347 @@ def({
   },
 });
 
+
+/* ── RUMMY ────────────────────────────────────────────────────────── */
+def({
+  id: "rummy", name: "Rummy", tagline: "Build sets. Build runs. Go out clean.",
+  category: "Rummy", min: 2, max: 6, art: ["cobalt", "ink"],
+  handSize(n) { return n <= 2 ? 10 : n <= 4 ? 7 : 6; },
+  setup(cfg, rng) {
+    const seats = cfg.seats.map((_, i) => i);
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), Z.stock, Z.discard]);
+    const size = this.handSize(seats.length);
+    for (let i = 0; i < size; i++) for (const s of seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of seats) B.sort(b, Z.hand(s), bySuitRank);
+    B.draw(b, Z.stock, Z.discard, "up");
+    const st = { board: b, seats, active: seats[0], done: null, phase: "draw",
+      melds: [], sel: {}, scores: {}, round: 1, target: 100, roundOver: false };
+    seats.forEach((s) => { st.scores[s] = 0; });
+    return st;
+  },
+  meldCards(st, m) { return m.cards.map((id) => st.board.cards.get(id)); },
+  legal(st, seat) {
+    if (st.done || st.active !== seat || st.roundOver) return [];
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (st.phase === "draw") {
+      const out = [];
+      if (B.count(st.board, Z.stock)) out.push({ t: "drawStock" });
+      if (B.count(st.board, Z.discard)) out.push({ t: "takeDiscard" });
+      return out;
+    }
+    const picked = st.sel[seat] || [];
+    const cards = picked.map((id) => st.board.cards.get(id));
+    const out = hand.filter((c) => !picked.includes(c.id)).map((c) => ({ t: "select", id: c.id }));
+    if (picked.length) out.push({ t: "clear" });
+    if (picked.length >= 3 && Melds.valid(cards)) out.push({ t: "meld" });
+    if (picked.length === 1) {
+      st.melds.forEach((m, i) => { if (Melds.canLayOff(cards[0], this.meldCards(st, m))) out.push({ t: "layoff", m: i }); });
+      out.push({ t: "discard" });
+    }
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "drawStock") {
+      B.draw(st.board, Z.stock, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), bySuitRank);
+      st.phase = "build"; return ev;
+    }
+    if (a.t === "takeDiscard") {
+      const c = B.draw(st.board, Z.discard, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), bySuitRank);
+      st.phase = "build";
+      if (c) ev.push(`${st.names[seat]} takes the ${RANK_NAME[c.rank].toLowerCase()}.`);
+      return ev;
+    }
+    if (a.t === "select") { st.sel[seat] = [...(st.sel[seat] || []), a.id]; return ev; }
+    if (a.t === "clear") { st.sel[seat] = []; return ev; }
+    if (a.t === "meld") {
+      const ids = st.sel[seat]; st.sel[seat] = [];
+      const zone = Z.meld(seat, st.melds.length);
+      B.move(st.board, ids, zone, "up");
+      st.melds.push({ owner: seat, zone, cards: ids });
+      ev.push(`${st.names[seat]} melds ${ids.length}.`);
+      return this.checkOut(st, seat, ev);
+    }
+    if (a.t === "layoff") {
+      const id = st.sel[seat][0]; st.sel[seat] = [];
+      const m = st.melds[a.m];
+      B.move(st.board, id, m.zone, "up");
+      m.cards.push(id);
+      ev.push(`${st.names[seat]} lays off on ${st.names[m.owner]}'s meld.`);
+      return this.checkOut(st, seat, ev);
+    }
+    // discard
+    const id = st.sel[seat][0]; st.sel[seat] = [];
+    B.move(st.board, id, Z.discard, "up");
+    this.checkOut(st, seat, ev);
+    if (st.roundOver) return ev;
+    st.phase = "draw";
+    st.active = nextSeat(st.seats, seat);
+    if (!B.count(st.board, Z.stock)) { st.roundOver = true; st.outSeat = null; ev.push("The stock is out."); }
+    return ev;
+  },
+  checkOut(st, seat, ev) {
+    if (B.count(st.board, Z.hand(seat)) > 0) return ev;
+    st.roundOver = true; st.outSeat = seat;
+    ev.push(`${st.names[seat]} goes out.`);
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.roundOver) return [];
+    st.roundOver = false;
+    const ev = [];
+    const winner = st.outSeat;
+    let total = 0;
+    for (const s of st.seats) if (s !== winner) total += B.cardsIn(st.board, Z.hand(s)).reduce((n, c) => n + deadwoodPoints(c), 0);
+    if (winner !== null && winner !== undefined) {
+      st.scores[winner] += total;
+      ev.push(`${st.names[winner]} scores ${total}.`);
+    } else ev.push("Nobody went out.");
+    if (Math.max(...st.seats.map((s) => st.scores[s])) >= st.target) {
+      const best = Math.max(...st.seats.map((s) => st.scores[s]));
+      st.done = { winners: st.seats.filter((s) => st.scores[s] === best), scores: { ...st.scores }, lowWins: false };
+      return ev;
+    }
+    st.round++;
+    const fresh = this.setup({ seats: st.seats.map(() => ({})) }, rng);
+    st.board = fresh.board; st.melds = []; st.sel = {}; st.phase = "draw";
+    st.active = st.seats[(st.round - 1) % st.seats.length];
+    st.outSeat = null;
+    ev.push(`Deal ${st.round}.`);
+    return ev;
+  },
+  observe(st, seat) {
+    return { hand: B.cardsIn(st.board, Z.hand(seat)), top: B.top(st.board, Z.discard),
+      stock: B.count(st.board, Z.stock), melds: st.melds.map((m) => this.meldCards(st, m)),
+      counts: st.seats.map((s) => B.count(st.board, Z.hand(s))) };
+  },
+  agent(st, seat, legal, prof, rng) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (st.phase === "draw") {
+      const top = B.top(st.board, Z.discard);
+      const now = Melds.best(hand).points;
+      const withIt = top ? Melds.best(hand.concat(top)).points : Infinity;
+      const take = legal.find((a) => a.t === "takeDiscard");
+      // Take the upcard only when it actually improves the hand.
+      if (take && withIt < now - 2) return take;
+      return legal.find((a) => a.t === "drawStock") || take;
+    }
+    const picked = st.sel[seat] || [];
+    const cards = picked.map((id) => st.board.cards.get(id));
+    if (picked.length >= 3 && Melds.valid(cards)) return legal.find((a) => a.t === "meld");
+
+    /* Commit to one thing per turn — lay a meld down, or throw a card
+       away — and see it through. Deciding afresh on every selection is
+       how an agent ends up picking a card up and putting it straight
+       back down forever. */
+    const solution = Melds.best(hand);
+    if (!st.intent || st.intent.seat !== seat || !picked.length) {
+      const layable = solution.melds.filter((m) => m.length >= 3);
+      st.intent = layable.length && rng.chance(.75 + prof.memory * .2)
+        ? { seat, kind: "meld", ids: layable[0].map((c) => c.id) }
+        : { seat, kind: "discard", id: (solution.deadwood[0] || hand[hand.length - 1]).id };
+    }
+    const fallback = () => legal.find((a) => a.t === "clear") || legal.find((a) => a.t === "discard") || legal[0];
+    if (st.intent.kind === "meld") {
+      const want = st.intent.ids.find((id) => !picked.includes(id));
+      if (want !== undefined) return legal.find((a) => a.t === "select" && a.id === want) || fallback();
+      return legal.find((a) => a.t === "meld") || fallback();
+    }
+    if (picked.includes(st.intent.id)) {
+      const lay = legal.find((a) => a.t === "layoff");
+      if (lay && rng.chance(.6 + prof.memory * .3)) return lay;
+      return legal.find((a) => a.t === "discard") || fallback();
+    }
+    if (picked.length) return legal.find((a) => a.t === "clear") || legal[0];
+    return legal.find((a) => a.t === "select" && a.id === st.intent.id) || legal[0];
+  },
+
+  table(st, viewer) {
+    const zones = [
+      { label: "Stock", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -11 }] : [], stack: true },
+      { label: "Discard", cards: [B.top(st.board, Z.discard)].filter(Boolean).map((c) => ({ known: true, ...c })) },
+    ];
+    st.melds.forEach((m, i) => zones.push({
+      label: `${st.names[m.owner]} · ${i + 1}`,
+      cards: this.meldCards(st, m).map((c) => ({ known: true, ...c })), spread: true, small: true,
+    }));
+    const mine = viewer === null ? null : Melds.best(B.cardsIn(st.board, Z.hand(viewer)));
+    return {
+      callouts: [
+        { k: "Stock", v: B.count(st.board, Z.stock) },
+        { k: "Deal", v: st.round },
+        ...(mine ? [{ k: "Your deadwood", v: mine.points }] : []),
+      ],
+      zones,
+      counts: (s) => `${B.count(st.board, Z.hand(s))} · ${st.scores[s]}`,
+      handHint: st.phase === "draw" ? "Draw from the stock or take the discard"
+        : "Tap cards to select — meld them, lay one off, or discard",
+      selected: st.sel[viewer] || [],
+    };
+  },
+});
+
+/* ── GIN RUMMY ────────────────────────────────────────────────────── */
+def({
+  id: "gin", name: "Gin Rummy", tagline: "Knock low. Or go gin.",
+  category: "Rummy", min: 2, max: 2, art: ["acid", "ink"],
+  setup(cfg, rng) {
+    const seats = [0, 1];
+    const b = newBoard();
+    B.load(b, rng.shuffle(buildDeck()), Z.stock);
+    B.ensure(b, [...seats.map(Z.hand), Z.stock, Z.discard]);
+    for (let i = 0; i < 10; i++) for (const s of seats) B.draw(b, Z.stock, Z.hand(s), "own", s);
+    for (const s of seats) B.sort(b, Z.hand(s), bySuitRank);
+    B.draw(b, Z.stock, Z.discard, "up");
+    const st = { board: b, seats, active: 1, done: null, phase: "draw", sel: {},
+      scores: { 0: 0, 1: 0 }, round: 1, target: 100, knockAt: 10, roundOver: false,
+      summary: null, took: null };
+    return st;
+  },
+  legal(st, seat) {
+    if (st.done || st.active !== seat || st.roundOver) return [];
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (st.phase === "draw") {
+      const out = [];
+      if (B.count(st.board, Z.stock) > 2) out.push({ t: "drawStock" });
+      if (B.count(st.board, Z.discard)) out.push({ t: "takeDiscard" });
+      return out;
+    }
+    const picked = st.sel[seat] || [];
+    // The card just taken from the discard cannot go straight back.
+    const out = hand.filter((c) => !picked.includes(c.id) && c.id !== st.took)
+      .map((c) => ({ t: "select", id: c.id }));
+    if (picked.length === 1) {
+      out.push({ t: "clear" });
+      out.push({ t: "discard" });
+      const rest = hand.filter((c) => c.id !== picked[0]);
+      const sol = Melds.best(rest);
+      if (sol.points <= st.knockAt) out.push({ t: "knock", gin: sol.points === 0 });
+    }
+    return out;
+  },
+  apply(st, a, rng) {
+    const seat = st.active, ev = [];
+    if (a.t === "drawStock") { B.draw(st.board, Z.stock, Z.hand(seat), "own", seat); B.sort(st.board, Z.hand(seat), bySuitRank); st.took = null; st.phase = "discard"; return ev; }
+    if (a.t === "takeDiscard") {
+      const c = B.draw(st.board, Z.discard, Z.hand(seat), "own", seat);
+      B.sort(st.board, Z.hand(seat), bySuitRank);
+      st.took = c ? c.id : null; st.phase = "discard";
+      if (c) ev.push(`${st.names[seat]} takes the ${RANK_NAME[c.rank].toLowerCase()}.`);
+      return ev;
+    }
+    if (a.t === "select") { st.sel[seat] = [...(st.sel[seat] || []), a.id]; return ev; }
+    if (a.t === "clear") { st.sel[seat] = []; return ev; }
+    const id = st.sel[seat][0]; st.sel[seat] = [];
+    B.move(st.board, id, Z.discard, "up");
+    st.took = null;
+    if (a.t === "discard") {
+      if (B.count(st.board, Z.stock) <= 2) { st.roundOver = true; st.summary = null; ev.push("The stock ran out — washout."); return ev; }
+      st.phase = "draw"; st.active = seat === 0 ? 1 : 0;
+      return ev;
+    }
+    // knock
+    const other = seat === 0 ? 1 : 0;
+    for (const s of st.seats) for (const cid of B.at(st.board, Z.hand(s))) B.face(st.board, cid, "up");
+    const mine = Melds.best(B.cardsIn(st.board, Z.hand(seat)));
+    let theirs = Melds.best(B.cardsIn(st.board, Z.hand(other)));
+    const gin = mine.points === 0;
+    let theirPoints = theirs.points;
+    if (!gin) {
+      // The defender lays off onto the knocker's melds — but not after gin.
+      const off = Melds.layOff(theirs.deadwood, mine.melds);
+      theirPoints = off.remaining.reduce((n, c) => n + deadwoodPoints(c), 0);
+      if (off.laid.length) ev.push(`${st.names[other]} lays off ${off.laid.length}.`);
+    }
+    const diff = theirPoints - mine.points;
+    let winner = seat, points, kind;
+    if (gin) { points = theirPoints + 25; kind = "gin"; }
+    else if (diff <= 0) { winner = other; points = Math.abs(diff) + 25; kind = "undercut"; }
+    else { points = diff; kind = "knock"; }
+    st.scores[winner] += points;
+    st.summary = { knocker: seat, winner, points, kind, mine: mine.points, theirs: theirPoints };
+    ev.push(kind === "gin" ? `${st.names[seat]} goes gin — ${points}.`
+      : kind === "undercut" ? `${st.names[other]} undercuts for ${points}.`
+      : `${st.names[seat]} knocks for ${points}.`);
+    st.roundOver = true;
+    return ev;
+  },
+  auto(st, rng) {
+    if (st.done || !st.roundOver) return [];
+    st.roundOver = false;
+    const ev = [];
+    if (Math.max(st.scores[0], st.scores[1]) >= st.target) {
+      const best = Math.max(st.scores[0], st.scores[1]);
+      st.done = { winners: st.seats.filter((s) => st.scores[s] === best), scores: { ...st.scores }, lowWins: false };
+      return ev;
+    }
+    st.round++;
+    const fresh = this.setup({ seats: [{}, {}] }, rng);
+    st.board = fresh.board; st.sel = {}; st.phase = "draw"; st.took = null; st.summary = null;
+    st.active = st.round % 2 === 0 ? 0 : 1;
+    ev.push(`Deal ${st.round}.`);
+    return ev;
+  },
+  observe(st, seat) {
+    const other = seat === 0 ? 1 : 0;
+    return { hand: B.cardsIn(st.board, Z.hand(seat)), top: B.top(st.board, Z.discard),
+      stock: B.count(st.board, Z.stock), opponent: B.count(st.board, Z.hand(other)), scores: st.scores };
+  },
+  agent(st, seat, legal, prof, rng) {
+    const hand = B.cardsIn(st.board, Z.hand(seat));
+    if (st.phase === "draw") {
+      const top = B.top(st.board, Z.discard);
+      const now = Melds.best(hand).points;
+      const withIt = top ? Melds.best(hand.concat(top)).points : Infinity;
+      const take = legal.find((a) => a.t === "takeDiscard");
+      if (take && withIt < now - 1) return take;
+      return legal.find((a) => a.t === "drawStock") || take;
+    }
+    const picked = st.sel[seat] || [];
+    if (picked.length === 1) {
+      const knock = legal.find((a) => a.t === "knock");
+      if (knock) {
+        // Always take gin. Knock small otherwise, and more readily when
+        // the deal has run long.
+        if (knock.gin) return knock;
+        const rest = Melds.best(hand.filter((c) => c.id !== picked[0])).points;
+        if (rest <= 4 || rng.chance(prof.aggression * .5)) return knock;
+      }
+      return legal.find((a) => a.t === "discard");
+    }
+    // Choose the discard that leaves the least deadwood.
+    let bestId = null, bestPts = Infinity;
+    for (const c of hand) {
+      if (c.id === st.took) continue;
+      const pts = Melds.best(hand.filter((x) => x.id !== c.id)).points;
+      if (pts < bestPts) { bestPts = pts; bestId = c.id; }
+    }
+    return legal.find((a) => a.t === "select" && a.id === bestId) || legal[0];
+  },
+  table(st, viewer) {
+    const mine = viewer === null ? null : Melds.best(B.cardsIn(st.board, Z.hand(viewer)));
+    return {
+      callouts: [
+        { k: "Stock", v: B.count(st.board, Z.stock) },
+        { k: "Deal", v: st.round },
+        ...(mine ? [{ k: "Deadwood", v: mine.points }, { k: "Knock at", v: st.knockAt + " or less" }] : []),
+      ],
+      zones: [
+        { label: "Stock", cards: B.count(st.board, Z.stock) ? [{ known: false, id: -12 }] : [], stack: true },
+        { label: "Discard", cards: [B.top(st.board, Z.discard)].filter(Boolean).map((c) => ({ known: true, ...c })) },
+      ],
+      counts: (s) => `${B.count(st.board, Z.hand(s))} · ${st.scores[s]}`,
+      handHint: st.phase === "draw" ? "Draw from the stock or take the discard"
+        : "Tap the card you want to throw",
+      selected: st.sel[viewer] || [],
+    };
+  },
+});
+
 /* ═══════════════════════════════════════════════════════════════════
    PRIVACY — the Pass & Play coordinator.
    Permission is state, not a screen. `viewer` is computed and is null
@@ -1919,6 +2363,12 @@ function actionLabel(g, st, a) {
     case "select": return null;
     case "clear": return "Clear";
     case "draw": return g.id === "klondike" ? "Turn" : "Draw a card";
+    case "drawStock": return "Draw from stock";
+    case "takeDiscard": return "Take the discard";
+    case "meld": return "Meld these";
+    case "layoff": return "Lay off";
+    case "discard": return "Discard";
+    case "knock": return a.gin ? "Gin!" : "Knock";
     case "redeal": return "Turn the pile over";
     case "pass": return "Pass";
     case "confirmPass": return "Pass these three";
