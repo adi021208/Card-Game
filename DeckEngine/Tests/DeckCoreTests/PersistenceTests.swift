@@ -252,7 +252,7 @@ final class PersistenceTests: XCTestCase {
     func testCheckpointCarriesEverythingNeededToResume() throws {
         let seats = [
             Seat(id: SeatID(0), displayName: "A", controller: .human(profileID: "a")),
-            Seat(id: SeatID(1), displayName: "B", controller: .ai(profile: .balanced))
+            Seat(id: SeatID(1), displayName: "B", controller: .ai(personality: .hal, difficulty: .skilled))
         ]
         let configuration = GameConfiguration(gameID: GameID("toy"),
                                               seating: SeatingPlan(seats: seats),
