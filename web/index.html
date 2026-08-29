@@ -1627,7 +1627,11 @@ def({
       st.teamScore[team] += delta;
     }
     ev.push("Hand scored.");
-    if (st.teamScore[0] >= st.target || st.teamScore[1] >= st.target) {
+    /* Standard Spades ends at minus two hundred as well as at plus five
+       hundred, and it needs to: a bid you miss scores negative, so two sides
+       that keep missing drift downwards together and never reach the target. */
+    if (st.teamScore[0] >= st.target || st.teamScore[1] >= st.target
+        || st.teamScore[0] <= -200 || st.teamScore[1] <= -200) {
       const winTeam = st.teamScore[0] === st.teamScore[1] ? null : (st.teamScore[0] > st.teamScore[1] ? 0 : 1);
       const scores = {}; st.seats.forEach((s) => { scores[s] = st.teamScore[this.team(s)]; });
       st.done = { winners: winTeam === null ? [] : st.seats.filter((s) => this.team(s) === winTeam), scores, lowWins: false };

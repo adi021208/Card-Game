@@ -25,14 +25,23 @@ public struct SpadesRules: GameRules {
         public var allowBlindNil: Bool
         /// Spades may not be led until one has been played off-suit.
         public var mustBreakSpades: Bool
+        /// A team this far behind has lost.
+        ///
+        /// Standard Spades ends at minus two hundred as well as at plus five
+        /// hundred, and it needs to: a bid you miss scores negative, so two
+        /// sides that keep missing drift downwards together and never reach
+        /// the target. Zero disables the floor.
+        public var minimumScore: Int
 
         public init(targetScore: Int = 500,
                     bagLimit: Int = 10,
                     bagPenalty: Int = 100,
                     nilValue: Int = 100,
                     allowBlindNil: Bool = false,
-                    mustBreakSpades: Bool = true) {
+                    mustBreakSpades: Bool = true,
+                    minimumScore: Int = -200) {
             self.targetScore = targetScore
+            self.minimumScore = min(0, minimumScore)
             self.bagLimit = bagLimit
             self.bagPenalty = bagPenalty
             self.nilValue = nilValue
@@ -46,7 +55,8 @@ public struct SpadesRules: GameRules {
                      bagPenalty: configuration.option("bagPenalty", default: 100),
                      nilValue: configuration.option("nilValue", default: 100),
                      allowBlindNil: configuration.flag("allowBlindNil"),
-                     mustBreakSpades: configuration.flag("mustBreakSpades", default: true))
+                     mustBreakSpades: configuration.flag("mustBreakSpades", default: true),
+                     minimumScore: configuration.option("minimumScore", default: -200))
         }
     }
 
@@ -366,7 +376,11 @@ public struct SpadesRules: GameRules {
         events.append(.roundEnded(scores: seatScores))
 
         let target = state.settings.targetScore
-        let reached = (state.teamScores[0] ?? 0) >= target || (state.teamScores[1] ?? 0) >= target
+        let floor = state.settings.minimumScore
+        let us = state.teamScores[0] ?? 0
+        let them = state.teamScores[1] ?? 0
+        let reached = us >= target || them >= target
+            || (floor < 0 && (us <= floor || them <= floor))
         if reached {
             let result = buildResult(state: state)
             state.finalResult = result

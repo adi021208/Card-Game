@@ -338,7 +338,12 @@ final class AgentPlayTests: XCTestCase {
                                     configuration: configuration,
                                     agent: RummyAgent.choose,
                                     profiles: AgentHarness.profiles([.hal, .honey, .calvin]))
-        XCTAssertNotNil(run.state.finalResult, "stopped because it \(run.stop)")
+        // Says whether the scores were moving toward the target or the deals
+        // themselves were not ending, which the stop reason alone cannot.
+        XCTAssertNotNil(run.state.finalResult,
+                        "stopped because it \(run.stop); after \(run.state.roundNumber) deals "
+                        + "the scores were \(run.state.scores.sorted { $0.key < $1.key }.map(\.value)) "
+                        + "against a target of \(run.state.settings.targetScore)")
     }
 
     func testPresidentCheatGoFishAndWarAgentsAllFinish() {
