@@ -135,7 +135,10 @@ public final class AppEnvironment {
     /// Rebuilds the game that was in progress when the app was last closed.
     public func resumeSavedGame() -> (session: GameSessionProtocol, viewerSeat: SeatID?)? {
         guard let checkpoint = progress.savedGame.checkpoint else { return nil }
-        guard let session = try? registry.restoreSession(from: checkpoint), let session else {
+        // `try?` on a throwing call that already returns an optional gives one
+        // optional, not two, so this single binding covers both a throw and a
+        // nil: either way the save cannot be rebuilt.
+        guard let session = try? registry.restoreSession(from: checkpoint) else {
             // The save is from a build whose rules no longer exist. Drop it
             // rather than loading something that would misplay.
             progress.clearSavedGame()
