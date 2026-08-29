@@ -82,7 +82,11 @@ public final class ProgressStore: @unchecked Sendable {
     public private(set) var loadFailures: [String] = []
 
     public init(store: DataStore, registry: GameRegistry) {
-        self.records = RecordStore(store: store)
+        // Held locally as well as stored: the loader below is a nested
+        // function, and reading self.records from it would count as using
+        // self before every stored property is initialised.
+        let recordStore = RecordStore(store: store)
+        self.records = recordStore
         self.registry = registry
         self.statisticsEngine = StatisticsEngine(registry: registry)
         self.masteryEngine = MasteryEngine(registry: registry)
@@ -92,7 +96,7 @@ public final class ProgressStore: @unchecked Sendable {
         var failures: [String] = []
         func load<Payload: PersistablePayload>(_ type: Payload.Type, fallback: Payload) -> Payload {
             do {
-                return try records.load(type) ?? fallback
+                return try recordStore.load(type) ?? fallback
             } catch {
                 failures.append(Payload.storeKey)
                 return fallback
