@@ -22,6 +22,8 @@ jobs:
         run: node web/test.js
       - name: Interface
         run: node web/test-ui.js
+      - name: Table server
+        run: node web/test-net.js
 
   engine:
     name: Engine — build and test

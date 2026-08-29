@@ -64,6 +64,20 @@ keeps the confirmation, because the confirmation is the guarantee.
   reconstructing something plausible.
 - **Replay** — seed plus the ordered list of action tokens reproduces the game.
 
+## Playing it in a browser
+
+`web/index.html` is a complete second implementation — same architecture,
+same design tokens, same privacy model, no Swift. It plays two ways:
+
+```
+open web/index.html          # one device, pass it round the table
+node web/server.js           # several devices, over your tailnet
+```
+
+The server holds the only complete game state and sends each device its
+own redacted view, so a card you may not see never crosses the network.
+See [docs/multiplayer.md](docs/multiplayer.md).
+
 ## Building
 
 ```
@@ -91,7 +105,8 @@ DeckEngine/Sources/
   DeckCatalog/           the registry that binds rules to agents
   DeckProgression/       statistics, achievements, dailies, bosses, collection
 DeckEngine/Tests/        five suites, one per target
-docs/                    architecture, adding a game, the design system
+web/                     the browser build: game, table server, tests
+docs/                    architecture, adding a game, design system, multiplayer
 tools/                   swiftcheck.py, make_appicon.py
 ```
 
@@ -104,6 +119,8 @@ tools/                   swiftcheck.py, make_appicon.py
 - [The design system](docs/design-system.md) — the four token files, the
   signature transitions, the procedural art, and the list of things this app
   deliberately does not do.
+- [Multiplayer](docs/multiplayer.md) — running a table on your own machine
+  and playing from everybody's phone over Tailscale.
 
 ## Art direction
 

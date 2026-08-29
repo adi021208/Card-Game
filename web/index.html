@@ -248,6 +248,28 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   background: var(--on-ground); color: var(--ground); padding: var(--s3) var(--s4);
   border-radius: var(--r-btn); font-size: 14px; font-weight: 600; max-width: 90vw;
 }
+.roomcode {
+  font-weight: 900; font-variation-settings: "wdth" 88, "wght" 900;
+  font-size: clamp(46px, 15vw, 76px); letter-spacing: .12em; line-height: 1;
+  color: var(--accent);
+}
+.codeinput {
+  width: 100%; background: var(--ground-2); border: 0; color: inherit;
+  font-family: var(--display); font-weight: 900; font-size: 34px;
+  letter-spacing: .24em; text-align: center; text-transform: uppercase;
+  padding: var(--s4); border-radius: var(--r-btn);
+}
+.codeinput:focus { outline: 3px solid var(--accent); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); flex: none; }
+.dot.off { background: var(--on-ground-mute); }
+.modepick { display: grid; gap: var(--s3); }
+.modepick button {
+  text-align: left; padding: var(--s5); border-radius: var(--r-panel);
+  background: var(--ground-2); display: flex; flex-direction: column; gap: var(--s2);
+}
+.modepick .t { font-weight: 900; font-variation-settings: "wdth" 74, "wght" 900;
+  font-size: 30px; text-transform: uppercase; line-height: .9; }
+.modepick .d { font-size: 14px; color: var(--on-ground-mute); line-height: 1.45; }
 .hidden { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
@@ -1855,6 +1877,25 @@ def({
   },
 });
 
+/* A game's table description with every function materialised, so it can
+   be rendered locally or serialised and sent to another device. */
+function tableFor(g, st, viewer) {
+  const t = g.table(st, viewer);
+  const seat = viewer === null || viewer === undefined ? null : viewer;
+  return {
+    callouts: t.callouts || [], zones: t.zones || [],
+    counts: st.seats.map((s) => (t.counts ? String(t.counts(s)) : "")),
+    dimIds: t.dimUnplayable && seat !== null
+      ? B.at(st.board, Z.hand(seat)).filter((id) => {
+          const c = st.board.cards.get(id);
+          return c && t.dimUnplayable(c);
+        })
+      : [],
+    handHint: t.handHint || null, selected: t.selected || [],
+    askMode: !!t.askMode, noCardPlay: !!t.noCardPlay, tableau: !!t.tableau,
+  };
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    PRIVACY — the Pass & Play coordinator.
    Permission is state, not a screen. `viewer` is computed and is null
@@ -1895,7 +1936,50 @@ const store = {
   set(k, v) { try { localStorage.setItem("deck." + k, JSON.stringify(v)); } catch {} },
 };
 
-let App = { view: "library", game: null, run: null };
+let App = { view: "library", game: null, run: null, remote: null };
+const SERVED = typeof window !== "undefined" && window.DECK_SERVER === true;
+
+/* ── Talking to the table ────────────────────────────────────────── */
+const Net = {
+  stream: null,
+  async post(path, body) {
+    const res = await fetch(path, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "The table did not answer.");
+    return data;
+  },
+  open(code, token) {
+    Net.close();
+    const es = new EventSource(`/api/events?code=${encodeURIComponent(code)}&token=${encodeURIComponent(token)}`);
+    es.onmessage = (e) => {
+      let view; try { view = JSON.parse(e.data); } catch { return; }
+      App.remote = Object.assign(App.remote || {}, { code, token, view });
+      if (App.view !== "lobby" && App.view !== "table" && App.view !== "result") App.view = "lobby";
+      if (view.phase === "playing" && App.view !== "table") App.view = "table";
+      if (view.phase === "over") App.view = "result";
+      if (view.phase === "lobby" && App.view !== "lobby") App.view = "lobby";
+      render();
+    };
+    es.onerror = () => { if (App.remote) App.remote.dropped = true; render(); };
+    Net.stream = es;
+  },
+  close() { if (Net.stream) { Net.stream.close(); Net.stream = null; } },
+  leave() {
+    const r = App.remote;
+    Net.close();
+    if (r) Net.post("/api/leave", { code: r.code, token: r.token }).catch(() => {});
+    App.remote = null; store.set("table", null);
+  },
+};
+async function sendAction(action) {
+  const r = App.remote;
+  if (!r) return;
+  try { await Net.post("/api/action", { code: r.code, token: r.token, action }); }
+  catch (e) { toast(e.message); }
+}
 
 function toast(msg) {
   const t = el("div", "toast", msg);
@@ -1915,6 +1999,7 @@ themeBtn.onclick = () => {
 { const t = store.get("theme", null); if (t) document.documentElement.setAttribute("data-theme", t); }
 
 document.getElementById("quitBtn").onclick = () => {
+  if (App.remote) { Net.leave(); App.view = "library"; render(); return; }
   if (App.view === "setup") { App.view = "library"; App.game = null; render(); return; }
   if (App.run && !App.run.state.done && !confirm("Leave this game? Progress is lost.")) return;
   App.run = null; App.view = "library"; render();
@@ -2016,7 +2101,23 @@ function viewLibrary() {
   const sub = el("p", "sub", "Pass one device around the table. Nobody sees a hand that isn't theirs — the app removes it, it doesn't just cover it.");
   head.append(h1, sub);
 
+  if (SERVED) {
+    const pick = el("div", "modepick");
+    const friends = el("button");
+    friends.append(el("span", "t", "Play with friends"));
+    friends.append(el("span", "d", "Everybody uses their own phone. Nobody sees a hand but their own — it never leaves this machine."));
+    friends.onclick = () => { App.view = "connect"; render(); };
+    const here = el("button");
+    here.append(el("span", "t", "Play on this device"));
+    here.append(el("span", "d", "Pass one device round the table. The game seals itself between players."));
+    here.onclick = () => { const sh = document.getElementById("shelfAnchor"); if (sh) sh.scrollIntoView({ behavior: "smooth" }); };
+    pick.append(friends, here);
+    head.append(pick);
+  }
+
   const shelf = el("div", "shelf");
+  shelf.attrs = shelf.attrs || {};
+  shelf.setAttribute("id", "shelfAnchor");
   for (const g of Object.values(GAMES)) {
     const card = el("button", "game-card");
     card.style.background = `var(--${g.art[1]})`;
@@ -2140,6 +2241,145 @@ function defaultSeats(g) {
   return out;
 }
 
+/* ── Joining a table ─────────────────────────────────────────────── */
+function viewConnect() {
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+  wrap.append(el("h1", "poster h-l", "Play with friends"));
+  wrap.append(el("p", "sub", "One of you starts a table and reads out the code. Everybody else joins from their own phone, on the same tailnet."));
+
+  const nameField = el("div", "field");
+  const nameIn = el("input");
+  nameIn.className = "codeinput";
+  nameIn.style.cssText = "font-size:22px;letter-spacing:.04em;text-transform:none";
+  nameIn.value = store.get("myname", "");
+  nameIn.setAttribute("placeholder", "Your name");
+  nameIn.setAttribute("aria-label", "Your name");
+  nameField.append(el("div", "label", "You are"), nameIn);
+
+  const err = el("p", "label");
+  err.style.color = "var(--accent)";
+
+  const host = el("button", "btn wide", "Start a table");
+  host.onclick = async () => {
+    const name = (nameIn.value || "").trim() || "Player";
+    store.set("myname", name);
+    host.disabled = true;
+    try {
+      const r = await Net.post("/api/create", { name });
+      store.set("table", { code: r.code, token: r.token });
+      App.remote = { code: r.code, token: r.token, view: null };
+      App.view = "lobby"; render();
+      Net.open(r.code, r.token);
+    } catch (e) { err.textContent = e.message; host.disabled = false; }
+  };
+
+  const codeField = el("div", "field");
+  const codeIn = el("input");
+  codeIn.className = "codeinput";
+  codeIn.setAttribute("placeholder", "CODE");
+  codeIn.setAttribute("aria-label", "Table code");
+  codeIn.setAttribute("maxlength", "4");
+  codeField.append(el("div", "label", "Or join one"), codeIn);
+
+  const join = el("button", "btn ghost wide", "Join the table");
+  join.onclick = async () => {
+    const name = (nameIn.value || "").trim() || "Player";
+    const code = (codeIn.value || "").trim().toUpperCase();
+    if (code.length !== 4) { err.textContent = "A table code is four letters."; return; }
+    store.set("myname", name);
+    join.disabled = true;
+    try {
+      const r = await Net.post("/api/join", { code, name });
+      store.set("table", { code: r.code, token: r.token });
+      App.remote = { code: r.code, token: r.token, view: null };
+      App.view = "lobby"; render();
+      Net.open(r.code, r.token);
+    } catch (e) { err.textContent = e.message; join.disabled = false; }
+  };
+
+  const back = el("button", "btn ghost wide", "Back");
+  back.onclick = () => { App.view = "library"; render(); };
+
+  wrap.append(nameField, host, codeField, join, err, back);
+  s.append(wrap);
+  return s;
+}
+
+function viewLobby() {
+  const r = App.remote;
+  const v = r && r.view;
+  const s = el("div", "screen");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+
+  wrap.append(el("div", "label", "Table code — read it out"));
+  wrap.append(el("div", "roomcode", r ? r.code : "····"));
+  if (!v) { wrap.append(el("p", "label", "Connecting…")); s.append(wrap); return s; }
+  if (r.dropped) {
+    const warn = el("p", "label", "Lost the table. Trying to get back…");
+    warn.style.color = "var(--accent)";
+    wrap.append(warn);
+  }
+
+  const list = el("div", "seatlist");
+  v.players.forEach((p, i) => {
+    const row = el("div", "seat-row");
+    const dot = el("span", "dot" + (p.online ? "" : " off"));
+    const chip = el("span", "chip" + (p.ai ? " ai" : ""), p.ai ? "AI" : (p.seat === v.you ? "You" : "Player"));
+    const nm = el("span", null, p.name);
+    nm.style.cssText = "flex:1;font-weight:700";
+    row.append(dot, chip, nm);
+    if (v.host && p.ai && i > 0) {
+      const rm = el("button", "icon-btn", "−");
+      rm.title = "Remove"; 
+      rm.onclick = () => Net.post("/api/seat", { code: r.code, token: r.token, remove: i }).catch((e) => toast(e.message));
+      row.append(rm);
+    }
+    list.append(row);
+  });
+  const seats = el("div", "field");
+  seats.append(el("div", "label", `At the table — ${v.players.length}`), list);
+  if (v.host) {
+    const add = el("button", "btn ghost wide", "Add an opponent");
+    add.onclick = () => Net.post("/api/seat", { code: r.code, token: r.token, add: true }).catch((e) => toast(e.message));
+    seats.append(add);
+  }
+  wrap.append(seats);
+
+  if (v.host) {
+    const n = v.players.length;
+    const field = el("div", "field");
+    field.append(el("div", "label", "Choose the game"));
+    const shelf = el("div", "shelf");
+    for (const g of v.games) {
+      const fits = n >= g.min && n <= g.max;
+      const card = el("button", "game-card");
+      card.style.background = fits ? "var(--ink-soft)" : "var(--ground-2)";
+      card.style.opacity = fits ? "1" : ".4";
+      card.style.color = fits ? "var(--cream)" : "var(--on-ground-mute)";
+      card.append(el("div", "gname", g.name));
+      card.append(el("div", "gtag", fits ? `${g.category} · ${g.min}–${g.max}` : `needs ${g.min}–${g.max}`));
+      card.disabled = !fits;
+      card.onclick = () => Net.post("/api/start", {
+        code: r.code, token: r.token, gameId: g.id, difficulty: store.get("difficulty", "skilled"),
+      }).catch((e) => toast(e.message));
+      shelf.append(card);
+    }
+    field.append(shelf);
+    wrap.append(field);
+  } else {
+    wrap.append(el("p", "label", "Waiting for the host to pick a game…"));
+  }
+
+  const leave = el("button", "btn ghost wide", "Leave the table");
+  leave.onclick = () => { Net.leave(); App.view = "library"; render(); };
+  wrap.append(leave);
+  s.append(wrap);
+  return s;
+}
+
 /* ── Running a game ──────────────────────────────────────────────── */
 function startGame(g, seats, difficulty) {
   const seed = (Math.random() * 0xFFFFFFFF) >>> 0;
@@ -2241,11 +2481,34 @@ function act(action) {
 }
 
 /* ── Table ───────────────────────────────────────────────────────── */
+/* Both modes render from this. Locally it is read straight out of the
+   engine; remotely it arrives already redacted from the server, which is
+   the only place the whole state exists. */
+function tableModel() {
+  const r = App.remote;
+  if (r && r.view && (r.view.phase === "playing" || r.view.phase === "over")) {
+    const v = r.view;
+    return {
+      remote: true, t: v.table, hand: v.hand || [], legal: v.legal || [],
+      names: v.names || [], seats: v.seats || [], active: v.active,
+      viewer: v.you, log: v.log || [], solo: false, busy: false,
+      sealed: false, act: sendAction,
+    };
+  }
+  const run = App.run, viewer = Privacy.viewer(run.privacy);
+  return {
+    remote: false, t: tableFor(run.g, run.state, viewer),
+    hand: viewer === null ? [] : B.at(run.state.board, Z.hand(viewer)).map((id) => B.visible(run.state.board, id, viewer)),
+    legal: viewer === null ? [] : run.g.legal(run.state, viewer),
+    names: run.state.names, seats: run.state.seats, active: run.state.active,
+    viewer, log: run.log, solo: !!run.g.solo, busy: run.busy,
+    sealed: !Privacy.acceptsInput(run.privacy), act,
+  };
+}
+
 function viewTable() {
-  const run = App.run;
-  const { g, state, privacy } = run;
-  const viewer = Privacy.viewer(privacy);
-  const t = g.table(state, viewer);
+  const m = tableModel();
+  const t = m.t;
   const s = el("div", "table");
 
   const co = el("div", "callouts");
@@ -2256,19 +2519,19 @@ function viewTable() {
   }
   s.append(co);
 
-  if (!g.solo) {
+  if (!m.solo) {
     const opp = el("div", "opponents");
-    for (const seat of state.seats) {
-      const o = el("div", "opp" + (state.active === seat ? " active" : ""));
-      o.append(el("span", "nm", state.names[seat]));
-      o.append(el("span", "ct", t.counts ? t.counts(seat) : ""));
+    m.seats.forEach((seat, i) => {
+      const o = el("div", "opp" + (m.active === seat ? " active" : ""));
+      o.append(el("span", "nm", (m.names[seat] || "") + (seat === m.viewer ? " (you)" : "")));
+      o.append(el("span", "ct", (t.counts && t.counts[i]) || ""));
       opp.append(o);
-    }
+    });
     s.append(opp);
   }
 
   const felt = el("div", "felt");
-  if (t.tableau) felt.append(tableauView(run, t));
+  if (t.tableau && !m.remote) felt.append(tableauView(App.run, t));
   else {
     const zs = el("div", "zones");
     for (const z of t.zones || []) {
@@ -2281,7 +2544,7 @@ function viewTable() {
         if (!z.spread && i) c.style.marginLeft = "-40px";
         pile.append(c);
       });
-      if (z.action) { pile.style.cursor = "pointer"; pile.onclick = () => act(z.action); }
+      if (z.action) { pile.style.cursor = "pointer"; pile.onclick = () => m.act(z.action); }
       zn.append(pile);
       if (z.label) zn.append(el("div", "zlabel", z.label));
       zs.append(zn);
@@ -2290,26 +2553,28 @@ function viewTable() {
   }
   s.append(felt);
 
-  if (run.log.length) {
+  if (m.log.length) {
     const lg = el("div", "log");
-    for (const line of run.log.slice(-3)) lg.append(el("div", null, line));
+    for (const line of m.log.slice(-3)) lg.append(el("div", null, line));
     s.append(lg);
   }
+  if (m.remote && m.active !== m.viewer && m.active !== null) {
+    s.append(el("div", "label", `Waiting for ${m.names[m.active] || "the next player"}…`));
+  }
 
-  s.append(handbar(run, t, viewer));
+  s.append(handbar(m));
   return s;
 }
 
-function handbar(run, t, viewer) {
-  const { g, state } = run;
+function handbar(m) {
+  const t = m.t, legal = m.legal, viewer = m.viewer;
   const bar = el("div", "handbar");
-  const legal = viewer === null ? [] : g.legal(state, viewer);
-  const canAct = Privacy.acceptsInput(run.privacy) && !run.busy && legal.length > 0;
+  const canAct = !m.sealed && !m.busy && legal.length > 0;
 
   if (t.handHint && canAct) bar.append(el("div", "label", t.handHint));
 
   if (viewer !== null) {
-    const hand = B.at(state.board, Z.hand(viewer)).map((id) => B.visible(state.board, id, viewer));
+    const hand = m.hand;
     const wrapH = el("div", "hand");
     const n = hand.length || 1;
     const w = Math.max(40, Math.min(62, Math.floor((Math.min(window.innerWidth - 40, 560) - 20) / Math.max(4, n) + 16)));
@@ -2319,14 +2584,14 @@ function handbar(run, t, viewer) {
       const playable = t.noCardPlay ? false
         : t.askMode ? legal.some((a) => a.t === "ask" && a.rank === vc.rank)
         : legal.some((a) => a.id === vc.id);
-      const dim = t.dimUnplayable && vc.known ? t.dimUnplayable(vc) : false;
+      const dim = (t.dimIds || []).includes(vc.id);
       const c = cardEl(vc, w, {
         sel: selected, dim: dim && !playable, playable: playable && canAct,
         tilt: selected ? 0 : seededTilt(vc.id, 2),
         play: canAct && playable ? () => {
-          if (t.askMode) { askFor(run, vc.rank); return; }
+          if (t.askMode) { askFor(m, vc.rank); return; }
           const a = legal.find((x) => x.id === vc.id);
-          if (a) act(a);
+          if (a) m.act(a);
         } : null,
       });
       if (i) c.style.marginLeft = overlap + "px";
@@ -2338,31 +2603,28 @@ function handbar(run, t, viewer) {
 
   const acts = el("div", "actions");
   const seen = new Set();
+  const gameId = m.remote ? (App.remote.view.gameId || "") : App.run.g.id;
   for (const a of legal) {
     if (a.id !== undefined && !t.noCardPlay) continue;
-    const label = actionLabel(g, state, a);
+    const label = actionLabel(gameId, m, a);
     if (!label || seen.has(label)) continue;
     seen.add(label);
     const b = el("button", "btn" + (a.t === "fold" || a.t === "pass" || a.t === "believe" ? " ghost" : ""), label);
     b.disabled = !canAct;
-    b.onclick = () => act(a);
+    b.onclick = () => m.act(a);
     acts.append(b);
   }
   if (acts.children.length) bar.append(acts);
-
-  if (viewer === null && !run.sealArmed && !run.busy) {
-    bar.append(el("div", "label", "Waiting…"));
-  }
   return bar;
 }
 
-function actionLabel(g, st, a) {
+function actionLabel(gameId, m, a) {
   switch (a.t) {
-    case "play": return g.id === "president" || g.id === "cheat" ? "Play selected" : null;
+    case "play": return gameId === "president" || gameId === "cheat" ? "Play selected" : null;
     case "lay": return "Put them down";
     case "select": return null;
     case "clear": return "Clear";
-    case "draw": return g.id === "klondike" ? "Turn" : "Draw a card";
+    case "draw": return gameId === "klondike" ? "Turn" : "Draw a card";
     case "drawStock": return "Draw from stock";
     case "takeDiscard": return "Take the discard";
     case "meld": return "Meld these";
@@ -2381,7 +2643,7 @@ function actionLabel(g, st, a) {
     case "check": return "Check";
     case "fold": return "Fold";
     case "call": return `Call ${a.amount}`;
-    case "raise": return `Raise to ${a.amount + (st.committed[st.active] || 0)}`;
+    case "raise": return `Raise to ${a.amount}`;
     case "allin": return `All in (${a.amount})`;
     case "ask": return null;
     case "move": return null;
@@ -2390,12 +2652,10 @@ function actionLabel(g, st, a) {
 }
 
 /* Go Fish asks a person, so tapping a rank opens the choice of who. */
-function askFor(run, rank) {
-  const { g, state } = run;
-  const viewer = Privacy.viewer(run.privacy);
-  const targets = g.legal(state, viewer).filter((a) => a.t === "ask" && a.rank === rank);
+function askFor(m, rank) {
+  const targets = m.legal.filter((a) => a.t === "ask" && a.rank === rank);
   if (!targets.length) return;
-  if (targets.length === 1) return act(targets[0]);
+  if (targets.length === 1) return m.act(targets[0]);
   const sheet = el("div", "seal");
   sheet.style.background = "var(--ground)";
   sheet.style.color = "var(--on-ground)";
@@ -2403,8 +2663,8 @@ function askFor(run, rank) {
   sheet.append(el("h2", "poster h-m", "Who has them?"));
   const list = el("div", "stack"); list.style.gap = "var(--s2)";
   for (const a of targets) {
-    const b = el("button", "btn wide", state.names[a.target]);
-    b.onclick = () => { sheet.remove(); act(a); };
+    const b = el("button", "btn wide", m.names[a.target] || `Player ${a.target + 1}`);
+    b.onclick = () => { sheet.remove(); m.act(a); };
     list.append(b);
   }
   const cancel = el("button", "btn ghost wide", "Never mind");
@@ -2507,6 +2767,8 @@ function viewSeal() {
 
 /* ── Result ──────────────────────────────────────────────────────── */
 function viewResult() {
+  const r = App.remote;
+  if (r && r.view && r.view.phase === "over") return viewRemoteResult(r.view);
   const run = App.run;
   const { state } = run;
   const d = state.done;
@@ -2548,6 +2810,41 @@ function viewResult() {
   return s;
 }
 
+function viewRemoteResult(v) {
+  const d = v.done;
+  const s = el("div", "screen result");
+  const wrap = el("div", "wrap stack");
+  wrap.style.gap = "var(--s6)";
+  const iWon = d.winners.includes(v.you);
+  const banner = el("div", "banner stack");
+  banner.style.gap = "var(--s3)";
+  banner.append(el("div", "label", v.gameName || ""));
+  const headline = d.winners.length > 1 ? "Split."
+    : iWon ? "You win." : `${v.names[d.winners[0]]} wins.`;
+  const h = el("h1", "poster h-xl", headline);
+  if (iWon) h.style.color = "var(--accent)";
+  banner.append(h);
+
+  const tbl = el("table", "scoretable");
+  const head = el("tr");
+  head.append(el("th", null, "Player"), el("th", null, d.lowWins ? "Points (low wins)" : "Score"));
+  tbl.append(head);
+  const order = [...v.seats].sort((a, b) => d.lowWins ? (d.scores[a] - d.scores[b]) : (d.scores[b] - d.scores[a]));
+  for (const seat of order) {
+    const tr = el("tr", d.winners.includes(seat) ? "win" : "");
+    tr.append(el("td", null, v.names[seat] + (seat === v.you ? " (you)" : "")), el("td", null, String(d.scores[seat])));
+    tbl.append(tr);
+  }
+
+  const back = el("button", "btn wide", v.host ? "Back to the table" : "Back to the table");
+  back.onclick = () => { App.view = "lobby"; render(); };
+  const leave = el("button", "btn ghost wide", "Leave");
+  leave.onclick = () => { Net.leave(); App.view = "library"; render(); };
+  wrap.append(banner, tbl, el("div", "stack"), back, leave);
+  s.append(wrap);
+  return s;
+}
+
 /* ── Render ──────────────────────────────────────────────────────── */
 function render() {
   try { renderInner(); }
@@ -2568,11 +2865,17 @@ function render() {
   }
 }
 function renderInner() {
-  const run = App.run;
-  const inGame = !!run && App.view === "table";
-  document.getElementById("quitBtn").classList.toggle("hidden", !inGame && App.view !== "setup");
+  const run = App.run, rem = App.remote;
+  const inGame = (!!run && App.view === "table") || App.view === "setup";
+  document.getElementById("quitBtn").classList.toggle("hidden", !inGame);
   document.querySelectorAll(".seal").forEach((n) => n.remove());
   screen.innerHTML = "";
+
+  if (App.view === "connect") { screen.append(viewConnect()); return; }
+  if (App.view === "lobby" && rem) { screen.append(viewLobby()); return; }
+  if (rem && rem.view && App.view === "result") { screen.append(viewResult()); return; }
+  if (rem && rem.view && rem.view.phase === "playing" && App.view === "table") { screen.append(viewTable()); return; }
+
   if (App.view === "setup" && App.game) { screen.append(viewSetup()); return; }
   if (!run) { App.view = "library"; screen.append(viewLibrary()); return; }
   if (App.view === "result") { screen.append(viewResult()); return; }
@@ -2580,6 +2883,21 @@ function renderInner() {
   if (run.sealArmed) document.body.append(viewSeal());
 }
 render();
+
+/* A reload should put you back in the seat you were in, not out of the
+   game — the server keeps the seat and the token identifies it. */
+if (SERVED) {
+  const saved = store.get("table", null);
+  if (saved && saved.code && saved.token) {
+    Net.post("/api/join", { code: saved.code, token: saved.token, name: store.get("myname", "Player") })
+      .then((r) => {
+        App.remote = { code: r.code, token: r.token, view: null };
+        App.view = "lobby"; render();
+        Net.open(r.code, r.token);
+      })
+      .catch(() => store.set("table", null));
+  }
+}
 
 /* Backgrounding the app re-seals it: coming back needs another
    confirmation, because we cannot know who is holding it now. */
