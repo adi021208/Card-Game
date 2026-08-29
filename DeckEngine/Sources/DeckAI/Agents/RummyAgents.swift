@@ -47,7 +47,7 @@ public enum GinRummyAgent {
                 moves.append(ScoredMove(action: action, score: 3.0 - gain, reason: "pass"))
 
             case let .discard(cardID):
-                guard hand.contains(where: { $0.id == cardID }) else { continue }
+                guard let card = hand.first(where: { $0.id == cardID }) else { continue }
                 var remaining = hand
                 remaining.removeAll { $0.id == cardID }
                 let after = MeldSolver.best(remaining)
@@ -147,7 +147,7 @@ public enum RummyAgent {
                 moves.append(ScoredMove(action: action, score: 9.0, reason: "lay off"))
 
             case let .discard(cardID):
-                guard hand.contains(where: { $0.id == cardID }) else { continue }
+                guard let card = hand.first(where: { $0.id == cardID }) else { continue }
                 var remaining = hand
                 remaining.removeAll { $0.id == cardID }
                 let after = MeldSolver.best(remaining)
