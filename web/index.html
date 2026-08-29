@@ -2848,28 +2848,48 @@ const Profile = {
    for every phase where the device is in transit, so there is no code
    path that renders a hand mid-handoff.
    ═══════════════════════════════════════════════════════════════════ */
+/* Who the screen belongs to.
+ *
+ * The viewer is a person, and only ever a person. A computer's turn does
+ * not change whose screen this is — nobody hands the phone to a robot —
+ * so a computer seat must never become the viewer, or the table would be
+ * redacted for the computer and draw its hand face up.
+ */
 const Privacy = {
-  make(seats, isHuman) { return { phase: "open", seat: null, next: null, seats, isHuman }; },
+  make(seats, isHuman) {
+    const humans = seats.filter(isHuman);
+    const p = { phase: "open", seat: null, next: null, seats, isHuman, humans };
+    /* One person against computers: the device is theirs for the whole
+       game, so seat them now and never seal it again. */
+    if (humans.length === 1) { p.phase = "playing"; p.seat = humans[0]; }
+    return p;
+  },
   viewer(p) { return p.phase === "playing" || p.phase === "revealing" ? p.seat : null; },
   acceptsInput(p) { return p.phase === "playing"; },
   open(p, seat) {
-    if (!p.isHuman(seat)) { p.phase = "playing"; p.seat = seat; return "resume"; }
-    const humans = p.seats.filter(p.isHuman);
-    if (humans.length <= 1) { p.phase = "playing"; p.seat = seat; return "resume"; }
-    p.phase = "handoff"; p.next = seat; return "handoff";
+    if (p.humans.length <= 1) return "resume";        // already seated, or nobody to seat
+    if (!p.isHuman(seat)) return "none";              // a computer opens: show nobody yet
+    p.phase = "handoff"; p.next = seat; p.seat = null; return "handoff";
   },
-  /* Called when the turn moves. An AI seat, or the same human twice in a
-     row, never triggers the ritual — the device has not changed hands. */
+  /* Called when the turn moves. A computer's turn leaves the viewer
+     exactly where it was, so the machine plays behind the same redaction
+     as any other opponent. The same person twice running is not a handoff
+     either — the device has not changed hands. */
   turnMoved(p, seat) {
     if (seat === null || seat === undefined) return "none";
-    if (!p.isHuman(seat)) { p.phase = "playing"; p.seat = seat; return "none"; }
-    const humans = p.seats.filter(p.isHuman);
-    if (humans.length <= 1) { p.phase = "playing"; p.seat = seat; return "none"; }
+    if (!p.isHuman(seat)) return "none";
+    if (p.humans.length === 1) { p.phase = "playing"; p.seat = p.humans[0]; return "none"; }
     if (p.seat === seat && p.phase === "playing") return "none";
     p.phase = "handoff"; p.next = seat; p.seat = null; return "handoff";
   },
   confirm(p) { p.phase = "playing"; p.seat = p.next; p.next = null; },
-  shield(p) { if (p.phase === "playing" && p.isHuman(p.seat)) { p.next = p.seat; p.seat = null; p.phase = "handoff"; return true; } return false; },
+  /* Putting the phone down mid-turn re-seals it. Alone against computers
+     there is nobody to hide from, so a solo game is left alone. */
+  shield(p) {
+    if (p.humans.length <= 1) return false;
+    if (p.phase === "playing" && p.isHuman(p.seat)) { p.next = p.seat; p.seat = null; p.phase = "handoff"; return true; }
+    return false;
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════════

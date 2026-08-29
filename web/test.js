@@ -70,6 +70,13 @@ console.log("Privacy");
   Privacy.confirm(p);
   eq(Privacy.viewer(p), 0, "after confirming, seat 0 sees");
   eq(Privacy.turnMoved(p, 2), "none", "an AI turn does not pass the device");
+  /* The return value above only says no seal was raised. What matters is
+     where the screen was left: on the person holding it. A computer seat
+     that becomes the viewer gets the table redacted in its favour, which
+     draws its hand face up. */
+  eq(Privacy.viewer(p), 0, "and an AI turn leaves the screen with the person holding it");
+  eq(Privacy.turnMoved(p, 3), "none", "a second AI in a row, likewise");
+  eq(Privacy.viewer(p), 0, "still seat 0's screen");
   eq(Privacy.turnMoved(p, 1), "handoff", "a different human does");
   eq(Privacy.viewer(p), null, "and nobody sees anything in transit");
   Privacy.confirm(p);
@@ -80,6 +87,36 @@ console.log("Privacy");
   const solo = Privacy.make([0,1], (s) => s === 0);
   Privacy.open(solo, 0);
   eq(Privacy.viewer(solo), 0, "a solo game never asks for a handoff");
+  eq(Privacy.turnMoved(solo, 1), "none", "and the machine's turn raises nothing");
+  eq(Privacy.viewer(solo), 0, "and never becomes the viewer");
+  ok(!Privacy.shield(solo), "alone against a machine there is nobody to hide from");
+  eq(Privacy.viewer(solo), 0, "so backgrounding a solo game keeps your seat");
+
+  /* A computer dealing first must not put its own hand on the screen
+     while the humans are still waiting to be handed the device. */
+  const aiFirst = Privacy.make([0,1,2], (s) => s < 2);
+  eq(Privacy.open(aiFirst, 2), "none", "a computer opening raises no seal");
+  eq(Privacy.viewer(aiFirst), null, "and shows nobody's hand");
+  eq(Privacy.turnMoved(aiFirst, 0), "handoff", "the first person to act is handed the device");
+  Privacy.confirm(aiFirst);
+  eq(Privacy.viewer(aiFirst), 0, "and only then does a hand appear");
+
+  /* The invariant, stated once: whatever sequence of turns arrives, the
+     viewer is a person or nobody — never a machine. */
+  const seats = [0,1,2,3], human = (s) => s < 2;
+  const q = Privacy.make(seats, human);
+  Privacy.open(q, 0); Privacy.confirm(q);
+  let held = 0;
+  const r = rngFrom(99);
+  for (let i = 0; i < 4000; i++) {
+    const seat = seats[r.int(4)];
+    if (Privacy.turnMoved(q, seat) === "handoff" && r.chance(.8)) Privacy.confirm(q);
+    if (r.chance(.05)) Privacy.shield(q);
+    const v = Privacy.viewer(q);
+    if (v !== null && !human(v)) { ok(false, `a machine held the screen after seat ${seat} moved`); break; }
+    if (v !== null) held++;
+  }
+  ok(held > 0, "and somebody does hold it along the way");
 }
 
 /* ── Redaction ─────────────────────────────────────────────────── */

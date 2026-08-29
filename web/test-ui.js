@@ -80,7 +80,16 @@ global.setTimeout = (fn) => { timers.push(fn); return timers.length; };
 global.confirm = () => true;
 global.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ players: [], you: "" }) });
 global.EventSource = class { constructor() {} close() {} };
-const drain = (max = 3000) => { let n = 0; while (timers.length && n++ < max) timers.shift()(); };
+let watching = null;
+const leaks = [];
+/* The privacy check runs after every frame, not only when the test clicks.
+   A computer's turn renders and then resolves on a timer, so the screen
+   being handed to a machine in between is invisible to a check that only
+   looks once the dust has settled — which is exactly how it was missed. */
+const drain = (max = 3000) => {
+  let n = 0;
+  while (timers.length && n++ < max) { timers.shift()(); if (watching) checkLeak(watching); }
+};
 
 /* ── Load the page's script ────────────────────────────────────────── */
 const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
@@ -97,26 +106,45 @@ const byText = (t) => buttons().find((b) => b.textContent.trim().toLowerCase() =
 const click = (n) => { if (n && n.onclick) { n.onclick(); drain(); return true; } return false; };
 const screenText = () => byId.screen.textContent;
 
-/* Nothing on screen may name a card the current viewer cannot see. */
-function assertNoLeak(label) {
+/* Nothing on screen may name a card the person holding the device cannot
+ * see. Privacy is asked who that is, but not trusted about it: if a
+ * computer seat becomes the viewer, every check below would excuse the
+ * very hand it exists to protect, so that is asserted first and on its
+ * own terms — a seat the setup screen filled with a machine is never the
+ * person holding the phone.
+ */
+const RANK_WORD = ["","","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Jack","Queen","King","Ace"];
+const SUIT_WORD = { C: "Clubs", D: "Diamonds", H: "Hearts", S: "Spades" };
+
+function checkLeak(where) {
   const run = api.App.run;
-  if (!run) return;
+  if (!run || !run.seats) return;
   const viewer = Privacy.viewer(run.privacy);
+  if (viewer !== null && run.seats[viewer] && run.seats[viewer].ai) {
+    leaks.push(`the screen was handed to computer seat ${viewer}`);
+    return;
+  }
   const shown = new Set(all(body).filter((n) => n.classList.contains("card"))
     .map((n) => n.getAttribute("aria-label")).filter((x) => x && x !== "Face-down card"));
+  if (!shown.size) return;
   for (const seat of run.state.seats) {
     if (seat === viewer) continue;
     for (const id of B.at(run.state.board, Z.hand(seat))) {
       const c = run.state.board.cards.get(id);
       if (!c) continue;
-      const name = `${["","","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Jack","Queen","King","Ace"][c.rank]} of ${{C:"Clubs",D:"Diamonds",H:"Hearts",S:"Spades"}[c.suit]}`;
+      const name = `${RANK_WORD[c.rank]} of ${SUIT_WORD[c.suit]}`;
       if (shown.has(name) && !B.canSee(run.state.board, id, viewer)) {
-        ok(false, `${label} — the page showed ${name}, which seat ${viewer} may not see`);
+        leaks.push(`showed ${name} from seat ${seat}, which seat ${viewer} may not see`);
         return;
       }
     }
   }
-  pass++;
+}
+
+function assertNoLeak(label) {
+  checkLeak(label);
+  if (leaks.length) { ok(false, `${label} — ${leaks[0]}`); leaks.length = 0; }
+  else pass++;
 }
 
 /* ── The library opens ─────────────────────────────────────────────── */
@@ -162,8 +190,9 @@ for (const id of Object.keys(GAMES)) {
     if (swap) { try { click(swap); } catch (e) { ok(false, `${id}: switching a seat threw — ${e.message}`); } }
   }
 
+  leaks.length = 0; watching = id;
   let dealt = null;
-  try { dealt = click(byText("Deal")); } catch (e) { ok(false, `${id}: dealing threw — ${e.message}`); continue; }
+  try { dealt = click(byText("Deal")); } catch (e) { ok(false, `${id}: dealing threw — ${e.message}`); watching = null; continue; }
   ok(dealt, `${id}: the Deal button worked`);
   ok(!!api.App.run, `${id}: a game is running`);
   assertNoLeak(`${id} at the deal`);
@@ -187,8 +216,11 @@ for (const id of Object.keys(GAMES)) {
     if (!acted) idle++; else { idle = 0; assertNoLeak(`${id} mid-game`); }
     steps++;
   }
+  watching = null;
   ok(steps > 0, `${id}: the table accepted at least one interaction`);
   ok(screenText().length > 0, `${id}: the screen is never blank`);
+  ok(leaks.length === 0, `${id}: no frame of the whole game leaked — ${leaks[0]}`);
+  leaks.length = 0;
 }
 
 /* ── A solitaire must put every one of its columns on the screen ────
