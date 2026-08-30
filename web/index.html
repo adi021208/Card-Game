@@ -1,87 +1,101 @@
 <title>DECK</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
-/* ─── DECK design tokens ──────────────────────────────────────────────
-   Ported from DeckPalette.swift / DeckTypography.swift / DeckSpace.swift.
-   Nine press inks, a 4pt grid, and one variable grotesque doing the work
-   the system font's width axis does on iOS. Nothing here glows. */
+/* ─── DECK — retro card arcade ────────────────────────────────────────
+   A CRT in a 90s bedroom. Everything is a shade of screen-lit concrete
+   with a few muted pops; nothing glows, nothing gradients, nothing is
+   round. Pixel type throughout: Press Start 2P for anything that shouts,
+   VT323 — a terminal face — for anything you actually have to read. */
 :root {
-  --ink: #0E0D0C; --ink-soft: #211F1D; --ink-light: #3D3A36;
-  --cream: #F2E9D8; --newsprint: #E8E0CE; --chalk: #FBF7EF;
-  --vermilion: #E33A21; --crimson: #B01030; --cobalt: #1B37C4;
-  --acid: #E4E11A; --coral: #FF6A55; --forest: #0F4F38; --orange: #F0791E;
+  /* The room, in greys. */
+  --void: #0A0C0F; --charcoal: #12151A; --slate: #1B1F26;
+  --steel: #262C35; --iron: #39424F; --dust: #7C8794;
+  --bone: #B9C2CD; --paper: #E4E9EF;
 
-  /* Light: ink on uncoated stock. */
-  --ground: var(--cream);
-  --ground-2: var(--newsprint);
-  --on-ground: var(--ink);
-  --on-ground-mute: #6A635A;
-  --rule: rgba(14,13,12,.16);
-  --accent: var(--vermilion);
-  --on-accent: var(--cream);
-  --card-face: var(--chalk);
-  --card-ink: var(--ink);
+  /* Muted pops. These seven names are what the games ask for by name,
+     so they keep them — repainted for the room. */
+  --vermilion: #B4544C; --crimson: #8E3E48; --cobalt: #4E6E9E;
+  --acid: #B8A055; --coral: #C07A6A; --forest: #4F7A5C; --orange: #B57A44;
+  --ink: var(--charcoal); --ink-soft: var(--slate); --ink-light: var(--steel);
+  --cream: var(--paper); --newsprint: var(--bone); --chalk: #EDF1F5;
+
+  /* Night: the set, lit by the tube. */
+  --ground: var(--void);
+  --ground-2: var(--slate);
+  --on-ground: var(--paper);
+  --on-ground-mute: var(--dust);
+  --rule: #2E3742;
+  --accent: #4E8A7F;              /* phosphor */
+  --accent-ink: #4E8A7F;          /* the same, where it has to be read */
+  --on-accent: #07120F;
+  --card-face: #DFE5EB;
+  --card-ink: #10141A;
   --card-back: var(--cobalt);
-  --shadow: rgba(14,13,12,.26);
+  --shadow: #05070A;
+  --screen: #10161B;              /* inside the tube */
 
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
-  --s6: 32px; --s7: 48px; --s8: 64px; --page: 20px; --section: 40px;
-  --r-tight: 4px; --r-btn: 8px; --r-panel: 12px; --r-poster: 16px;
+  --s6: 32px; --s7: 48px; --s8: 64px; --page: 16px; --section: 28px;
+  /* Pixels do not have corners. */
+  --r-tight: 0px; --r-btn: 0px; --r-panel: 0px; --r-poster: 0px;
 
-  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  color-scheme: light dark;
+  --display: "Press Start 2P", "Courier New", monospace;
+  --mono: "VT323", "Courier New", monospace;
+  --body: "VT323", "Courier New", monospace;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: var(--ink); --ground-2: var(--ink-soft);
-    --on-ground: var(--cream); --on-ground-mute: #9A9086;
-    --rule: rgba(242,233,216,.18);
-    --shadow: rgba(0,0,0,.55);
-  }
-}
-:root[data-theme="dark"] {
-  --ground: var(--ink); --ground-2: var(--ink-soft);
-  --on-ground: var(--cream); --on-ground-mute: #9A9086;
-  --rule: rgba(242,233,216,.18);
-  --shadow: rgba(0,0,0,.55);
+/* Day: curtains open. The same room with the lights up — still grey. */
+:root[data-theme="light"] {
+  --ground: #C6CCD4;
+  --ground-2: #B0B8C2;
+  --on-ground: #12151A;
+  --on-ground-mute: #4C5560;
+  --rule: #98A2AE;
+  --on-accent: #F2F7F5;
+  --accent-ink: #2C5E54;
+  --card-face: #EDF1F5;
+  --shadow: #9AA3AE;
+  /* A tube is a tube whatever the weather: the screens stay lit. */
+  --screen: #10161B;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; overscroll-behavior-y: none; }
 body {
   margin: 0; background: var(--ground); color: var(--on-ground);
-  font-family: var(--display); font-variation-settings: "wdth" 100;
+  font-family: var(--body); font-size: 19px; line-height: 1.35;
   -webkit-text-size-adjust: 100%; overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-  /* A card table should not bounce, zoom on a double tap, or wait 300ms
-     to find out whether you meant to. */
   touch-action: manipulation;
 }
+/* Every canvas here is pixel art drawn small and blown up. Let it stay
+   blocky rather than being helpfully smoothed into mush. */
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
 button {
   font: inherit; color: inherit; background: none; border: 0; cursor: pointer;
   touch-action: manipulation;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Poster type: black weight, compressed width, tracked in tight. */
+/* ─── Pixel type ─────────────────────────────────────────────────── */
 .poster {
-  font-weight: 900; font-variation-settings: "wdth" 68, "wght" 900;
-  letter-spacing: -.02em; line-height: .86; text-wrap: balance;
-  text-transform: uppercase; margin: 0;
+  font-family: var(--display); font-weight: 400;
+  line-height: 1.7; text-transform: uppercase; margin: 0;
+  text-shadow: 2px 2px 0 var(--shadow);
 }
-.h-xl { font-size: clamp(48px, 17vw, 104px); }
-.h-l  { font-size: clamp(34px, 11vw, 64px); }
-.h-m  { font-size: clamp(24px, 7.5vw, 40px); }
-.h-s  { font-size: 20px; }
+.h-xl { font-size: clamp(13px, 4.4vw, 22px); }
+.h-l  { font-size: clamp(11px, 3.4vw, 17px); }
+.h-m  { font-size: clamp(9px, 2.7vw, 13px); }
+.h-s  { font-size: 10px; }
 .label {
-  font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--on-ground-mute);
+  font-family: var(--display); font-size: 8px; letter-spacing: .04em;
+  line-height: 1.9; text-transform: uppercase; color: var(--on-ground-mute);
 }
-.num { font-variant-numeric: tabular-nums; font-weight: 800; }
+.num { font-family: var(--display); font-size: 11px; font-variant-numeric: tabular-nums; }
 
 #app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
 #screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -102,76 +116,150 @@ button {
            max(var(--page), env(safe-area-inset-right, 0px))
            var(--s3)
            max(var(--page), env(safe-area-inset-left, 0px));
-  border-bottom: 1px solid var(--rule);
-  position: sticky; top: 0; background: var(--ground); z-index: 20;
+  border-bottom: 2px solid var(--rule);
+  position: sticky; top: 0; background: var(--ground-2); z-index: 20;
 }
-.topbar .mark { font-weight: 900; font-variation-settings: "wdth" 62, "wght" 900;
-  letter-spacing: .01em; font-size: 22px; }
+.topbar .mark {
+  font-family: var(--display); font-size: 13px; letter-spacing: .02em;
+  color: var(--accent-ink); text-shadow: 2px 2px 0 var(--shadow);
+}
 .topbar .spacer { flex: 1; }
+.topbar .tally {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px var(--s2); background: var(--ground);
+  border: 2px solid var(--rule); color: var(--on-ground-mute);
+}
+.topbar .tally .g { font-family: var(--body); font-size: 15px; line-height: 1; }
+.topbar .tally .n {
+  font-family: var(--display); font-size: 8px; line-height: 1.4;
+  color: var(--on-ground); font-variant-numeric: tabular-nums;
+}
 .icon-btn {
   width: 44px; height: 44px; display: grid; place-items: center;
-  border-radius: var(--r-btn); font-size: 18px;
+  font-size: 16px; color: var(--on-ground); border: 2px solid var(--rule);
+  background: var(--ground);
 }
-@media (hover: hover) { .icon-btn:hover { background: var(--ground-2); } }
+@media (hover: hover) { .icon-btn:hover { background: var(--ground-2); color: var(--on-ground); } }
+.icon-btn:active { transform: translate(1px, 1px); }
+.icon-btn.swapseat { font-family: var(--display); font-size: 8px; letter-spacing: .02em; }
 
-/* ─── Buttons ────────────────────────────────────────────────────── */
+/* ─── Buttons: a pressed key on a grey console ───────────────────── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  gap: var(--s2); min-height: 52px; padding: 0 var(--s5);
+  gap: var(--s2); min-height: 46px; padding: 0 var(--s4);
   background: var(--accent); color: var(--on-accent);
-  font-weight: 800; font-variation-settings: "wdth" 88, "wght" 800;
-  text-transform: uppercase; letter-spacing: .04em; font-size: 15px;
-  border-radius: var(--r-btn); transition: transform .12s ease;
+  font-family: var(--display); font-size: 10px; line-height: 1.6;
+  text-transform: uppercase; letter-spacing: .02em;
+  border: 2px solid var(--void); box-shadow: 3px 3px 0 var(--shadow);
+  transition: none;
 }
-.btn:active { transform: translateY(2px); }
-.btn.ghost { background: transparent; color: var(--on-ground); box-shadow: inset 0 0 0 2px var(--rule); }
-@media (hover: hover) { .btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--on-ground); } }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+.btn.ghost { background: var(--ground-2); color: var(--on-ground); }
+@media (hover: hover) { .btn.ghost:hover { background: var(--rule); } }
 .btn.wide { width: 100%; }
-.btn[disabled] { opacity: .35; pointer-events: none; }
+.btn[disabled] { opacity: .38; pointer-events: none; box-shadow: none; }
+
+/* ─── The room, and the tube ─────────────────────────────────────── */
+.room {
+  position: relative; width: 100%; line-height: 0;
+  border: 2px solid var(--rule); border-bottom: 0; background: var(--charcoal);
+}
+.room canvas { width: 100%; height: auto; display: block; }
+/* The content below the diorama reads as what is on the screen. */
+.crt {
+  position: relative; background: var(--screen);
+  border: 2px solid var(--rule); padding: var(--s4) var(--s3);
+  box-shadow: inset 0 0 0 2px var(--void);
+}
+.crt::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom, rgba(0,0,0,.22) 0 1px, rgba(0,0,0,0) 1px 3px);
+}
+.crt > * { position: relative; z-index: 1; }
+.crt .poster { color: var(--accent); text-shadow: 2px 2px 0 var(--void); }
+.crt .sub {
+  font-family: var(--display); font-size: 7px; line-height: 1.8;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--dust);
+}
+.crt .shelf { margin-top: var(--s2); }
 
 /* ─── Library ────────────────────────────────────────────────────── */
-.masthead { padding-top: var(--s5); }
-.masthead .sub { margin-top: var(--s3); max-width: 34ch; color: var(--on-ground-mute); font-size: 15px; line-height: 1.5; }
-.shelf { display: grid; gap: var(--s3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-.game-card {
-  position: relative; text-align: left; padding: var(--s4);
-  min-height: 132px; border-radius: var(--r-panel); overflow: hidden;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  color: var(--cream); transition: transform .14s ease;
+.masthead { padding-top: var(--s2); }
+.sub {
+  margin: 0; max-width: 44ch; color: var(--on-ground-mute);
+  font-size: 17px; line-height: 1.3;
 }
-.game-card:active { transform: scale(.98); }
-.game-card .gname { font-weight: 900; font-variation-settings: "wdth" 66, "wght" 900;
-  font-size: 26px; line-height: .88; text-transform: uppercase; }
-.game-card .gtag { font-family: var(--mono); font-size: 10.5px; margin-top: var(--s2);
-  opacity: .82; letter-spacing: .06em; text-transform: uppercase; }
+.masthead .sub { margin-top: var(--s3); }
+.shelf { display: grid; gap: var(--s2); grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
+.game-card {
+  position: relative; text-align: left; padding: var(--s2);
+  min-height: 128px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  color: var(--paper); background: var(--slate);
+  border: 2px solid var(--iron); box-shadow: 3px 3px 0 var(--shadow);
+}
+.game-card.art { aspect-ratio: 5 / 4; }
+.game-card.wide { aspect-ratio: 16 / 9; }
+.game-card:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+@media (hover: hover) { .game-card:hover { border-color: var(--accent); } }
 .game-card canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .game-card .gname, .game-card .gtag { position: relative; }
+.game-card .gname {
+  font-family: var(--display); font-size: 8px; line-height: 1.5;
+  text-transform: uppercase; text-shadow: 2px 2px 0 var(--void);
+}
+.game-card .gtag {
+  font-family: var(--display); font-size: 6px; line-height: 1.6;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--dust);
+  text-shadow: 1px 1px 0 var(--void); margin-top: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ─── Bottom navigation ──────────────────────────────────────────── */
+#app.has-nav .screen { padding-bottom: calc(var(--page) + 62px + env(safe-area-inset-bottom, 0px)); }
+.navbar {
+  display: flex; border-top: 2px solid var(--rule); background: var(--ground-2);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: sticky; bottom: 0; z-index: 20;
+}
+.navitem {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: var(--s2) 2px calc(var(--s2) + 2px);
+  font-family: var(--display); font-size: 7px; letter-spacing: .02em;
+  text-transform: uppercase; color: var(--on-ground-mute);
+}
+.navitem .glyph { font-family: var(--body); font-size: 17px; line-height: 1; }
+.navitem[aria-current="page"] { color: var(--accent-ink); background: var(--ground); }
+.navitem:active { background: var(--rule); }
 
 /* ─── Setup ──────────────────────────────────────────────────────── */
 .field { display: flex; flex-direction: column; gap: var(--s3); }
 .seatlist { display: flex; flex-direction: column; gap: var(--s2); }
 .seat-row {
   display: flex; align-items: center; gap: var(--s3);
-  padding: var(--s3); border-radius: var(--r-btn); background: var(--ground-2);
+  padding: var(--s2) var(--s3); background: var(--ground-2);
+  border: 2px solid var(--rule);
 }
 .seat-row input {
   flex: 1; min-width: 0; background: transparent; border: 0; color: inherit;
-  font-family: var(--display); font-size: 16px; font-weight: 600; padding: var(--s1) 0;
+  font-family: var(--body); font-size: 19px; padding: var(--s1) 0;
   border-bottom: 2px solid var(--rule);
 }
 .seat-row input:focus { outline: none; border-bottom-color: var(--accent); }
 .chip {
-  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  font-family: var(--display); font-size: 7px; line-height: 1.7;
   text-transform: uppercase; padding: var(--s1) var(--s2);
-  border-radius: var(--r-tight); background: var(--on-ground); color: var(--ground);
+  background: var(--iron); color: var(--paper);
 }
-.chip.ai { background: var(--cobalt); color: var(--cream); }
-.seg { display: flex; gap: var(--s1); background: var(--ground-2); padding: var(--s1); border-radius: var(--r-btn); }
+.chip.ai { background: var(--cobalt); }
+.seg { display: flex; gap: 2px; background: var(--ground-2); padding: 2px; border: 2px solid var(--rule); }
 .seg button {
-  flex: 1; padding: var(--s2) var(--s3); border-radius: var(--r-tight);
-  font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+  flex: 1; padding: var(--s2) var(--s1);
+  font-family: var(--display); font-size: 7px; line-height: 1.7;
+  text-transform: uppercase; color: var(--dust);
 }
-.seg button[aria-pressed="true"] { background: var(--on-ground); color: var(--ground); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 
 /* ─── Table ──────────────────────────────────────────────────────── */
 .table {
@@ -180,66 +268,74 @@ button {
            calc(var(--s4) + env(safe-area-inset-bottom, 0px))
            max(var(--s3), env(safe-area-inset-left, 0px));
 }
-.callouts { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); align-items: baseline; min-height: 26px; }
-.callout .k { font-family: var(--mono); font-size: 10px; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--on-ground-mute); display: block; }
-.callout .v { font-weight: 800; font-size: 17px; font-variation-settings: "wdth" 88, "wght" 800; }
+.callouts { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: baseline; min-height: 26px; }
+.callout .k {
+  font-family: var(--display); font-size: 7px; line-height: 1.8;
+  text-transform: uppercase; color: var(--on-ground-mute); display: block;
+}
+.callout .v { font-family: var(--display); font-size: 11px; line-height: 1.5; }
 .opponents { display: flex; flex-wrap: wrap; gap: var(--s2); }
 .opp {
   display: flex; align-items: center; gap: var(--s2);
-  padding: var(--s2) var(--s3); border-radius: var(--r-btn);
-  background: var(--ground-2); font-size: 13px;
+  padding: var(--s1) var(--s2); background: var(--ground-2);
+  border: 2px solid var(--rule); font-size: 13px;
 }
-.opp.active { background: var(--accent); color: var(--on-accent); }
-.opp .nm { font-weight: 700; }
-.opp .ct { font-family: var(--mono); font-size: 12px; opacity: .8; }
+.opp.active { border-color: var(--accent); background: var(--rule); }
+.opp .nm { font-family: var(--display); font-size: 8px; line-height: 1.7; }
+.opp .ct { font-size: 14px; color: var(--on-ground); }
 .felt {
-  flex: 1; min-height: 190px; border-radius: var(--r-panel);
-  background: var(--ground-2); padding: var(--s4);
+  flex: 1; min-height: 180px; background: var(--screen);
+  background-image:
+    repeating-linear-gradient(to right, rgba(255,255,255,.022) 0 2px, rgba(0,0,0,0) 2px 8px),
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.022) 0 2px, rgba(0,0,0,0) 2px 8px);
+  box-shadow: inset 0 0 0 2px var(--void);
+  border: 2px solid var(--rule); padding: var(--s3);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--s3); position: relative; overflow: hidden;
 }
-/* A solitaire layout is taller than the felt: let it scroll, from the top. */
 .felt.tableau { justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
-.zones { display: flex; flex-wrap: wrap; gap: var(--s5); justify-content: center; align-items: flex-start; }
+.zones { display: flex; flex-wrap: wrap; gap: var(--s4); justify-content: center; align-items: flex-start; }
 .zone { display: flex; flex-direction: column; align-items: center; gap: var(--s2); }
-.zone .zlabel { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--on-ground-mute); }
-.pile { position: relative; }
-.pile.empty {
-  border: 2px dashed var(--rule); border-radius: 8px;
+.zone .zlabel {
+  font-family: var(--display); font-size: 6px; line-height: 1.9;
+  text-transform: uppercase; color: var(--dust);
 }
+.pile { position: relative; }
+.pile.empty { border: 2px dashed var(--iron); }
 .handbar { display: flex; flex-direction: column; gap: var(--s3); }
 .hand { display: flex; justify-content: center; min-height: 108px; padding: var(--s3) 0 var(--s2); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
-.actions .btn { flex: 1 1 auto; min-height: 46px; font-size: 13px; padding: 0 var(--s4); }
+.actions .btn { flex: 1 1 auto; min-height: 44px; font-size: 8px; padding: 0 var(--s3); }
 
-/* ─── Cards ──────────────────────────────────────────────────────── */
+/* ─── Cards: drawn like sprites, not printed ─────────────────────── */
 .card {
-  position: relative; border-radius: 7px; flex: none;
+  position: relative; flex: none;
   background: var(--card-face); color: var(--card-ink);
-  box-shadow: 0 2px 0 var(--shadow);
+  border: 2px solid var(--void); box-shadow: 2px 2px 0 var(--shadow);
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-  transition: transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s ease;
+  transition: transform .1s steps(2, end);
 }
 .card.back { background: var(--card-back); }
 .card.red { color: var(--vermilion); }
-.card .pip { position: absolute; font-weight: 900; line-height: .82;
-  font-variation-settings: "wdth" 78, "wght" 900; text-align: center; }
-.card .pip.tl { top: 5%; left: 7%; }
-.card .pip.br { bottom: 5%; right: 7%; transform: rotate(180deg); }
-.card .mid { position: absolute; inset: 0; display: grid; place-items: center;
-  font-weight: 900; opacity: .92; }
-.card .backmark { position: absolute; inset: 12%; border-radius: 4px;
-  border: 2px solid rgba(242,233,216,.5); display: grid; place-items: center;
-  color: rgba(242,233,216,.85); font-weight: 900; }
+.card .pip {
+  position: absolute; font-family: var(--display); line-height: 1.1;
+  text-align: center;
+}
+.card .pip.tl { top: 6%; left: 8%; }
+.card .pip.br { bottom: 6%; right: 8%; transform: rotate(180deg); }
+.card .mid { position: absolute; inset: 0; display: grid; place-items: center; opacity: .9; }
+.card .backmark {
+  position: absolute; inset: 14%; border: 2px solid rgba(228,233,239,.35);
+  display: grid; place-items: center; color: rgba(228,233,239,.6);
+  font-family: var(--display);
+}
 .card.play { cursor: pointer; }
-@media (hover: hover) { .card.play:hover { transform: translateY(-10px); } }
-.card.sel { transform: translateY(-16px) scale(1.04); box-shadow: 0 10px 0 var(--shadow); }
-.card.dim { opacity: .38; }
+@media (hover: hover) { .card.play:hover { transform: translateY(-8px); } }
+.card.sel { transform: translateY(-14px); box-shadow: 2px 10px 0 var(--shadow); }
+.card.dim { opacity: .4; }
 .card.playable::after {
   content: ""; position: absolute; left: 50%; transform: translateX(-50%);
-  bottom: -9px; width: 20px; height: 4px; border-radius: 2px; background: var(--accent);
+  bottom: -8px; width: 16px; height: 4px; background: var(--accent);
 }
 
 /* ─── Pass & Play seal ───────────────────────────────────────────── */
@@ -250,69 +346,84 @@ button {
            max(var(--page), env(safe-area-inset-right, 0px))
            calc(var(--s6) + env(safe-area-inset-bottom, 0px))
            max(var(--page), env(safe-area-inset-left, 0px));
-  background: var(--accent); color: var(--on-accent);
+  background: var(--charcoal); color: var(--paper);
+  box-shadow: inset 0 0 0 4px var(--accent);
 }
-.seal .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; opacity: .85; }
-.seal .who { font-size: clamp(56px, 22vw, 150px); }
-.seal .note { max-width: 30ch; font-size: 15px; line-height: 1.5; opacity: .92; }
-.seal .btn { background: var(--on-accent); color: var(--accent); align-self: flex-start; }
-.seal.armed { animation: slam .22s cubic-bezier(.2,.9,.3,1) both; }
+.seal .eyebrow {
+  font-family: var(--display); font-size: 8px; line-height: 1.9;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--accent);
+}
+.seal .who {
+  font-family: var(--display); font-size: clamp(18px, 7vw, 40px);
+  line-height: 1.5; text-transform: uppercase; text-shadow: 3px 3px 0 var(--shadow);
+}
+.seal .note { max-width: 38ch; font-size: 19px; line-height: 1.3; color: var(--bone); }
+.seal .btn { align-self: flex-start; }
+.seal.armed { animation: slam .18s steps(4, end) both; }
 @keyframes slam { from { transform: translateY(-100%); } to { transform: none; } }
 
 /* ─── Result ─────────────────────────────────────────────────────── */
-.result .banner { padding: var(--s6) 0; }
-.scoretable { width: 100%; border-collapse: collapse; font-size: 15px; }
-.scoretable th { text-align: left; font-family: var(--mono); font-size: 10px;
-  letter-spacing: .1em; text-transform: uppercase; color: var(--on-ground-mute);
-  padding-bottom: var(--s2); font-weight: 400; }
-.scoretable td { padding: var(--s3) 0; border-top: 1px solid var(--rule); }
-.scoretable td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 800; }
-.scoretable tr.win td { color: var(--accent); }
+.result .banner { padding: var(--s5) 0; }
+.scoretable { width: 100%; border-collapse: collapse; font-size: 18px; }
+.scoretable th {
+  text-align: left; font-family: var(--display); font-size: 7px; line-height: 1.9;
+  text-transform: uppercase; color: var(--on-ground-mute);
+  padding-bottom: var(--s2); font-weight: 400;
+}
+.scoretable td { padding: var(--s2) 0; border-top: 2px solid var(--rule); }
+.scoretable td:last-child { text-align: right; font-family: var(--display); font-size: 10px; }
+.scoretable tr.win td { color: var(--accent-ink); }
 
-.log { display: flex; flex-direction: column; gap: var(--s1); max-height: 88px; overflow-y: auto; }
-.log div { font-family: var(--mono); font-size: 11px; color: var(--on-ground-mute); }
+.log { display: flex; flex-direction: column; gap: 2px; max-height: 84px; overflow-y: auto; }
+.log div { font-size: 16px; color: var(--on-ground-mute); }
 .log div:last-child { color: var(--on-ground); }
 .toast {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 60;
-  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
-  background: var(--on-ground); color: var(--ground); padding: var(--s3) var(--s4);
-  border-radius: var(--r-btn); font-size: 14px; font-weight: 600; max-width: 90vw;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  background: var(--steel); color: var(--paper); padding: var(--s2) var(--s3);
+  border: 2px solid var(--accent); box-shadow: 3px 3px 0 var(--shadow);
+  font-size: 17px; max-width: 90vw;
 }
 .roomcode {
-  font-weight: 900; font-variation-settings: "wdth" 88, "wght" 900;
-  font-size: clamp(46px, 15vw, 76px); letter-spacing: .12em; line-height: 1;
-  color: var(--accent);
+  font-family: var(--display); font-size: clamp(20px, 8vw, 38px);
+  letter-spacing: .1em; line-height: 1.5; color: var(--accent);
+  text-shadow: 3px 3px 0 var(--shadow);
 }
 .codeinput {
-  width: 100%; background: var(--ground-2); border: 0; color: inherit;
-  font-family: var(--display); font-weight: 900; font-size: 34px;
-  letter-spacing: .24em; text-align: center; text-transform: uppercase;
-  padding: var(--s4); border-radius: var(--r-btn);
+  width: 100%; background: var(--ground-2); border: 2px solid var(--rule); color: inherit;
+  font-family: var(--display); font-size: 20px;
+  letter-spacing: .14em; text-align: center; text-transform: uppercase;
+  padding: var(--s4) var(--s2);
 }
-.codeinput:focus { outline: 3px solid var(--accent); }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); flex: none; }
-.dot.off { background: var(--on-ground-mute); }
-.modepick { display: grid; gap: var(--s3); }
+.codeinput:focus { outline: 2px solid var(--accent); }
+.dot { width: 8px; height: 8px; background: var(--forest); flex: none; }
+.dot.off { background: var(--iron); }
+.modepick { display: grid; gap: var(--s2); }
 .modepick button {
-  text-align: left; padding: var(--s5); border-radius: var(--r-panel);
-  background: var(--ground-2); display: flex; flex-direction: column; gap: var(--s2);
+  text-align: left; padding: var(--s4); background: var(--ground-2);
+  border: 2px solid var(--rule); box-shadow: 3px 3px 0 var(--shadow);
+  display: flex; flex-direction: column; gap: var(--s2);
 }
-.modepick .t { font-weight: 900; font-variation-settings: "wdth" 74, "wght" 900;
-  font-size: 30px; text-transform: uppercase; line-height: .9; }
-.modepick .d { font-size: 14px; color: var(--on-ground-mute); line-height: 1.45; }
+.modepick button:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+.modepick .t {
+  font-family: var(--display); font-size: 11px; line-height: 1.6;
+  text-transform: uppercase;
+}
+.modepick .d { font-size: 18px; color: var(--on-ground-mute); line-height: 1.25; }
 .hidden { display: none !important; }
+
 /* A phone held sideways: about 350px of height once Safari takes its cut. */
 @media (orientation: landscape) and (max-height: 460px) {
-  :root { --page: 14px; --s5: 16px; --s6: 20px; --s7: 28px; --section: 24px; }
+  :root { --page: 12px; --s5: 16px; --s6: 20px; --s7: 28px; --section: 20px; }
   .topbar { position: static; }
-  .h-xl { font-size: clamp(34px, 9vw, 56px); }
-  .h-l  { font-size: clamp(28px, 7vw, 44px); }
-  .masthead { padding-top: var(--s3); }
+  .h-xl { font-size: clamp(11px, 3vw, 16px); }
+  .masthead { padding-top: 0; }
   .seal { gap: var(--s3); }
-  .seal .who { font-size: clamp(38px, 13vh, 76px); }
+  .seal .who { font-size: clamp(14px, 5vh, 26px); }
   .hand { min-height: 84px; }
-  .felt { min-height: 130px; padding: var(--s3); }
+  .felt { min-height: 130px; padding: var(--s2); }
   .log { max-height: 44px; }
+  .room { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
@@ -322,12 +433,15 @@ button {
 <div id="app">
   <div class="topbar">
     <span class="mark">DECK</span>
+    <span class="tally" title="Games won"><span class="g">♠</span><span class="n" id="wonCount">0</span></span>
+    <span class="tally" title="Current streak"><span class="g">★</span><span class="n" id="streakCount">0</span></span>
     <span class="spacer"></span>
     <button class="icon-btn" id="statsBtn" title="Your record" aria-label="Your record">◍</button>
-  <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
+    <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
     <button class="icon-btn hidden" id="quitBtn" title="Leave game" aria-label="Leave game">✕</button>
   </div>
   <div id="screen"></div>
+  <nav class="navbar hidden" id="navbar" aria-label="Sections"></nav>
 </div>
 
 <script>
@@ -2993,16 +3107,23 @@ function cardEl(vc, w, opts = {}) {
   if (!opts.play) n.style.cursor = "default";
   if (vc.known) {
     if (isRed(vc)) n.classList.add("red");
+    /* Ten columns on a phone leave a card twenty-six pixels wide. At
+       that size a centre suit and a second corner are ink on top of
+       ink, so a tight card keeps one corner and gives it the room. */
+    const tight = w < 38;
     const pip = (cls) => {
       const p = el("div", "pip " + cls);
-      p.style.fontSize = Math.round(w * .30) + "px";
+      p.style.fontSize = Math.round(w * (tight ? .42 : .30)) + "px";
       p.innerHTML = `${RANK_TOKEN[vc.rank]}<br>${SUIT_GLYPH[vc.suit]}`;
       return p;
     };
-    n.append(pip("tl"), pip("br"));
-    const mid = el("div", "mid", SUIT_GLYPH[vc.suit]);
-    mid.style.fontSize = Math.round(w * .5) + "px";
-    n.append(mid);
+    n.append(pip("tl"));
+    if (!tight) {
+      n.append(pip("br"));
+      const mid = el("div", "mid", SUIT_GLYPH[vc.suit]);
+      mid.style.fontSize = Math.round(w * .5) + "px";
+      n.append(mid);
+    }
     n.setAttribute("aria-label", spoken(vc));
   } else {
     n.classList.add("back");
@@ -3023,14 +3144,109 @@ const seededTilt = (id, spread = 3) => {
   return ((x - Math.floor(x)) * 2 - 1) * spread;
 };
 
-/* ── Cover art: a seeded screen-print composition per game ───────── */
-/* A press ink as rgba, so it can fade. Falls back to the near-black the
-   whole palette is built on if the token is not a plain hex. */
-function tint(hex, a) {
+/* ── Cover art: one 12×12 pixel sprite per game ──────────────────── */
+/* A colour as rgba, so it can sit over something. Falls back to the
+   near-black the whole palette is built on if the token is not a hex. */
+function chan(hex, fallback) {
   const h = String(hex).trim().replace("#", "");
   const full = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
-  const n = /^[0-9a-fA-F]{6}$/.test(full) ? parseInt(full, 16) : 0x0E0D0C;
+  return /^[0-9a-fA-F]{6}$/.test(full) ? parseInt(full, 16) : fallback;
+}
+function tint(hex, a) {
+  const n = chan(hex, 0x0A0C0F);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+/* The same colour with the light taken out of it — a sprite's shadow. */
+function shade(hex, k) {
+  const n = chan(hex, 0x4E8A7F);
+  const c = (s) => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * k)));
+  return `rgb(${c(16)},${c(8)},${c(0)})`;
+}
+
+/* Each game gets its own icon, authored as a mask: "#" the game's own
+   colour, "o" its shadow, "w" a highlight, "k" a hole punched
+   through it in the keyline colour, "." nothing. The black
+   keyline round every shape is not drawn by hand — the painter walks
+   the mask and lays one down wherever a filled cell meets an empty
+   one, the way a sprite sheet would be outlined. */
+const SPRITE = {
+  hearts: [
+    "............", "..##....##..", ".####..####.", ".w#########.",
+    ".##########.", ".##########.", "..########..", "...######...",
+    "....####....", ".....##.....", "............", "............"],
+  spades: [
+    "............", ".....##.....", "....####....", "...w#####...",
+    "..w#######..", ".w#########.", ".##########.", ".##########.",
+    "..#o#..#o#..", ".....##.....", "...oo##oo...", "............"],
+  holdem: [
+    "............", "............", "..########..", ".w########o.",
+    ".kkkkkkkkkk.", ".w########o.", ".kkkkkkkkkk.", ".w########o.",
+    ".oooooooooo.", "..oooooooo..", "............", "............"],
+  president: [
+    "............", "............", ".##..##..##.", ".##..##..##.",
+    ".##.####.##.", ".##########.", ".#w##w##w#o.", ".##########.",
+    ".oooooooooo.", "............", "............", "............"],
+  speed: [
+    "............", ".......###..", "......###...", ".....###....",
+    "....######..", "......###...", ".....###....", "....###.....",
+    "...###......", "..##........", "............", "............"],
+  war: [
+    "............", ".w........w.", ".##......##.", "..##....##..",
+    "...##..##...", "....####....", "...##..##...", "..##....##..",
+    ".oooo..oooo.", "...oo..oo...", "...oo..oo...", "............"],
+  crazy8: [
+    "............", "...######...", "..##....##..", "..##....##..",
+    "...######...", "...######...", "..##....##..", "..##....##..",
+    "..##....##..", "...######...", "............", "............"],
+  cheat: [
+    "............", "............", "............", ".##########.",
+    ".#kk####kk#.", ".#kk####kk#.", ".##########.", "..##....##..",
+    "............", "............", "............", "............"],
+  gofish: [
+    "............", "............", "............", "............",
+    "..#####...#.", ".#w#####.##.", ".########.##", ".########.##",
+    ".#######.##.", "..#####...#.", "............", "............"],
+  spider: [
+    "............", "............", ".#........#.", "..#.####.#..",
+    ".#.######.#.", "..########..", ".#.w####w.#.", "..########..",
+    ".#.######.#.", "..#.####.#..", ".#........#.", "............"],
+  klondike: [
+    "............", "............", "............", ".....##.....",
+    "....#oo#....", "...#oooo#...", "..#oooooo#..", ".#oooooooo#.",
+    ".##########.", "............", "............", "............"],
+  freecell: [
+    "............", "............", "............", ".##.##.##.##",
+    ".##.##.##.##", "............", ".##########.", ".#oooooooo#.",
+    ".#oooooooo#.", ".##########.", "............", "............"],
+  rummy: [
+    "............", "............", "............", ".........###",
+    ".....###.#w#", ".###.#w#.###", ".#w#.###.###", ".###.###.###",
+    ".###.###.###", ".###.###.###", ".###.###.###", "............"],
+  gin: [
+    "............", ".##########.", ".oooooowooo.", "..########..",
+    "...######...", "....####....", ".....##.....", ".....##.....",
+    ".....##.....", "...######...", "..########..", "............"],
+  euchre: [
+    "............", "............", "...#######..", "......##....",
+    "......##....", "......##....", "......##....", ".#....##....",
+    ".##...##....", ".###..##....", "..######....", "............"],
+};
+
+/* Stamp a mask at (ox, oy) with cells `u` across. */
+function stamp(g, mask, ox, oy, u, col) {
+  const n = mask.length;
+  const at = (x, y) => (y < 0 || y >= n || x < 0 || x >= n ? "." : mask[y][x]);
+  const near = (x, y) => at(x - 1, y) !== "." || at(x + 1, y) !== "."
+    || at(x, y - 1) !== "." || at(x, y + 1) !== "." || at(x - 1, y - 1) !== "."
+    || at(x + 1, y - 1) !== "." || at(x - 1, y + 1) !== "." || at(x + 1, y + 1) !== ".";
+  g.fillStyle = col.line;
+  for (let y = -1; y <= n; y++) for (let x = -1; x <= n; x++)
+    if (at(x, y) === "." && near(x, y)) g.fillRect(ox + x * u, oy + y * u, u, u);
+  for (const [ch, paint] of [["#", col.hue], ["o", col.deep], ["w", col.lite], ["k", col.line]]) {
+    g.fillStyle = paint;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+      if (mask[y][x] === ch) g.fillRect(ox + x * u, oy + y * u, u, u);
+  }
 }
 
 function coverArt(node, game) {
@@ -3038,53 +3254,208 @@ function coverArt(node, game) {
   node.prepend(c);
   const paint = () => {
     const r = node.getBoundingClientRect();
+    if (!(r.width > 2) || !(r.height > 2)) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = Math.max(1, r.width * dpr); c.height = Math.max(1, r.height * dpr);
+    c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
     const g = c.getContext("2d");
+    if (!g) return;
     g.scale(dpr, dpr);
     const css = getComputedStyle(document.documentElement);
-    const ink = css.getPropertyValue("--" + game.art[1]).trim() || "#0E0D0C";
-    const hue = css.getPropertyValue("--" + game.art[0]).trim() || "#E33A21";
-    g.fillStyle = ink; g.fillRect(0, 0, r.width, r.height);
-    const rng = rngFrom(game.id.split("").reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0);
-    g.fillStyle = hue;
-    // A sprayed field, then two overprinted card shapes: press, not gradient.
-    for (let i = 0; i < 90; i++) {
-      const a = rng() * Math.PI * 2, d = Math.pow(rng(), 1.6) * r.width * .75;
-      g.globalAlpha = .10 + rng() * .16;
-      g.beginPath();
-      g.arc(r.width * .68 + Math.cos(a) * d, r.height * .35 + Math.sin(a) * d * .7, 1 + rng() * 5, 0, 7);
-      g.fill();
+    const tok = (name, fb) => css.getPropertyValue("--" + name).trim() || fb;
+    const hue = tok(game.art[0], "#4E8A7F");
+    const line = tok("void", "#0A0C0F");
+    const u = Math.max(2, Math.round(r.width / 34));
+
+    g.fillStyle = tok("charcoal", "#12151A");
+    g.fillRect(0, 0, r.width, r.height);
+
+    /* A chequered wash of the game's colour, thinning as it falls —
+       dither, not a gradient. Nothing on this screen fades smoothly. */
+    const rows = Math.ceil(r.height / u), cols = Math.ceil(r.width / u);
+    g.fillStyle = tint(hue, .17);
+    for (let y = 0; y < rows; y++) {
+      const keep = 1 - y / rows;
+      for (let x = y % 2; x < cols; x += 2)
+        if (((x * 7 + y * 13) % 11) / 11 <= keep) g.fillRect(x * u, y * u, u, u);
     }
-    g.globalAlpha = 1;
-    for (let i = 0; i < 2; i++) {
-      const w = r.width * .32, h = w / (2.5 / 3.5);
-      g.save();
-      g.translate(r.width * (.68 + i * .12), r.height * (.25 + i * .05));
-      g.rotate((i ? 13 : -9) * Math.PI / 180);
-      g.fillStyle = i ? hue : css.getPropertyValue("--cream").trim();
-      g.globalAlpha = i ? .95 : .18;
-      g.beginPath();
-      const rr = 6;
-      g.roundRect(-w / 2, -h / 2, w, h, rr);
-      g.fill();
-      g.restore();
-    }
-    g.globalAlpha = 1;
-    /* The title sits on this art, so the art gives it a ground to sit on:
-       a block of the same ink deepening under the type, the way a poster
-       would print it rather than hoping the word lands on a dark patch. */
-    const grad = g.createLinearGradient ? g.createLinearGradient(0, r.height * .34, 0, r.height) : null;
-    if (grad && grad.addColorStop) {
-      grad.addColorStop(0, tint(ink, 0));
-      grad.addColorStop(.55, tint(ink, .74));
-      grad.addColorStop(1, tint(ink, .94));
-      g.fillStyle = grad;
-      g.fillRect(0, r.height * .34, r.width, r.height * .66);
-    }
+
+    const mask = SPRITE[game.id] || SPRITE.spades;
+    const su = Math.max(2, Math.round((r.width * .46) / mask.length));
+    const side = mask.length * su;
+    stamp(g, mask, Math.round((r.width - side) / 2),
+      Math.round(r.height * .38 - side / 2), su,
+      { hue, deep: shade(hue, .58), lite: tok("paper", "#E4E9EF"), line });
+
+    /* Tube lines over the lot, then a hard band for the title to sit on. */
+    g.fillStyle = tint(line, .28);
+    for (let y = 0; y < r.height; y += 3) g.fillRect(0, y, r.width, 1);
+    const band = Math.max(30, Math.round(r.height * .29));
+    g.fillStyle = tint(line, .84);
+    g.fillRect(0, r.height - band, r.width, band);
+    g.fillStyle = tint(hue, .5);
+    g.fillRect(0, r.height - band, r.width, 1);
   };
   paint();
-  new ResizeObserver(paint).observe(node);
+  if (window.ResizeObserver) new ResizeObserver(paint).observe(node);
+}
+
+/* ── The room ────────────────────────────────────────────────────── */
+/* A bedroom seen side-on, drawn as rectangles on a 160×80 grid: wall,
+   skirting, floorboards, a rug, a kid sitting cross-legged with a
+   controller, and the tube he is looking at. The floor line is y=67,
+   so anything standing on it is drawn at 67 minus its own height.
+   Everything below this canvas is what is on that tube. */
+const FLOOR = 67;
+function roomArt(node) {
+  const c = el("canvas");
+  node.append(c);
+  const W = 160, H = 80;
+  const paint = () => {
+    const box = node.getBoundingClientRect();
+    if (!(box.width > 2)) return;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const s = Math.max(2, Math.min(9, Math.ceil((box.width * dpr) / W)));
+    c.width = W * s; c.height = H * s;
+    const g = c.getContext("2d");
+    if (!g) return;
+    g.scale(s, s);
+    const css = getComputedStyle(document.documentElement);
+    const tok = (n, fb) => css.getPropertyValue("--" + n).trim() || fb;
+    const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+
+    const wall = tok("steel", "#262C35"), wallLo = tok("slate", "#1B1F26");
+    const iron = tok("iron", "#39424F"), night = tok("void", "#0A0C0F");
+    const bone = tok("bone", "#B9C2CD"), dust = tok("dust", "#7C8794");
+    const glass = tok("screen", "#10161B"), accent = tok("accent", "#4E8A7F");
+    const red = tok("vermilion", "#B4544C"), rust = tok("crimson", "#8E3E48");
+    const blue = tok("cobalt", "#4E6E9E"), gold = tok("acid", "#B8A055");
+    const green = tok("forest", "#4F7A5C"), amber = tok("orange", "#B57A44");
+    const skin = "#C39A78", hair = "#33241D";
+
+    /* Wall, picture rail, skirting, boards. */
+    R(0, 0, W, 64, wall);
+    for (let x = 3; x < W; x += 9) R(x, 0, 1, 64, tint(wallLo, .5));
+    R(0, 29, W, 1, shade(wall, 1.35));
+    R(0, 30, W, 1, wallLo);
+    R(0, 64, W, 3, iron);
+    R(0, 64, W, 1, shade(iron, 1.3));
+    R(0, FLOOR, W, H - FLOOR, shade(iron, .62));
+    for (let y = FLOOR + 2; y < H; y += 3) R(0, y, W, 1, shade(iron, .44));
+
+    /* A framed poster: one big spade, printed cheap. */
+    R(8, 5, 26, 22, night);
+    R(9, 6, 24, 20, shade(rust, .8));
+    R(20, 9, 2, 2, bone); R(19, 11, 4, 2, bone); R(18, 13, 6, 2, bone);
+    R(17, 15, 8, 2, bone); R(16, 17, 10, 2, bone);
+    R(20, 19, 2, 2, bone); R(18, 21, 6, 2, bone);
+
+    /* A shelf: books at random heights, and something green. */
+    R(40, 26, 32, 2, iron);
+    R(40, 28, 32, 1, night);
+    const books = [[41, 4, rust], [45, 3, gold], [48, 5, blue],
+                   [53, 3, green], [56, 4, amber], [60, 2, red]];
+    for (const [bx, bw, col] of books) {
+      const bh = 8 + (bx * 5) % 4;
+      R(bx, 26 - bh, bw, bh, shade(col, .78));
+      R(bx, 26 - bh, bw, 1, col);
+    }
+    R(64, 21, 7, 5, shade(amber, .7));
+    R(64, 21, 7, 1, amber);
+    R(65, 16, 2, 5, green); R(67, 13, 2, 8, green); R(69, 17, 2, 4, shade(green, .8));
+
+    /* A clock nobody has reset since the last power cut. */
+    R(84, 6, 10, 10, night);
+    R(85, 7, 8, 8, bone);
+    R(88, 9, 1, 3, night); R(88, 11, 3, 1, night);
+
+    /* A poster over the television. */
+    R(104, 4, 44, 16, night);
+    R(105, 5, 42, 4, shade(red, .85));
+    R(105, 9, 42, 3, shade(amber, .85));
+    R(105, 12, 42, 3, shade(gold, .8));
+    R(121, 6, 8, 8, gold);
+    R(105, 15, 42, 4, shade(green, .55));
+
+    /* The rug — drawn before anything that sits on it. */
+    R(34, FLOOR, 80, 6, shade(rust, .5));
+    R(34, FLOOR, 80, 1, shade(rust, .72));
+    for (let x = 36; x < 112; x += 7) R(x, FLOOR + 2, 3, 2, shade(rust, .34));
+    R(34, FLOOR + 6, 80, 1, night);
+
+    /* Cartridges, a can, a bag of something. */
+    const carts = [red, gold, blue, green];
+    carts.forEach((col, i) => {
+      R(14, FLOOR - 3 - i * 3, 14, 3, shade(col, .7));
+      R(14, FLOOR - 3 - i * 3, 14, 1, shade(col, .95));
+    });
+    R(34, FLOOR - 9, 5, 9, shade(red, .8));
+    R(34, FLOOR - 7, 5, 2, bone);
+    R(44, FLOOR - 6, 12, 6, shade(gold, .72));
+    R(44, FLOOR - 6, 12, 1, gold);
+
+    /* The television: body, bezel, tube, knobs, grille. */
+    R(116, FLOOR - 7, 30, 7, shade(iron, 1.05));
+    R(116, FLOOR - 7, 30, 1, shade(iron, 1.35));
+    R(114, FLOOR - 2, 34, 2, night);
+    R(106, 24, 50, 36, iron);
+    R(106, 24, 50, 1, shade(iron, 1.35));
+    R(107, 25, 48, 34, shade(iron, .8));
+    R(109, 27, 36, 28, night);
+    R(110, 28, 34, 26, glass);
+    const menu = [rust, blue, gold, green, amber, red];
+    menu.forEach((m, i) => {
+      const mx = 113 + (i % 3) * 11, my = 33 + ((i / 3) | 0) * 10;
+      R(mx, my, 9, 8, shade(m, .8));
+      R(mx, my, 9, 1, m);
+    });
+    R(112, 32, 11, 10, accent);
+    R(113, 33, 9, 8, shade(rust, .8));
+    R(113, 33, 9, 1, rust);
+    for (let y = 28; y < 54; y += 2) R(110, y, 34, 1, tint(night, .34));
+    R(110, 28, 34, 26, tint(accent, .07));
+    R(147, 30, 7, 7, shade(iron, .6)); R(149, 32, 3, 3, bone);
+    R(147, 40, 7, 7, shade(iron, .6)); R(149, 42, 3, 3, dust);
+    for (let y = 50; y < 56; y += 2) R(147, y, 7, 1, night);
+
+    /* The console, and the cable running back to the controller. */
+    R(99, FLOOR - 5, 16, 5, shade(iron, .95));
+    R(99, FLOOR - 5, 16, 1, shade(iron, 1.25));
+    R(102, FLOOR - 3, 10, 2, night);
+    R(103, FLOOR - 6, 3, 1, red);
+
+    /* The kid: crossed legs, hoodie, a controller in both hands. */
+    R(64, FLOOR - 7, 24, 7, shade(blue, .55));
+    R(86, FLOOR - 6, 6, 6, shade(blue, .48));
+    R(68, 44, 16, 17, blue);
+    R(66, 44, 4, 9, shade(blue, .78));
+    R(70, 55, 12, 1, shade(blue, .7));
+    R(80, 52, 10, 4, blue);
+    R(89, 52, 4, 4, skin);
+    R(74, 43, 6, 2, shade(skin, .82));
+    R(70, 32, 12, 12, skin);
+    R(68, 29, 15, 6, hair);
+    R(68, 29, 4, 12, hair);
+    R(74, 38, 2, 3, shade(skin, .84));
+    R(79, 37, 2, 2, night);
+    R(82, 39, 1, 2, shade(skin, .78));
+    R(79, 41, 2, 1, shade(skin, .6));
+
+    /* The controller, and the wire he keeps kicking loose. */
+    R(88, 53, 11, 5, bone);
+    R(88, 53, 11, 1, tok("paper", "#E4E9EF"));
+    R(90, 55, 2, 2, night);
+    R(95, 55, 1, 1, rust); R(97, 55, 1, 1, rust);
+    R(99, 56, 2, 1, night); R(100, 56, 1, 5, night);
+    R(100, 60, 5, 1, night); R(104, 60, 1, 2, night);
+
+    /* Everything he can see is lit by the one thing in the room that
+       is switched on, so his front edge picks up the tube. */
+    R(83, 44, 1, 17, tint(accent, .55));
+    R(81, 32, 1, 10, tint(accent, .45));
+    R(92, 53, 1, 3, tint(accent, .5));
+  };
+  paint();
+  if (window.ResizeObserver) new ResizeObserver(paint).observe(node);
 }
 
 /* ── Library ─────────────────────────────────────────────────────── */
@@ -3093,11 +3464,39 @@ function viewLibrary() {
   const wrap = el("div", "wrap stack");
   wrap.style.gap = "var(--section)";
 
-  const head = el("div", "masthead stack");
-  const h1 = el("h1", "poster h-xl", "One deck.\nEvery game.");
-  h1.style.whiteSpace = "pre-line";
-  const sub = el("p", "sub", "Pass one device around the table. Nobody sees a hand that isn't theirs — the app removes it, it doesn't just cover it.");
-  head.append(h1, sub);
+  /* The room, and directly under it the face of the tube in it. The
+     two share an edge and a border so they read as one appliance. */
+  const set = el("div", "stack");
+  const room = el("div", "room");
+  const crt = el("div", "crt stack");
+  crt.style.gap = "var(--s3)";
+
+  const h1 = el("h1", "poster h-l", "Choose your game");
+  const sub = el("p", "sub", "One deck · Every game · Pass and play");
+
+  const shelf = el("div", "shelf");
+  shelf.setAttribute("id", "shelfAnchor");
+  for (const g of Object.values(GAMES)) {
+    const card = el("button", "game-card art");
+    const nm = el("div", "gname", g.name);
+    const tg = el("div", "gtag", `${g.category} · ${g.min === g.max ? g.min : g.min + "–" + g.max}P`);
+    card.append(nm, tg);
+    card.onclick = () => { App.game = g; App.view = "setup"; render(); };
+    shelf.append(card);
+    requestAnimationFrame(() => coverArt(card, g));
+  }
+
+  crt.append(h1, sub, shelf);
+  set.append(room, crt);
+  requestAnimationFrame(() => roomArt(room));
+
+  const note = el("p", "label");
+  note.style.cssText = "color:var(--dust);text-transform:none;letter-spacing:0";
+  note.textContent = "Pass one device round the table. Nobody sees a hand that isn't theirs — the app takes it away rather than covering it up.";
+
+  const stack = el("div", "stack");
+  stack.style.gap = "var(--s4)";
+  stack.append(set, note);
 
   if (SERVED) {
     const pick = el("div", "modepick");
@@ -3105,26 +3504,8 @@ function viewLibrary() {
     friends.append(el("span", "t", "Play with friends"));
     friends.append(el("span", "d", "Everybody uses their own phone. Nobody sees a hand but their own — it never leaves this machine."));
     friends.onclick = () => { App.view = "connect"; render(); };
-    const here = el("button");
-    here.append(el("span", "t", "Play on this device"));
-    here.append(el("span", "d", "Pass one device round the table. The game seals itself between players."));
-    here.onclick = () => { const sh = document.getElementById("shelfAnchor"); if (sh) sh.scrollIntoView({ behavior: "smooth" }); };
-    pick.append(friends, here);
-    head.append(pick);
-  }
-
-  const shelf = el("div", "shelf");
-  shelf.attrs = shelf.attrs || {};
-  shelf.setAttribute("id", "shelfAnchor");
-  for (const g of Object.values(GAMES)) {
-    const card = el("button", "game-card");
-    card.style.background = `var(--${g.art[1]})`;
-    const nm = el("div", "gname", g.name);
-    const tg = el("div", "gtag", `${g.category} · ${g.min === g.max ? g.min : g.min + "–" + g.max} player${g.max > 1 ? "s" : ""}`);
-    card.append(nm, tg);
-    card.onclick = () => { App.game = g; App.view = "setup"; render(); };
-    shelf.append(card);
-    requestAnimationFrame(() => coverArt(card, g));
+    pick.append(friends);
+    stack.append(pick);
   }
 
   const p = localProfile();
@@ -3137,14 +3518,14 @@ function viewLibrary() {
       ["Streak", p.streak]]) {
     const c = el("div", "callout");
     c.append(el("span", "k", k), el("span", "v num", String(v)));
-    c.querySelector(".v").style.fontSize = "26px";
+    c.querySelector(".v").style.fontSize = "16px";
     row.append(c);
   }
-  const seeAll = el("button", "btn ghost wide", "Statistics, achievements and mastery");
+  const seeAll = el("button", "btn ghost wide", "Statistics, achievements, mastery");
   seeAll.onclick = () => { App.view = "stats"; render(); };
   foot.append(el("div", "label", "On this device"), row, seeAll);
 
-  wrap.append(head, dailyCard(), shelf, foot);
+  wrap.append(stack, dailyCard(), foot);
   s.append(wrap);
   return s;
 }
@@ -3191,7 +3572,8 @@ function viewSetup() {
       input.setAttribute("autocomplete", "off");
       input.setAttribute("enterkeyhint", "done");
       input.oninput = () => { seat.name = input.value; };
-      const swap = el("button", "icon-btn", seat.ai ? "👤" : "🤖");
+      /* No colour emoji on a screen made of squares. */
+      const swap = el("button", "icon-btn swapseat", seat.ai ? "YOU" : "CPU");
       swap.title = seat.ai ? "Make this a person" : "Make this an opponent";
       swap.onclick = () => {
         if (seat.ai) { seat.ai = null; seat.name = "Player " + (i + 1); }
@@ -3257,19 +3639,19 @@ function dailyCard() {
   const p = localProfile();
   const done = p.dailyHistory.includes(c.date);
   const boss = c.bossId ? bossById(c.bossId) : null;
-  const card = el("button", "game-card");
-  card.style.cssText = `background:var(--${boss ? boss.colour : "vermilion"});min-height:150px`;
-  const top = el("div", "gtag", `Today · ${c.date}`);
+  const card = el("button", "game-card wide");
   const nm = el("div", "gname", boss ? boss.name.toUpperCase() : c.gameName);
   const sub = el("div", "gtag");
-  sub.style.cssText = "opacity:1;margin-top:var(--s2);font-size:11.5px";
   sub.textContent = boss
     ? `${boss.title} · ${c.gameName} · ${c.percent >= 0 ? "+" : ""}${c.percent}%`
     : `${Daily.describe(c)} · ${c.percent >= 0 ? "+" : ""}${c.percent}%`;
-  card.append(top, nm, sub);
+  card.append(el("div", "gtag", `Today · ${c.date}`), nm, sub);
+  const hue = boss ? boss.colour : ((GAMES[c.gameId] || { art: ["vermilion"] }).art[0]);
+  requestAnimationFrame(() => coverArt(card, { id: c.gameId, art: [hue, "ink"] }));
   if (done) {
     const stamp = el("div", "gtag", "DONE");
-    stamp.style.cssText = "position:absolute;top:12px;right:12px;font-weight:900;font-size:14px;opacity:1;border:2px solid currentColor;padding:2px 6px;border-radius:4px;transform:rotate(-8deg)";
+    stamp.className = "poster h-s";
+    stamp.style.cssText = "position:absolute;top:12px;right:12px;opacity:1;border:2px solid currentColor;padding:4px 6px;transform:rotate(-6deg);text-shadow:none";
     card.append(stamp);
   }
   card.onclick = () => { App.view = "daily"; render(); };
@@ -3302,7 +3684,7 @@ function viewDaily() {
     const r = el("div", "row");
     r.style.cssText = "gap:var(--s4);align-items:baseline;border-top:1px solid var(--rule);padding-top:var(--s3)";
     const kk = el("span", "label", k); kk.style.cssText = "flex:0 0 34%";
-    const vv = el("span", null, v); vv.style.cssText = "flex:1;font-weight:700";
+    const vv = el("span", "poster h-s", v); vv.style.cssText = "flex:1;text-shadow:none";
     r.append(kk, vv); facts.append(r);
   };
   add("Game", g.name);
@@ -3339,7 +3721,7 @@ function viewDaily() {
     const key = Daily.today(d);
     const hit = p.dailyHistory.includes(key);
     const cell = el("div", null, String(d.getDate()));
-    cell.style.cssText = `width:34px;height:40px;display:grid;place-items:center;border-radius:6px;font-weight:800;font-size:13px;` +
+    cell.style.cssText = `width:34px;height:40px;display:grid;place-items:center;font-family:var(--display);font-size:9px;` +
       (hit ? "background:var(--accent);color:var(--on-accent)" : "background:var(--ground-2);color:var(--on-ground-mute)");
     strip.append(cell);
   }
@@ -3369,7 +3751,7 @@ function viewStats() {
   const stat = (k, v) => {
     const c = el("div", "callout");
     c.append(el("span", "k", k), el("span", "v num", String(v)));
-    c.querySelector(".v").style.fontSize = "32px";
+    c.querySelector(".v").style.fontSize = "15px";
     big.append(c);
   };
   stat("Played", p.played);
@@ -3394,11 +3776,11 @@ function viewStats() {
     row.style.cssText = "gap:var(--s2);border-top:1px solid var(--rule);padding-top:var(--s3)";
     const head = el("div", "row");
     head.style.cssText = "gap:var(--s3);align-items:baseline";
-    const nm = el("span", null, g.name); nm.style.cssText = "font-weight:800;flex:1";
+    const nm = el("span", "poster h-s", g.name); nm.style.cssText = "flex:1;text-shadow:none";
     const rec = el("span", "label", `${r.won}/${r.played} · ${MASTERY_NAMES[m.level]}`);
     head.append(nm, rec);
     const bar = el("div");
-    bar.style.cssText = "height:6px;border-radius:3px;background:var(--ground-2);overflow:hidden";
+    bar.style.cssText = "height:6px;background:var(--ground-2);border:2px solid var(--rule);overflow:hidden";
     const fill = el("div");
     fill.style.cssText = `height:100%;width:${Math.round(m.progress * 100)}%;background:var(--accent)`;
     bar.append(fill);
@@ -3433,15 +3815,16 @@ function viewStats() {
     const line = el("div", "row");
     line.style.cssText = "gap:var(--s3);align-items:baseline";
     const t = el("span", null, a.t);
-    t.style.cssText = `font-weight:800;flex:1;${got ? "color:var(--accent)" : ""}`;
+    t.className = "poster h-s";
+    t.style.cssText = `flex:1;text-shadow:none;${got ? "color:var(--accent)" : ""}`;
     const n = el("span", "label", got ? "EARNED" : `${a.at} / ${a.target}`);
     line.append(t, n);
     const d = el("span", "label", a.d);
-    d.style.cssText = "text-transform:none;letter-spacing:0;font-size:12.5px";
+    d.style.cssText = "font-family:var(--body);text-transform:none;letter-spacing:0;font-size:16px;line-height:1.25";
     row.append(line, d);
     if (!got) {
       const bar = el("div");
-      bar.style.cssText = "height:4px;border-radius:2px;background:var(--ground-2);overflow:hidden;margin-top:var(--s1)";
+      bar.style.cssText = "height:6px;background:var(--ground-2);border:2px solid var(--rule);overflow:hidden;margin-top:var(--s2)";
       const fill = el("div");
       fill.style.cssText = `height:100%;width:${Math.round((a.at / a.target) * 100)}%;background:var(--on-ground-mute)`;
       bar.append(fill);
@@ -3459,9 +3842,10 @@ function viewStats() {
     const row = el("div", "row");
     row.style.cssText = "gap:var(--s3);align-items:center;border-top:1px solid var(--rule);padding-top:var(--s3)";
     const dot = el("span");
-    dot.style.cssText = `width:16px;height:16px;border-radius:4px;background:var(--${b.colour});flex:none;opacity:${beat ? 1 : .35}`;
+    dot.style.cssText = `width:14px;height:14px;background:var(--${b.colour});border:2px solid var(--void);flex:none;opacity:${beat ? 1 : .35}`;
     const nm = el("span", null, `${b.name} — ${b.title}`);
-    nm.style.cssText = `flex:1;font-weight:${beat ? 800 : 500};${beat ? "" : "color:var(--on-ground-mute)"}`;
+    nm.className = "poster h-s";
+    nm.style.cssText = `flex:1;text-shadow:none;${beat ? "" : "color:var(--on-ground-mute)"}`;
     row.append(dot, nm, el("span", "label", beat ? "BEATEN" : ""));
     bosses.append(row);
   }
@@ -3594,7 +3978,7 @@ function viewLobby() {
     const dot = el("span", "dot" + (p.online ? "" : " off"));
     const chip = el("span", "chip" + (p.ai ? " ai" : ""), p.ai ? "AI" : (p.seat === v.you ? "You" : "Player"));
     const nm = el("span", null, p.name);
-    nm.style.cssText = "flex:1;font-weight:700";
+    nm.className = "poster h-s"; nm.style.cssText = "flex:1;text-shadow:none";
     row.append(dot, chip, nm);
     if (v.host && p.ai && i > 0) {
       const rm = el("button", "icon-btn", "−");
@@ -4158,8 +4542,48 @@ function viewRemoteResult(v) {
 }
 
 /* ── Render ──────────────────────────────────────────────────────── */
+/* The bottom bar names the three places you can actually go, plus the
+   fourth when this copy is served rather than published. Anything that
+   is not one of them — a setup sheet, a table, a result — takes the
+   whole screen, so the bar goes away. */
+const NAV = [
+  { id: "library", label: "Arcade", glyph: "♠" },
+  { id: "daily", label: "Daily", glyph: "★" },
+  { id: "stats", label: "Record", glyph: "◆" },
+];
+const navbar = document.getElementById("navbar");
+function paintNav() {
+  const here = App.view;
+  const top = !App.remote && (here === "library" || here === "daily"
+    || here === "stats" || here === "connect");
+  navbar.classList.toggle("hidden", !top);
+  document.getElementById("app").classList.toggle("has-nav", top);
+  if (!top) return;
+  const items = SERVED ? NAV.concat([{ id: "connect", label: "Link", glyph: "◎" }]) : NAV;
+  if (navbar.children.length !== items.length) {
+    navbar.innerHTML = "";
+    for (const it of items) {
+      const b = el("button", "navitem");
+      b.append(el("span", "glyph", it.glyph), el("span", null, it.label));
+      b.dataset.view = it.id;
+      b.onclick = () => { App.view = it.id; render(); };
+      navbar.append(b);
+    }
+  }
+  for (const b of navbar.children) {
+    if (b.dataset.view === here) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  }
+}
+/* The two counters in the top bar are the only currency this app has:
+   games won, and days in a row. Nothing here is bought. */
+function paintTally() {
+  const p = localProfile();
+  document.getElementById("wonCount").textContent = String(p.won || 0);
+  document.getElementById("streakCount").textContent = String(p.streak || 0);
+}
 function render() {
-  try { renderInner(); }
+  try { renderInner(); paintNav(); paintTally(); }
   catch (err) {
     console.error(err);
     screen.innerHTML = "";

@@ -61,7 +61,7 @@ function matches(n, sel) {
 const root = makeNode("html");
 const body = makeNode("body");
 const byId = {};
-for (const id of ["screen", "themeBtn", "quitBtn", "statsBtn"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
+for (const id of ["screen", "themeBtn", "quitBtn", "statsBtn", "navbar", "wonCount", "streakCount", "app"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
 
 global.document = {
   documentElement: root, body,
