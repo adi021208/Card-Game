@@ -20,7 +20,13 @@ const timers = [];
 function makeNode(tag) {
   const n = {
     tagName: String(tag).toUpperCase(), children: [], parentNode: null,
-    style: new Proxy({}, { get: (t, k) => t[k] || "", set: (t, k, v) => (t[k] = v, true) }),
+    style: new Proxy({}, {
+      get: (t, k) => (k === "setProperty" ? (n, v) => { t[n] = String(v); }
+                   : k === "removeProperty" ? (n) => { delete t[n]; }
+                   : k === "getPropertyValue" ? (n) => t[n] || ""
+                   : t[k] || ""),
+      set: (t, k, v) => (t[k] = v, true),
+    }),
     dataset: {}, attrs: {}, _text: "", disabled: false, value: "", tabIndex: 0,
     classList: {
       _s: new Set(),
@@ -61,7 +67,9 @@ function matches(n, sel) {
 const root = makeNode("html");
 const body = makeNode("body");
 const byId = {};
-for (const id of ["screen", "themeBtn", "quitBtn", "statsBtn", "navbar", "wonCount", "streakCount", "app"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
+for (const id of ["screen", "themeBtn", "quitBtn", "statsBtn", "navbar", "wonCount", "streakCount", "app", "playerName", "playerSub", "avatarPic", "coinPic", "gemPic", "gearPic"]) { byId[id] = makeNode("div"); byId[id].attrs.id = id; body.append(byId[id]); }
+/* The page has one static bar it toggles a class on, so the shim has one. */
+const topbar = makeNode("div"); topbar.className = "topbar"; body.append(topbar);
 
 global.document = {
   documentElement: root, body,
@@ -149,13 +157,43 @@ function assertNoLeak(label) {
 
 /* ── The library opens ─────────────────────────────────────────────── */
 api.render(); drain();
-ok(screenText().includes("One deck"), "library renders");
-function shelfTiles() {
-  const anchor = all(byId.screen).find((n) => n.getAttribute("id") === "shelfAnchor");
-  return anchor ? all(anchor).filter((n) => n.classList.contains("game-card")) : [];
+ok(screenText().includes("Choose your game"), "library renders");
+
+/* The menu shows six at a time, so the test has to page it. Paging all
+   the way round must reach every game exactly once and never show a
+   seventh tile on one screen. */
+const tubeTiles = () => all(byId.screen).filter((n) => n.classList.contains("gtile"));
+const pageBtns = () => all(byId.screen).filter((n) => n.classList.contains("pagebtn"));
+function pageForward() {
+  const next = pageBtns()[1];
+  if (!next || !next.onclick) return false;
+  next.onclick(); drain(); return true;
 }
-ok(shelfTiles().length === Object.keys(GAMES).length,
-   `library lists all ${Object.keys(GAMES).length} games — found ${shelfTiles().length}`);
+{
+  const names = Object.values(GAMES).map((g) => g.name);
+  const seen = new Set();
+  let widest = 0;
+  const pages = Math.ceil(names.length / 6);
+  for (let i = 0; i < pages; i++) {
+    const here = tubeTiles();
+    widest = Math.max(widest, here.length);
+    for (const t of here) for (const n of names) if (t.textContent.includes(n)) seen.add(n);
+    pageForward();
+  }
+  ok(widest <= 6, `the glass shows at most six at once — showed ${widest}`);
+  ok(seen.size === names.length,
+     `paging reaches all ${names.length} games — reached ${seen.size}`);
+  ok(api.App.page === 0, "paging round the end comes back to the first page");
+}
+/* Find a game wherever it is in the pages. */
+function findTile(name) {
+  for (let i = 0; i <= Math.ceil(Object.keys(GAMES).length / 6); i++) {
+    const t = tubeTiles().find((n) => n.textContent.includes(name));
+    if (t) return t;
+    if (!pageForward()) return null;
+  }
+  return null;
+}
 
 /* ── Every game opens its setup screen and deals ───────────────────── */
 for (const id of Object.keys(GAMES)) {
@@ -163,7 +201,7 @@ for (const id of Object.keys(GAMES)) {
   api.App.run = null; api.App.game = null; api.App.view = "library";
   api.render(); drain();
 
-  const tile = shelfTiles().find((n) => n.textContent.includes(g.name));
+  const tile = findTile(g.name);
   ok(!!tile, `${id}: has a tile in the library`);
   if (!tile) continue;
 
@@ -231,7 +269,7 @@ for (const id of Object.keys(GAMES)) {
 for (const id of ["klondike", "freecell", "spider"]) {
   api.App.run = null; api.App.game = null; api.App.view = "library";
   api.render(); drain();
-  const tile = shelfTiles().find((n) => n.textContent.includes(GAMES[id].name));
+  const tile = findTile(GAMES[id].name);
   click(tile); click(byText("Deal")); drain();
 
   const run = api.App.run;

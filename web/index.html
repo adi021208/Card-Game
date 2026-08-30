@@ -4,37 +4,39 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
 /* ─── DECK — retro card arcade ────────────────────────────────────────
-   A CRT in a 90s bedroom. Everything is a shade of screen-lit concrete
-   with a few muted pops; nothing glows, nothing gradients, nothing is
-   round. Pixel type throughout: Press Start 2P for anything that shouts,
-   VT323 — a terminal face — for anything you actually have to read. */
+   A bedroom at half past ten at night, lit by the tube in it. Warm
+   dark: charcoal walls, a wood floor, brass and cream for anything
+   that has to be read. Nothing glows, nothing gradients, nothing is
+   round. Pixel type throughout: Press Start 2P for anything that
+   shouts, VT323 — a terminal face — for anything you have to read. */
 :root {
-  /* The room, in greys. */
-  --void: #0A0C0F; --charcoal: #12151A; --slate: #1B1F26;
-  --steel: #262C35; --iron: #39424F; --dust: #7C8794;
-  --bone: #B9C2CD; --paper: #E4E9EF;
+  /* The room, warm and dark. */
+  --void: #0A0807; --charcoal: #141110; --slate: #1E1917;
+  --steel: #2B2421; --iron: #40352D; --dust: #8C7C6A;
+  --bone: #C3B096; --paper: #F0E4CA;
+  --wood: #533B29; --wood-dark: #38271B; --brass: #D8B14E;
 
   /* Muted pops. These seven names are what the games ask for by name,
-     so they keep them — repainted for the room. */
-  --vermilion: #B4544C; --crimson: #8E3E48; --cobalt: #4E6E9E;
-  --acid: #B8A055; --coral: #C07A6A; --forest: #4F7A5C; --orange: #B57A44;
+     so they keep them — repainted for a room lit by one screen. */
+  --vermilion: #A8503C; --crimson: #7E2E38; --cobalt: #3B5580;
+  --acid: #A88C3E; --coral: #B06A50; --forest: #3F6B52; --orange: #A56A32;
   --ink: var(--charcoal); --ink-soft: var(--slate); --ink-light: var(--steel);
-  --cream: var(--paper); --newsprint: var(--bone); --chalk: #EDF1F5;
+  --cream: var(--paper); --newsprint: var(--bone); --chalk: #FBF3E2;
 
   /* Night: the set, lit by the tube. */
   --ground: var(--void);
   --ground-2: var(--slate);
   --on-ground: var(--paper);
   --on-ground-mute: var(--dust);
-  --rule: #2E3742;
-  --accent: #4E8A7F;              /* phosphor */
-  --accent-ink: #4E8A7F;          /* the same, where it has to be read */
-  --on-accent: #07120F;
-  --card-face: #DFE5EB;
-  --card-ink: #10141A;
+  --rule: #3A302A;
+  --accent: var(--brass);
+  --accent-ink: var(--brass);     /* the same, where it has to be read */
+  --on-accent: #241A08;
+  --card-face: #EFE6D2;
+  --card-ink: #17120E;
   --card-back: var(--cobalt);
-  --shadow: #05070A;
-  --screen: #10161B;              /* inside the tube */
+  --shadow: #050403;
+  --screen: #0D1512;              /* inside the tube */
 
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
   --s6: 32px; --s7: 48px; --s8: 64px; --page: 16px; --section: 28px;
@@ -46,19 +48,19 @@
   --body: "VT323", "Courier New", monospace;
   color-scheme: dark;
 }
-/* Day: curtains open. The same room with the lights up — still grey. */
+/* Day: curtains open. The room lightens; the screens stay lit. */
 :root[data-theme="light"] {
-  --ground: #C6CCD4;
-  --ground-2: #B0B8C2;
-  --on-ground: #12151A;
-  --on-ground-mute: #4C5560;
-  --rule: #98A2AE;
-  --on-accent: #F2F7F5;
-  --accent-ink: #2C5E54;
-  --card-face: #EDF1F5;
-  --shadow: #9AA3AE;
-  /* A tube is a tube whatever the weather: the screens stay lit. */
-  --screen: #10161B;
+  --ground: #D8CDB8;
+  --ground-2: #C6B99F;
+  --on-ground: #241C15;
+  --on-ground-mute: #5E5142;
+  --rule: #A6957A;
+  --on-accent: #241A08;
+  --accent-ink: #6E5210;
+  --card-face: #F6EEDC;
+  --shadow: #A6957A;
+  /* A tube is a tube whatever the weather. */
+  --screen: #0D1512;
   color-scheme: light;
 }
 
@@ -111,34 +113,49 @@ button {
 
 /* ─── Chrome ─────────────────────────────────────────────────────── */
 .topbar {
-  display: flex; align-items: center; gap: var(--s3);
-  padding: max(var(--s3), env(safe-area-inset-top, 0px))
-           max(var(--page), env(safe-area-inset-right, 0px))
-           var(--s3)
-           max(var(--page), env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; gap: 6px;
+  padding: max(var(--s2), env(safe-area-inset-top, 0px))
+           max(10px, env(safe-area-inset-right, 0px))
+           var(--s2)
+           max(10px, env(safe-area-inset-left, 0px));
   border-bottom: 2px solid var(--rule);
   position: sticky; top: 0; background: var(--ground-2); z-index: 20;
 }
-.topbar .mark {
-  font-family: var(--display); font-size: 13px; letter-spacing: .02em;
-  color: var(--accent-ink); text-shadow: 2px 2px 0 var(--shadow);
-}
 .topbar .spacer { flex: 1; }
+.who {
+  display: flex; align-items: center; gap: 6px; min-width: 0;
+  padding: 3px 7px 3px 3px; background: var(--ground); border: 2px solid var(--rule);
+}
+.who:active { background: var(--steel); }
+.avatar {
+  position: relative; flex: none; width: 26px; height: 26px;
+  border: 2px solid var(--rule); background: var(--steel);
+}
+.whotext { display: flex; flex-direction: column; gap: 1px; min-width: 0; text-align: left; }
+.wname {
+  font-family: var(--display); font-size: 7px; line-height: 1.5;
+  text-transform: uppercase; color: var(--on-ground); max-width: 88px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wsub { font-size: 13px; line-height: 1; color: var(--dust); }
 .topbar .tally {
   display: flex; align-items: center; gap: 5px;
-  padding: 3px var(--s2); background: var(--ground);
-  border: 2px solid var(--rule); color: var(--on-ground-mute);
+  padding: 3px 7px 3px 4px; background: var(--ground); border: 2px solid var(--rule);
 }
-.topbar .tally .g { font-family: var(--body); font-size: 15px; line-height: 1; }
+.topbar .tally .pic { position: relative; flex: none; width: 16px; height: 16px; }
 .topbar .tally .n {
   font-family: var(--display); font-size: 8px; line-height: 1.4;
   color: var(--on-ground); font-variant-numeric: tabular-nums;
 }
+/* Mid-hand the counters are noise, and the room needs the width. */
+.topbar.ingame .tally, .topbar.ingame .wsub { display: none; }
+.pixcanvas { display: block; width: 100%; height: 100%; position: absolute; inset: 0; }
 .icon-btn {
-  width: 44px; height: 44px; display: grid; place-items: center;
-  font-size: 16px; color: var(--on-ground); border: 2px solid var(--rule);
+  position: relative; width: 44px; height: 44px; display: grid; place-items: center;
+  font-size: 15px; color: var(--on-ground); border: 2px solid var(--rule);
   background: var(--ground);
 }
+.icon-btn .pic { position: relative; width: 20px; height: 20px; }
 @media (hover: hover) { .icon-btn:hover { background: var(--ground-2); color: var(--on-ground); } }
 .icon-btn:active { transform: translate(1px, 1px); }
 .icon-btn.swapseat { font-family: var(--display); font-size: 8px; letter-spacing: .02em; }
@@ -159,30 +176,71 @@ button {
 .btn.wide { width: 100%; }
 .btn[disabled] { opacity: .38; pointer-events: none; box-shadow: none; }
 
-/* ─── The room, and the tube ─────────────────────────────────────── */
-.room {
-  position: relative; width: 100%; line-height: 0;
-  border: 2px solid var(--rule); border-bottom: 0; background: var(--charcoal);
+/* ─── The room, and the glass in it ──────────────────────────────── */
+/* The scene is one canvas filling the stage; the menu is real markup
+   laid into the hole the painter left for the tube, positioned from
+   the rectangle it hands back. */
+.screen.roomscreen { padding: 0; gap: 0; flex: none; }
+.stage {
+  position: relative; width: 100%; max-width: 620px; margin: 0 auto;
+  flex: 1 0 auto; min-height: min(74dvh, 640px);
 }
-.room canvas { width: 100%; height: auto; display: block; }
-/* The content below the diorama reads as what is on the screen. */
-.crt {
-  position: relative; background: var(--screen);
-  border: 2px solid var(--rule); padding: var(--s4) var(--s3);
-  box-shadow: inset 0 0 0 2px var(--void);
+.roomcanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sign {
+  position: absolute; display: grid; place-items: center; text-align: center;
+  font-family: var(--display); font-size: clamp(6px, 2.1vw, 11px);
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--paper); text-shadow: 2px 2px 0 var(--void); overflow: hidden;
 }
-.crt::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
+.tube {
+  position: absolute; display: flex; flex-direction: column; gap: 4px;
+  padding: 2.4% 2.6%; overflow: hidden;
+}
+.tube::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
   background: repeating-linear-gradient(
-    to bottom, rgba(0,0,0,.22) 0 1px, rgba(0,0,0,0) 1px 3px);
+    to bottom, rgba(0,0,0,.26) 0 1px, rgba(0,0,0,0) 1px 3px);
 }
-.crt > * { position: relative; z-index: 1; }
-.crt .poster { color: var(--accent); text-shadow: 2px 2px 0 var(--void); }
-.crt .sub {
-  font-family: var(--display); font-size: 7px; line-height: 1.8;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--dust);
+.tubegrid {
+  flex: 1; min-height: 0; display: grid; gap: 4px;
+  grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr);
 }
-.crt .shelf { margin-top: var(--s2); }
+.gtile {
+  position: relative; display: flex; align-items: center; gap: 5px;
+  padding: 3px 5px; min-width: 0; text-align: left; overflow: hidden;
+  background: var(--tint, var(--iron)); border: 2px solid var(--tint, var(--iron));
+  box-shadow: inset 0 0 0 999px rgba(10, 8, 7, .55);
+}
+.gtile:active { box-shadow: inset 0 0 0 999px rgba(10, 8, 7, .22); }
+@media (hover: hover) { .gtile:hover { box-shadow: inset 0 0 0 999px rgba(10, 8, 7, .34); } }
+.gtile.here { border-color: var(--brass); }
+.gtile.here .gt { color: var(--brass); }
+.gicon { flex: none; width: 23%; max-width: 36px; aspect-ratio: 1 / 1; }
+.gtext { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.gt {
+  font-family: var(--display); font-size: clamp(5px, 1.85vw, 9px); line-height: 1.5;
+  text-transform: uppercase; color: var(--paper); text-shadow: 1px 1px 0 var(--void);
+  overflow: hidden;
+}
+.gs {
+  font-size: clamp(9px, 3vw, 14px); line-height: 1.1; color: var(--dust);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tubepager { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.pagebtn {
+  width: 32px; height: 20px; display: grid; place-items: center; font-size: 11px;
+  color: var(--brass); background: rgba(10, 8, 7, .5); border: 2px solid var(--rule);
+}
+.pagebtn:active { background: var(--steel); }
+.dots { display: flex; gap: 4px; }
+.dot { width: 6px; height: 6px; background: var(--iron); }
+.dot.on { background: var(--brass); }
+.underroom {
+  padding: var(--s5) max(var(--page), env(safe-area-inset-right, 0px))
+           calc(var(--page) + env(safe-area-inset-bottom, 0px))
+           max(var(--page), env(safe-area-inset-left, 0px));
+}
+#app.has-nav .roomscreen .underroom { padding-bottom: calc(var(--page) + 62px + env(safe-area-inset-bottom, 0px)); }
 
 /* ─── Library ────────────────────────────────────────────────────── */
 .masthead { padding-top: var(--s2); }
@@ -196,8 +254,8 @@ button {
   position: relative; text-align: left; padding: var(--s2);
   min-height: 128px; overflow: hidden;
   display: flex; flex-direction: column; justify-content: flex-end;
-  color: var(--paper); background: var(--slate);
-  border: 2px solid var(--iron); box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--paper); background: var(--ground-2);
+  border: 2px solid var(--rule); box-shadow: 3px 3px 0 var(--shadow);
 }
 .game-card.art { aspect-ratio: 5 / 4; }
 .game-card.wide { aspect-ratio: 16 / 9; }
@@ -219,19 +277,23 @@ button {
 /* ─── Bottom navigation ──────────────────────────────────────────── */
 #app.has-nav .screen { padding-bottom: calc(var(--page) + 62px + env(safe-area-inset-bottom, 0px)); }
 .navbar {
-  display: flex; border-top: 2px solid var(--rule); background: var(--ground-2);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex; gap: 2px; padding: 5px 5px calc(5px + env(safe-area-inset-bottom, 0px));
+  border-top: 2px solid var(--rule); background: var(--ground-2);
   position: sticky; bottom: 0; z-index: 20;
 }
 .navitem {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  gap: 3px; padding: var(--s2) 2px calc(var(--s2) + 2px);
-  font-family: var(--display); font-size: 7px; letter-spacing: .02em;
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 4px 2px;
+  font-family: var(--display); font-size: 6px; letter-spacing: .04em;
   text-transform: uppercase; color: var(--on-ground-mute);
 }
-.navitem .glyph { font-family: var(--body); font-size: 17px; line-height: 1; }
-.navitem[aria-current="page"] { color: var(--accent-ink); background: var(--ground); }
-.navitem:active { background: var(--rule); }
+.navpic {
+  position: relative; width: 28px; height: 28px; padding: 2px;
+  border: 2px solid var(--rule); background: var(--ground);
+}
+.navitem[aria-current="page"] { color: var(--accent-ink); }
+.navitem[aria-current="page"] .navpic { border-color: var(--accent-ink); background: var(--ground-2); }
+.navitem:active .navpic { background: var(--steel); }
 
 /* ─── Setup ──────────────────────────────────────────────────────── */
 .field { display: flex; flex-direction: column; gap: var(--s3); }
@@ -322,7 +384,7 @@ button {
   text-align: center;
 }
 .card .pip.tl { top: 6%; left: 8%; }
-.card .pip.br { bottom: 6%; right: 8%; transform: rotate(180deg); }
+.card .pip.br { bottom: 6%; right: 8%; }
 .card .mid { position: absolute; inset: 0; display: grid; place-items: center; opacity: .9; }
 .card .backmark {
   position: absolute; inset: 14%; border: 2px solid rgba(228,233,239,.35);
@@ -432,12 +494,17 @@ button {
 
 <div id="app">
   <div class="topbar">
-    <span class="mark">DECK</span>
-    <span class="tally" title="Games won"><span class="g">♠</span><span class="n" id="wonCount">0</span></span>
-    <span class="tally" title="Current streak"><span class="g">★</span><span class="n" id="streakCount">0</span></span>
+    <button class="who" id="statsBtn" title="Your record" aria-label="Your record">
+      <span class="avatar" id="avatarPic"></span>
+      <span class="whotext">
+        <span class="wname" id="playerName">PLAYER 1</span>
+        <span class="wsub" id="playerSub">0 of 15</span>
+      </span>
+    </button>
     <span class="spacer"></span>
-    <button class="icon-btn" id="statsBtn" title="Your record" aria-label="Your record">◍</button>
-    <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
+    <span class="tally" title="Games won"><span class="pic" id="coinPic"></span><span class="n" id="wonCount">0</span></span>
+    <span class="tally" title="Day streak"><span class="pic" id="gemPic"></span><span class="n" id="streakCount">0</span></span>
+    <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme"><span class="pic" id="gearPic"></span></button>
     <button class="icon-btn hidden" id="quitBtn" title="Leave game" aria-label="Leave game">✕</button>
   </div>
   <div id="screen"></div>
@@ -3027,7 +3094,7 @@ const store = {
   set(k, v) { try { localStorage.setItem("deck." + k, JSON.stringify(v)); } catch {} },
 };
 
-let App = { view: "library", game: null, run: null, remote: null };
+let App = { view: "library", game: null, run: null, remote: null, page: 0 };
 const SERVED = typeof window !== "undefined" && window.DECK_SERVER === true;
 
 /* ── Talking to the table ────────────────────────────────────────── */
@@ -3264,7 +3331,7 @@ function coverArt(node, game) {
     const tok = (name, fb) => css.getPropertyValue("--" + name).trim() || fb;
     const hue = tok(game.art[0], "#4E8A7F");
     const line = tok("void", "#0A0C0F");
-    const u = Math.max(2, Math.round(r.width / 34));
+    const u = Math.max(3, Math.min(5, Math.round(r.width / 40)));
 
     g.fillStyle = tok("charcoal", "#12151A");
     g.fillRect(0, 0, r.width, r.height);
@@ -3272,7 +3339,7 @@ function coverArt(node, game) {
     /* A chequered wash of the game's colour, thinning as it falls —
        dither, not a gradient. Nothing on this screen fades smoothly. */
     const rows = Math.ceil(r.height / u), cols = Math.ceil(r.width / u);
-    g.fillStyle = tint(hue, .17);
+    g.fillStyle = tint(hue, .13);
     for (let y = 0; y < rows; y++) {
       const keep = 1 - y / rows;
       for (let x = y % 2; x < cols; x += 2)
@@ -3280,7 +3347,7 @@ function coverArt(node, game) {
     }
 
     const mask = SPRITE[game.id] || SPRITE.spades;
-    const su = Math.max(2, Math.round((r.width * .46) / mask.length));
+    const su = Math.max(2, Math.round(Math.min(r.width * .46, r.height * .56) / mask.length));
     const side = mask.length * su;
     stamp(g, mask, Math.round((r.width - side) / 2),
       Math.round(r.height * .38 - side / 2), su,
@@ -3299,22 +3366,88 @@ function coverArt(node, game) {
   if (window.ResizeObserver) new ResizeObserver(paint).observe(node);
 }
 
-/* ── The room ────────────────────────────────────────────────────── */
-/* A bedroom seen side-on, drawn as rectangles on a 160×80 grid: wall,
-   skirting, floorboards, a rug, a kid sitting cross-legged with a
-   controller, and the tube he is looking at. The floor line is y=67,
-   so anything standing on it is drawn at 67 minus its own height.
-   Everything below this canvas is what is on that tube. */
-const FLOOR = 67;
-function roomArt(node) {
-  const c = el("canvas");
-  node.append(c);
-  const W = 160, H = 80;
+/* Icons for the chrome, in the same mask language as the game art:
+   "#" the icon's own colour, "o" its shadow, "w" a highlight, "k" a
+   hole. The face doubles up — hair is the colour, skin the highlight. */
+const UI = {
+  coin: [
+    "............", "............", "....####....", "..##wwww##..",
+    ".##wwwwww##.", ".#wwwwwwoo#.", ".#wwwwwwoo#.", ".##wwwwoo##.",
+    "..##oooo##..", "....####....", "............", "............"],
+  gem: [
+    "............", "............", "...######...", "..########..",
+    ".#wwww##oo#.", ".##########.", "..#w####oo..", "...######...",
+    "....####....", ".....##.....", "............", "............"],
+  gear: [
+    "............", "...#....#...", "..##....##..", ".###o##o###.",
+    "..########..", ".###kkkk###.", "##o#kkkk#o##", "##o#kkkk#o##",
+    ".###kkkk###.", "..########..", ".###o##o###.", "..##....##.."],
+  tv: [
+    "............", "............", ".##########.", ".#kkkkkkkk#.",
+    ".#kwwwwwwk#.", ".#kwwwwwwk#.", ".#kwwwwwwk#.", ".#kkkkkkkk#.",
+    ".##########.", "..#o####o#..", ".##......##.", "............"],
+  calendar: [
+    "............", "...#....#...", ".##########.", ".#oooooooo#.",
+    ".##########.", ".#wwwwwwww#.", ".#w#ww#ww#w.", ".#wwwwwwww#.",
+    ".#w#ww#ww#w.", ".##########.", "............", "............"],
+  trophy: [
+    "............", ".#........#.", ".##########.", ".##########.",
+    ".#w######w#.", "..########..", "...######...", "....####....",
+    ".....##.....", "...oooooo...", "..oooooooo..", "............"],
+  antenna: [
+    "............", ".....##.....", "..#..##..#..", ".#.#.##.#.#.",
+    ".#.#.##.#.#.", "..#..##..#..", ".....##.....", "....####....",
+    "..########..", ".##########.", ".#oooooooo#.", ".##########."],
+  face: [
+    "............", "..########..", ".##########.", ".###wwwwww#.",
+    ".##wwwwwwww.", ".#wwkwwkwww.", ".#wwwwwwwww.", ".#wwwkkkwww.",
+    ".##wwwwwww#.", "..#wwwwww#..", "...oooooo...", "..oooooooo.."],
+};
+
+/* Paint one of them into a box, at whatever size the box turns out. */
+function pixIcon(host, name, hue, lite) {
+  const mask = UI[name];
+  if (!mask) return;
+  const c = el("canvas", "pixcanvas");
+  host.append(c);
   const paint = () => {
-    const box = node.getBoundingClientRect();
-    if (!(box.width > 2)) return;
+    const r = host.getBoundingClientRect();
     const dpr = Math.min(3, window.devicePixelRatio || 1);
-    const s = Math.max(2, Math.min(9, Math.ceil((box.width * dpr) / W)));
+    const su = Math.max(1, Math.round(((r.width || 16) * dpr) / 14));
+    c.width = 14 * su; c.height = 14 * su;
+    const g = c.getContext("2d");
+    if (!g) return;
+    const css = getComputedStyle(document.documentElement);
+    const tok = (n, fb) => css.getPropertyValue("--" + n).trim() || fb;
+    const h = tok(hue, "#D8B14E");
+    stamp(g, mask, su, su, su, {
+      hue: h, deep: shade(h, .58), lite: tok(lite || "paper", "#F0E4CA"),
+      line: tok("void", "#0A0807"),
+    });
+  };
+  requestAnimationFrame(paint);
+  if (window.ResizeObserver) new ResizeObserver(paint).observe(host);
+}
+
+/* ── The room ────────────────────────────────────────────────────── */
+/* A bedroom at half past ten, seen head-on and drawn as rectangles on
+   a 120-cell grid: panelled wall, shelf, posters, a wood floor, the
+   kid on it with his back to us, and the television he is looking at.
+   The set is painted with a hole where the tube's glass goes, and the
+   real menu — real buttons, real text — is laid into that hole by the
+   caller, which is why the painter hands its screen rectangle back as
+   percentages of its own box. */
+function roomScene(stage, onScreen) {
+  const c = el("canvas", "roomcanvas");
+  stage.prepend(c);
+  const paint = () => {
+    const box = stage.getBoundingClientRect();
+    if (!(box.width > 8) || !(box.height > 8)) return;
+    const W = 120;
+    const u = box.width / W;
+    const H = Math.max(120, Math.round(box.height / u));
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const s = Math.max(2, Math.min(10, Math.ceil((box.width * dpr) / W)));
     c.width = W * s; c.height = H * s;
     const g = c.getContext("2d");
     if (!g) return;
@@ -3322,182 +3455,292 @@ function roomArt(node) {
     const css = getComputedStyle(document.documentElement);
     const tok = (n, fb) => css.getPropertyValue("--" + n).trim() || fb;
     const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+    /* A framed thing: keyline, fill, and a lit top edge. */
+    const box3 = (x, y, w, h, fill, edge, lit) => {
+      R(x, y, w, h, edge); R(x + 1, y + 1, w - 2, h - 2, fill);
+      if (lit) R(x + 1, y + 1, w - 2, 1, lit);
+    };
 
-    const wall = tok("steel", "#262C35"), wallLo = tok("slate", "#1B1F26");
-    const iron = tok("iron", "#39424F"), night = tok("void", "#0A0C0F");
-    const bone = tok("bone", "#B9C2CD"), dust = tok("dust", "#7C8794");
-    const glass = tok("screen", "#10161B"), accent = tok("accent", "#4E8A7F");
-    const red = tok("vermilion", "#B4544C"), rust = tok("crimson", "#8E3E48");
-    const blue = tok("cobalt", "#4E6E9E"), gold = tok("acid", "#B8A055");
-    const green = tok("forest", "#4F7A5C"), amber = tok("orange", "#B57A44");
-    const skin = "#C39A78", hair = "#33241D";
+    const night = tok("void", "#0A0807"), wall = tok("charcoal", "#141110");
+    const slate = tok("slate", "#1E1917"), steel = tok("steel", "#2B2421");
+    const iron = tok("iron", "#40352D"), dust = tok("dust", "#8C7C6A");
+    const bone = tok("bone", "#C3B096"), paper = tok("paper", "#F0E4CA");
+    const wood = tok("wood", "#4A3526"), woodDark = tok("wood-dark", "#33241A");
+    const brass = tok("brass", "#D8B14E"), glass = tok("screen", "#0D1512");
+    const red = tok("vermilion", "#A8503C"), rust = tok("crimson", "#7E2E38");
+    const blue = tok("cobalt", "#3B5580"), gold = tok("acid", "#A88C3E");
+    const green = tok("forest", "#3F6B52"), amber = tok("orange", "#A56A32");
+    const skin = "#C08D63", hair = "#33231A", hairHi = "#4A3425";
+    const hoodie = "#5C5049", hoodieHi = "#736459", jeans = "#3E5375";
 
-    /* Wall, picture rail, skirting, boards. */
-    R(0, 0, W, 64, wall);
-    for (let x = 3; x < W; x += 9) R(x, 0, 1, 64, tint(wallLo, .5));
-    R(0, 29, W, 1, shade(wall, 1.35));
-    R(0, 30, W, 1, wallLo);
-    R(0, 64, W, 3, iron);
-    R(0, 64, W, 1, shade(iron, 1.3));
-    R(0, FLOOR, W, H - FLOOR, shade(iron, .62));
-    for (let y = FLOOR + 2; y < H; y += 3) R(0, y, W, 1, shade(iron, .44));
+    /* Vertical budget: the wall furniture takes the top fifth, the
+       floor and everything on it the bottom third, the set the rest. */
+    const top = Math.round(H * .215);
+    const tvT = top + 2;
+    const tvB = H - Math.round(H * .30);
+    const tvL = 9, tvR = 111;
+    const floorY = Math.max(tvT + 6, tvB - Math.round(H * .13));
+    const base = H - 2;
 
-    /* A framed poster: one big spade, printed cheap. */
-    R(8, 5, 26, 22, night);
-    R(9, 6, 24, 20, shade(rust, .8));
-    R(20, 9, 2, 2, bone); R(19, 11, 4, 2, bone); R(18, 13, 6, 2, bone);
-    R(17, 15, 8, 2, bone); R(16, 17, 10, 2, bone);
-    R(20, 19, 2, 2, bone); R(18, 21, 6, 2, bone);
-
-    /* A shelf: books at random heights, and something green. */
-    R(40, 26, 32, 2, iron);
-    R(40, 28, 32, 1, night);
-    const books = [[41, 4, rust], [45, 3, gold], [48, 5, blue],
-                   [53, 3, green], [56, 4, amber], [60, 2, red]];
-    for (const [bx, bw, col] of books) {
-      const bh = 8 + (bx * 5) % 4;
-      R(bx, 26 - bh, bw, bh, shade(col, .78));
-      R(bx, 26 - bh, bw, 1, col);
+    /* ── Wall, panelling, floor ─────────────────────────────────── */
+    R(0, 0, W, floorY, wall);
+    for (let x = 0; x < W; x += 15) { R(x, 0, 1, floorY, night); R(x + 1, 0, 1, floorY, slate); }
+    R(0, floorY - 3, W, 3, steel);
+    R(0, floorY - 3, W, 1, iron);
+    R(0, floorY, W, H - floorY, wood);
+    for (let y = floorY, i = 0; y < H; y += 7, i++) {
+      R(0, y, W, 7, i % 3 === 1 ? shade(wood, 1.08) : i % 3 === 2 ? shade(wood, .92) : wood);
+      R(0, y + 6, W, 1, woodDark);
     }
-    R(64, 21, 7, 5, shade(amber, .7));
-    R(64, 21, 7, 1, amber);
-    R(65, 16, 2, 5, green); R(67, 13, 2, 8, green); R(69, 17, 2, 4, shade(green, .8));
+    /* The tube throws light forward, so the boards in front of it lift. */
+    R(20, floorY, 80, H - floorY, tint(brass, .05));
 
-    /* A clock nobody has reset since the last power cut. */
-    R(84, 6, 10, 10, night);
-    R(85, 7, 8, 8, bone);
-    R(88, 9, 1, 3, night); R(88, 11, 3, 1, night);
+    /* ── Bookcases either side ──────────────────────────────────── */
+    for (const [bx, bw] of [[0, 9], [111, 9]]) {
+      R(bx, Math.round(top * .55), bw, floorY - Math.round(top * .55), slate);
+      R(bx, Math.round(top * .55), bw, 1, iron);
+      for (let sy = Math.round(top * .55) + 12; sy < floorY; sy += 13) {
+        R(bx, sy, bw, 1, night);
+        const spines = [rust, blue, gold, green, amber, red, bone];
+        for (let i = 0, x = bx + 1; x < bx + bw - 1; i++) {
+          const bwid = 1 + ((x * 7 + sy) % 2);
+          R(x, sy - 10, bwid, 10, shade(spines[(x + sy + i) % spines.length], .55));
+          R(x, sy - 10, bwid, 1, shade(spines[(x + sy + i) % spines.length], .8));
+          x += bwid + 1;
+        }
+      }
+    }
 
-    /* A poster over the television. */
-    R(104, 4, 44, 16, night);
-    R(105, 5, 42, 4, shade(red, .85));
-    R(105, 9, 42, 3, shade(amber, .85));
-    R(105, 12, 42, 3, shade(gold, .8));
-    R(121, 6, 8, 8, gold);
-    R(105, 15, 42, 4, shade(green, .55));
+    /* ── A framed poster, a shelf, and what is on it ────────────── */
+    const shelfY = Math.round(top * .58);
+    box3(2, Math.round(top * .08), 22, shelfY - Math.round(top * .08) - 2, shade(blue, .5), night, tint(bone, .18));
+    const py = Math.round(top * .22);                       /* a controller */
+    R(6, py + 3, 14, 6, shade(bone, .85));
+    R(5, py + 4, 16, 4, shade(bone, .85));
+    R(7, py + 5, 3, 1, night); R(8, py + 4, 1, 3, night);
+    R(16, py + 5, 2, 2, rust); R(13, py + 6, 2, 2, rust);
+    R(9, py + 12, 8, 2, brass); R(7, py + 15, 12, 1, shade(bone, .6));
 
-    /* The rug — drawn before anything that sits on it. */
-    R(34, FLOOR, 80, 6, shade(rust, .5));
-    R(34, FLOOR, 80, 1, shade(rust, .72));
-    for (let x = 36; x < 112; x += 7) R(x, FLOOR + 2, 3, 2, shade(rust, .34));
-    R(34, FLOOR + 6, 80, 1, night);
+    box3(96, Math.round(top * .08), 22, shelfY - Math.round(top * .08) - 2, shade(rust, .5), night, tint(bone, .18));
+    const qy = Math.round(top * .18);                       /* a trophy */
+    R(102, qy, 10, 5, brass); R(101, qy + 1, 1, 3, brass); R(112, qy + 1, 1, 3, brass);
+    R(103, qy + 5, 8, 2, brass); R(105, qy + 7, 4, 3, shade(brass, .8));
+    R(102, qy + 10, 10, 2, shade(brass, .7));
+    R(100, qy + 15, 14, 1, shade(bone, .55));
+    R(102, qy + 18, 10, 1, shade(bone, .4));
 
-    /* Cartridges, a can, a bag of something. */
-    const carts = [red, gold, blue, green];
+    R(26, shelfY, 68, 2, iron);
+    R(26, shelfY + 2, 68, 1, night);
+    /* A clock that nobody has reset since the last power cut. */
+    box3(30, shelfY - 15, 20, 15, night, steel, iron);
+    R(32, shelfY - 13, 16, 11, glass);
+    R(34, shelfY - 10, 3, 5, brass); R(38, shelfY - 10, 2, 5, brass);
+    R(41, shelfY - 10, 3, 5, brass); R(45, shelfY - 10, 2, 5, brass);
+    /* Books flat and upright, and something green in a pot. */
+    for (let i = 0, x = 54; i < 5; i++) {
+      const h = 9 + (i % 3) * 2, col = [rust, gold, blue, green, amber][i];
+      R(x, shelfY - h, 2, h, shade(col, .7)); R(x, shelfY - h, 2, 1, col); x += 3;
+    }
+    R(74, shelfY - 6, 9, 6, shade(amber, .6)); R(74, shelfY - 6, 9, 1, amber);
+    R(76, shelfY - 12, 2, 6, green); R(78, shelfY - 16, 2, 10, green);
+    R(80, shelfY - 13, 2, 7, shade(green, .8)); R(79, shelfY - 18, 3, 2, green);
+
+    /* ── The sign over the set ──────────────────────────────────── */
+    const signT = Math.round(top * .68), signH = Math.max(9, Math.round(top * .3));
+    R(34, shelfY + 3, 1, signT - shelfY - 3, iron);
+    R(86, shelfY + 3, 1, signT - shelfY - 3, iron);
+    box3(20, signT, 80, signH, steel, night, iron);
+    R(21, signT + signH - 2, 78, 1, night);
+
+    /* ── The television ─────────────────────────────────────────── */
+    const tvW = tvR - tvL, tvH = tvB - tvT;
+    R(tvL + 2, tvB, tvW - 4, 5, shade(wood, .65));
+    R(tvL + 2, tvB, tvW - 4, 1, shade(wood, 1.1));
+    R(tvL + 6, tvB + 5, 6, 3, night); R(tvR - 12, tvB + 5, 6, 3, night);
+    R(tvL, tvB + 8, tvW, 2, tint(night, .55));
+    box3(tvL, tvT, tvW, tvH, iron, night, tint(paper, .16));
+    R(tvL + 2, tvT + 2, tvW - 4, tvH - 4, steel);
+    const scr = { x: tvL + 7, y: tvT + 5, w: tvW - 14, h: tvH - 19 };
+    R(scr.x - 2, scr.y - 2, scr.w + 4, scr.h + 4, night);
+    R(scr.x - 1, scr.y - 1, scr.w + 2, scr.h + 2, shade(steel, .6));
+    R(scr.x, scr.y, scr.w, scr.h, glass);
+    /* The chassis under the glass: brand plate, vents, knobs, a lamp. */
+    const chy = scr.y + scr.h + 4;
+    box3(scr.x + 4, chy, 34, 6, shade(iron, .8), night, null);
+    for (let x = scr.x + 44; x < scr.x + scr.w - 22; x += 3) R(x, chy + 1, 2, 4, shade(steel, .7));
+    R(scr.x + scr.w - 16, chy + 1, 4, 4, red);
+    box3(scr.x + scr.w - 10, chy, 10, 6, shade(iron, .7), night, null);
+    /* Light spills out of the glass onto the wall behind it. */
+    R(tvL - 3, tvT + 6, 3, tvH - 20, tint(brass, .06));
+    R(tvR, tvT + 6, 3, tvH - 20, tint(brass, .06));
+
+    /* ── The kid, with his back to us ───────────────────────────── */
+    const kx = 4, kb = base;
+    R(kx + 2, kb - 10, 28, 9, jeans);                          /* crossed legs */
+    R(kx + 2, kb - 10, 28, 1, shade(jeans, 1.3));
+    R(kx + 22, kb - 13, 12, 7, shade(jeans, .8));
+    R(kx + 22, kb - 13, 12, 1, shade(jeans, 1.1));
+    R(kx, kb - 30, 26, 20, hoodie);                           /* hoodie back */
+    R(kx, kb - 30, 26, 2, hoodieHi);
+    R(kx + 22, kb - 28, 3, 17, hoodieHi);
+    R(kx + 2, kb - 21, 20, 1, shade(hoodie, .72));            /* seam */
+    R(kx + 19, kb - 24, 12, 6, hoodie);                       /* arm forward */
+    R(kx + 19, kb - 24, 12, 1, hoodieHi);
+    R(kx + 29, kb - 23, 5, 5, skin);
+    R(kx + 5, kb - 35, 19, 6, shade(hoodie, 1.18));           /* hood down */
+    R(kx + 5, kb - 35, 19, 1, hoodieHi);
+    R(kx + 7, kb - 44, 15, 11, hair);                         /* messy hair */
+    R(kx + 5, kb - 41, 2, 8, hair); R(kx + 22, kb - 42, 3, 9, hair);
+    R(kx + 8, kb - 46, 4, 2, hair); R(kx + 13, kb - 47, 3, 3, hair);
+    R(kx + 17, kb - 46, 4, 2, hair); R(kx + 10, kb - 48, 2, 2, hair);
+    R(kx + 15, kb - 49, 2, 2, hair); R(kx + 19, kb - 48, 2, 2, hair);
+    R(kx + 8, kb - 44, 12, 2, hairHi); R(kx + 13, kb - 46, 3, 2, hairHi);
+    R(kx + 21, kb - 40, 2, 6, shade(hair, .7));               /* fringe edge */
+    R(kx + 23, kb - 39, 3, 7, skin);                          /* cheek and ear */
+    R(kx + 24, kb - 37, 2, 2, shade(skin, .78));
+    R(kx + 26, kb - 38, 1, 6, tint(brass, .55));              /* tube on his cheek */
+    /* What he is holding, and the wire he keeps kicking loose. */
+    box3(kx + 31, kb - 24, 14, 7, bone, night, paper);
+    R(kx + 34, kb - 22, 3, 3, night);
+    R(kx + 41, kb - 22, 2, 2, rust); R(kx + 43, kb - 20, 2, 2, rust);
+    R(kx + 46, kb - 21, 3, 1, night); R(kx + 49, kb - 21, 1, 8, night);
+    R(kx + 49, kb - 14, 10, 1, night);
+
+    /* ── The floor, and what is on it ───────────────────────────── */
+    box3(52, base - 16, 26, 9, shade(iron, 1.1), night, tint(paper, .22));
+    R(56, base - 12, 18, 3, night);
+    R(56, base - 12, 18, 1, shade(steel, .8));
+    R(69, base - 15, 3, 1, red);
+    R(61, base - 7, 1, 3, night);
+
+    R(0, base - 11, 7, 11, shade(red, .75));                  /* a can */
+    R(0, base - 9, 7, 2, bone);
+    R(0, base - 11, 7, 1, shade(red, 1.15));
+
+    box3(30, base - 8, 30, 8, shade(bone, .78), night, bone); /* pizza box */
+    R(36, base - 6, 18, 4, shade(amber, .8));
+    R(41, base - 5, 8, 2, shade(red, .9));
+
+    R(80, base - 7, 14, 7, shade(bone, .62));                 /* popcorn */
+    R(80, base - 7, 14, 1, bone);
+    for (let i = 0; i < 7; i++) R(81 + i * 2, base - 9 - (i % 2), 2, 2, gold);
+
+    const carts = [rust, blue, gold, green];                  /* cartridges */
     carts.forEach((col, i) => {
-      R(14, FLOOR - 3 - i * 3, 14, 3, shade(col, .7));
-      R(14, FLOOR - 3 - i * 3, 14, 1, shade(col, .95));
+      R(98, base - 8 - i * 5, 20, 5, shade(col, .55));
+      R(98, base - 8 - i * 5, 20, 1, shade(col, .85));
+      R(101, base - 7 - i * 5, 14, 2, shade(col, .35));
     });
-    R(34, FLOOR - 9, 5, 9, shade(red, .8));
-    R(34, FLOOR - 7, 5, 2, bone);
-    R(44, FLOOR - 6, 12, 6, shade(gold, .72));
-    R(44, FLOOR - 6, 12, 1, gold);
+    box3(96, base - 6, 22, 6, shade(steel, 1.2), night, tint(paper, .2)); /* a handheld */
+    R(99, base - 5, 7, 4, glass);
+    R(109, base - 4, 3, 2, night); R(114, base - 4, 2, 2, rust);
 
-    /* The television: body, bezel, tube, knobs, grille. */
-    R(116, FLOOR - 7, 30, 7, shade(iron, 1.05));
-    R(116, FLOOR - 7, 30, 1, shade(iron, 1.35));
-    R(114, FLOOR - 2, 34, 2, night);
-    R(106, 24, 50, 36, iron);
-    R(106, 24, 50, 1, shade(iron, 1.35));
-    R(107, 25, 48, 34, shade(iron, .8));
-    R(109, 27, 36, 28, night);
-    R(110, 28, 34, 26, glass);
-    const menu = [rust, blue, gold, green, amber, red];
-    menu.forEach((m, i) => {
-      const mx = 113 + (i % 3) * 11, my = 33 + ((i / 3) | 0) * 10;
-      R(mx, my, 9, 8, shade(m, .8));
-      R(mx, my, 9, 1, m);
+    /* Everything in the room is lit by one thing, so the far edges go. */
+    R(0, 0, 2, H, tint(night, .5));
+    R(W - 2, 0, 2, H, tint(night, .5));
+    R(0, H - 2, W, 2, tint(night, .45));
+
+    if (onScreen) onScreen({
+      left: (scr.x / W) * 100, top: (scr.y / H) * 100,
+      width: (scr.w / W) * 100, height: (scr.h / H) * 100,
+      signLeft: (21 / W) * 100, signTop: (signT / H) * 100,
+      signWidth: (78 / W) * 100, signHeight: (signH / H) * 100,
     });
-    R(112, 32, 11, 10, accent);
-    R(113, 33, 9, 8, shade(rust, .8));
-    R(113, 33, 9, 1, rust);
-    for (let y = 28; y < 54; y += 2) R(110, y, 34, 1, tint(night, .34));
-    R(110, 28, 34, 26, tint(accent, .07));
-    R(147, 30, 7, 7, shade(iron, .6)); R(149, 32, 3, 3, bone);
-    R(147, 40, 7, 7, shade(iron, .6)); R(149, 42, 3, 3, dust);
-    for (let y = 50; y < 56; y += 2) R(147, y, 7, 1, night);
-
-    /* The console, and the cable running back to the controller. */
-    R(99, FLOOR - 5, 16, 5, shade(iron, .95));
-    R(99, FLOOR - 5, 16, 1, shade(iron, 1.25));
-    R(102, FLOOR - 3, 10, 2, night);
-    R(103, FLOOR - 6, 3, 1, red);
-
-    /* The kid: crossed legs, hoodie, a controller in both hands. */
-    R(64, FLOOR - 7, 24, 7, shade(blue, .55));
-    R(86, FLOOR - 6, 6, 6, shade(blue, .48));
-    R(68, 44, 16, 17, blue);
-    R(66, 44, 4, 9, shade(blue, .78));
-    R(70, 55, 12, 1, shade(blue, .7));
-    R(80, 52, 10, 4, blue);
-    R(89, 52, 4, 4, skin);
-    R(74, 43, 6, 2, shade(skin, .82));
-    R(70, 32, 12, 12, skin);
-    R(68, 29, 15, 6, hair);
-    R(68, 29, 4, 12, hair);
-    R(74, 38, 2, 3, shade(skin, .84));
-    R(79, 37, 2, 2, night);
-    R(82, 39, 1, 2, shade(skin, .78));
-    R(79, 41, 2, 1, shade(skin, .6));
-
-    /* The controller, and the wire he keeps kicking loose. */
-    R(88, 53, 11, 5, bone);
-    R(88, 53, 11, 1, tok("paper", "#E4E9EF"));
-    R(90, 55, 2, 2, night);
-    R(95, 55, 1, 1, rust); R(97, 55, 1, 1, rust);
-    R(99, 56, 2, 1, night); R(100, 56, 1, 5, night);
-    R(100, 60, 5, 1, night); R(104, 60, 1, 2, night);
-
-    /* Everything he can see is lit by the one thing in the room that
-       is switched on, so his front edge picks up the tube. */
-    R(83, 44, 1, 17, tint(accent, .55));
-    R(81, 32, 1, 10, tint(accent, .45));
-    R(92, 53, 1, 3, tint(accent, .5));
   };
   paint();
-  if (window.ResizeObserver) new ResizeObserver(paint).observe(node);
+  if (window.ResizeObserver) new ResizeObserver(paint).observe(stage);
 }
 
 /* ── Library ─────────────────────────────────────────────────────── */
+/* Six games fit on the glass at once, the way a console menu of the
+   period would have had it, so fifteen games are three pages. */
+const PAGE = 6;
+function tileIcon(node, game) {
+  const c = el("canvas", "gicon");
+  node.prepend(c);
+  const paint = () => {
+    const r = c.getBoundingClientRect();
+    if (!(r.width > 4)) return;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const su = Math.max(2, Math.round((r.width * dpr) / 14));
+    c.width = 14 * su; c.height = 14 * su;
+    const g = c.getContext("2d");
+    if (!g) return;
+    const css = getComputedStyle(document.documentElement);
+    const tok = (n, fb) => css.getPropertyValue("--" + n).trim() || fb;
+    const hue = tok(game.art[0], "#D8B14E");
+    stamp(g, SPRITE[game.id] || SPRITE.spades, su, su, su, {
+      hue, deep: shade(hue, .58), lite: tok("paper", "#F0E4CA"), line: tok("void", "#0A0807"),
+    });
+  };
+  requestAnimationFrame(paint);
+  if (window.ResizeObserver) new ResizeObserver(paint).observe(c);
+}
+
 function viewLibrary() {
-  const s = el("div", "screen");
-  const wrap = el("div", "wrap stack");
-  wrap.style.gap = "var(--section)";
+  const s = el("div", "screen roomscreen");
+  const games = Object.values(GAMES);
+  const pages = Math.max(1, Math.ceil(games.length / PAGE));
+  const p = localProfile();
+  /* The pointer sits on whatever this device plays most. */
+  let here = null, most = 0;
+  for (const [id, r] of Object.entries(p.byGame || {})) if (r.played > most) { most = r.played; here = id; }
 
-  /* The room, and directly under it the face of the tube in it. The
-     two share an edge and a border so they read as one appliance. */
-  const set = el("div", "stack");
-  const room = el("div", "room");
-  const crt = el("div", "crt stack");
-  crt.style.gap = "var(--s3)";
+  const stage = el("div", "stage");
+  const sign = el("div", "sign");
+  sign.append(el("span", null, "Choose your game"));
+  const tube = el("div", "tube");
+  const grid = el("div", "tubegrid");
+  const pager = el("div", "tubepager");
+  tube.append(grid, pager);
+  stage.append(sign, tube);
 
-  const h1 = el("h1", "poster h-l", "Choose your game");
-  const sub = el("p", "sub", "One deck · Every game · Pass and play");
+  const drawPage = () => {
+    grid.innerHTML = ""; pager.innerHTML = "";
+    const from = App.page * PAGE;
+    for (const g of games.slice(from, from + PAGE)) {
+      const t = el("button", "gtile");
+      if (g.id === here) t.classList.add("here");
+      t.style.setProperty("--tint", `var(--${g.art[0]})`);
+      const txt = el("span", "gtext");
+      txt.append(el("span", "gt", g.name),
+        el("span", "gs", `${g.min === g.max ? g.min : g.min + "–" + g.max} player${g.max > 1 ? "s" : ""}`));
+      t.append(txt);
+      t.onclick = () => { App.game = g; App.view = "setup"; render(); };
+      grid.append(t);
+      tileIcon(t, g);
+    }
+    const turn = (d) => { App.page = (App.page + d + pages) % pages; drawPage(); };
+    const prev = el("button", "pagebtn", "◄");
+    prev.setAttribute("aria-label", "Previous page");
+    prev.onclick = () => turn(-1);
+    const dots = el("span", "dots");
+    for (let i = 0; i < pages; i++) {
+      const d = el("span", "dot" + (i === App.page ? " on" : ""));
+      d.setAttribute("role", "presentation");
+      dots.append(d);
+    }
+    const next = el("button", "pagebtn", "►");
+    next.setAttribute("aria-label", "Next page");
+    next.onclick = () => turn(1);
+    pager.append(prev, dots, next);
+  };
+  drawPage();
 
-  const shelf = el("div", "shelf");
-  shelf.setAttribute("id", "shelfAnchor");
-  for (const g of Object.values(GAMES)) {
-    const card = el("button", "game-card art");
-    const nm = el("div", "gname", g.name);
-    const tg = el("div", "gtag", `${g.category} · ${g.min === g.max ? g.min : g.min + "–" + g.max}P`);
-    card.append(nm, tg);
-    card.onclick = () => { App.game = g; App.view = "setup"; render(); };
-    shelf.append(card);
-    requestAnimationFrame(() => coverArt(card, g));
-  }
+  roomScene(stage, (r) => {
+    tube.style.left = r.left + "%"; tube.style.top = r.top + "%";
+    tube.style.width = r.width + "%"; tube.style.height = r.height + "%";
+    sign.style.left = r.signLeft + "%"; sign.style.top = r.signTop + "%";
+    sign.style.width = r.signWidth + "%"; sign.style.height = r.signHeight + "%";
+  });
 
-  crt.append(h1, sub, shelf);
-  set.append(room, crt);
-  requestAnimationFrame(() => roomArt(room));
+  s.append(stage);
 
-  const note = el("p", "label");
-  note.style.cssText = "color:var(--dust);text-transform:none;letter-spacing:0";
-  note.textContent = "Pass one device round the table. Nobody sees a hand that isn't theirs — the app takes it away rather than covering it up.";
-
-  const stack = el("div", "stack");
-  stack.style.gap = "var(--s4)";
-  stack.append(set, note);
-
+  /* Below the room: the daily, the link-up, and this device's record.
+     Scrolled to, not stacked on the scene. */
+  const under = el("div", "wrap stack underroom");
+  under.style.gap = "var(--s4)";
+  under.append(dailyCard());
   if (SERVED) {
     const pick = el("div", "modepick");
     const friends = el("button");
@@ -3505,28 +3748,14 @@ function viewLibrary() {
     friends.append(el("span", "d", "Everybody uses their own phone. Nobody sees a hand but their own — it never leaves this machine."));
     friends.onclick = () => { App.view = "connect"; render(); };
     pick.append(friends);
-    stack.append(pick);
+    under.append(pick);
   }
-
-  const p = localProfile();
-  const foot = el("div", "stack");
-  foot.style.gap = "var(--s3)";
-  const row = el("div", "row");
-  row.style.cssText = "gap:var(--s5);flex-wrap:wrap";
-  for (const [k, v] of [["Played", p.played], ["Won", p.won],
-      ["Win rate", p.played ? Math.round((p.won / p.played) * 100) + "%" : "—"],
-      ["Streak", p.streak]]) {
-    const c = el("div", "callout");
-    c.append(el("span", "k", k), el("span", "v num", String(v)));
-    c.querySelector(".v").style.fontSize = "16px";
-    row.append(c);
-  }
+  const note = el("p", "sub");
+  note.textContent = "Pass one device round the table. Nobody sees a hand that isn't theirs — the app takes it away rather than covering it up.";
   const seeAll = el("button", "btn ghost wide", "Statistics, achievements, mastery");
   seeAll.onclick = () => { App.view = "stats"; render(); };
-  foot.append(el("div", "label", "On this device"), row, seeAll);
-
-  wrap.append(stack, dailyCard(), foot);
-  s.append(wrap);
+  under.append(note, seeAll);
+  s.append(under);
   return s;
 }
 
@@ -4547,10 +4776,15 @@ function viewRemoteResult(v) {
    is not one of them — a setup sheet, a table, a result — takes the
    whole screen, so the bar goes away. */
 const NAV = [
-  { id: "library", label: "Arcade", glyph: "♠" },
-  { id: "daily", label: "Daily", glyph: "★" },
-  { id: "stats", label: "Record", glyph: "◆" },
+  { id: "library", label: "Arcade", icon: "tv", hue: "cobalt" },
+  { id: "daily", label: "Daily", icon: "calendar", hue: "vermilion" },
+  { id: "stats", label: "Record", icon: "trophy", hue: "acid" },
 ];
+/* The chrome icons are drawn once; only their numbers change after. */
+pixIcon(document.getElementById("avatarPic"), "face", "iron", "paper");
+pixIcon(document.getElementById("coinPic"), "coin", "brass");
+pixIcon(document.getElementById("gemPic"), "gem", "cobalt", "bone");
+pixIcon(document.getElementById("gearPic"), "gear", "dust", "bone");
 const navbar = document.getElementById("navbar");
 function paintNav() {
   const here = App.view;
@@ -4559,12 +4793,14 @@ function paintNav() {
   navbar.classList.toggle("hidden", !top);
   document.getElementById("app").classList.toggle("has-nav", top);
   if (!top) return;
-  const items = SERVED ? NAV.concat([{ id: "connect", label: "Link", glyph: "◎" }]) : NAV;
+  const items = SERVED ? NAV.concat([{ id: "connect", label: "Link", icon: "antenna", hue: "forest" }]) : NAV;
   if (navbar.children.length !== items.length) {
     navbar.innerHTML = "";
     for (const it of items) {
       const b = el("button", "navitem");
-      b.append(el("span", "glyph", it.glyph), el("span", null, it.label));
+      const box = el("span", "navpic");
+      b.append(box, el("span", null, it.label));
+      pixIcon(box, it.icon, it.hue);
       b.dataset.view = it.id;
       b.onclick = () => { App.view = it.id; render(); };
       navbar.append(b);
@@ -4581,6 +4817,9 @@ function paintTally() {
   const p = localProfile();
   document.getElementById("wonCount").textContent = String(p.won || 0);
   document.getElementById("streakCount").textContent = String(p.streak || 0);
+  document.getElementById("playerName").textContent = p.name || "Player";
+  document.getElementById("playerSub").textContent =
+    `${(p.wonGames || []).length} of ${Object.keys(GAMES).length}`;
 }
 function render() {
   try { renderInner(); paintNav(); paintTally(); }
@@ -4604,6 +4843,7 @@ function renderInner() {
   const run = App.run, rem = App.remote;
   const inGame = (!!run && App.view === "table") || App.view === "setup";
   document.getElementById("quitBtn").classList.toggle("hidden", !inGame);
+  document.querySelector(".topbar").classList.toggle("ingame", inGame);
   document.querySelectorAll(".seal").forEach((n) => n.remove());
   screen.innerHTML = "";
 
