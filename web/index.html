@@ -320,6 +320,21 @@ button {
   background: var(--iron); color: var(--paper);
 }
 .chip.ai { background: var(--cobalt); }
+.picker { gap: var(--s2); }
+.pickrow {
+  display: flex; align-items: flex-start; gap: var(--s3); text-align: left;
+  min-height: 44px; padding: var(--s3); background: var(--ground-2);
+  border: 2px solid var(--rule); box-shadow: 3px 3px 0 var(--shadow);
+}
+.pickrow:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+@media (hover: hover) { .pickrow:hover { border-color: var(--accent); } }
+.pickrow .chip { margin-top: 3px; }
+.picktext { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.picktext .t {
+  font-family: var(--display); font-size: 8px; line-height: 1.5;
+  text-transform: uppercase; color: var(--on-ground);
+}
+.picktext .d { font-size: 16px; line-height: 1.2; color: var(--on-ground-mute); }
 .seg { display: flex; gap: 2px; background: var(--ground-2); padding: 2px; border: 2px solid var(--rule); }
 .seg button {
   flex: 1; padding: var(--s2) var(--s1);
@@ -628,13 +643,20 @@ const byRankSuit = (a, c) => (a.rank === c.rank ? SUITS.indexOf(a.suit) - SUITS.
 
 /* ── AI: one profile, one selector, seven personalities ───────────── */
 const CAST = [
-  { id: "hal",     name: "Hal",     colour: "cobalt",    aggression: .45, risk: .40, bluff: .06, memory: .85, mistake: .06 },
-  { id: "pedro",   name: "Pedro",   colour: "vermilion", aggression: .86, risk: .78, bluff: .30, memory: .55, mistake: .14 },
-  { id: "calvin",  name: "Calvin",  colour: "forest",    aggression: .18, risk: .15, bluff: .03, memory: .70, mistake: .09 },
-  { id: "rohan",   name: "Rohan",   colour: "acid",      aggression: .50, risk: .45, bluff: .09, memory: 1.0, mistake: .03 },
-  { id: "shayla",  name: "Shayla",  colour: "coral",     aggression: .62, risk: .58, bluff: .22, memory: .90, mistake: .06 },
-  { id: "honey",   name: "Honey",   colour: "orange",    aggression: .70, risk: .85, bluff: .44, memory: .60, mistake: .11 },
-  { id: "scarlet", name: "Scarlet", colour: "crimson",   aggression: .66, risk: .52, bluff: .26, memory: 1.0, mistake: .02 },
+  { id: "hal",     name: "Hal",     colour: "cobalt",    aggression: .45, risk: .40, bluff: .06, memory: .85, mistake: .06,
+    blurb: "Plays the percentages, every hand, without ever varying. Almost never bluffs." },
+  { id: "pedro",   name: "Pedro",   colour: "vermilion", aggression: .86, risk: .78, bluff: .30, memory: .55, mistake: .14,
+    blurb: "Comes at you from the first card. Forgets what was played, and does not slow down for it." },
+  { id: "calvin",  name: "Calvin",  colour: "forest",    aggression: .18, risk: .15, bluff: .03, memory: .70, mistake: .09,
+    blurb: "Passes and waits and passes, then takes the hand you thought was already yours." },
+  { id: "rohan",   name: "Rohan",   colour: "acid",      aggression: .50, risk: .45, bluff: .09, memory: 1.0, mistake: .03,
+    blurb: "Remembers every card that has gone. Steady, and very hard to catch out twice." },
+  { id: "shayla",  name: "Shayla",  colour: "coral",     aggression: .62, risk: .58, bluff: .22, memory: .90, mistake: .06,
+    blurb: "Watches how you bet, then plays the person holding the cards rather than the cards." },
+  { id: "honey",   name: "Honey",   colour: "orange",    aggression: .70, risk: .85, bluff: .44, memory: .60, mistake: .11,
+    blurb: "Backs anything, lies about half of it, and gets away with it far too often." },
+  { id: "scarlet", name: "Scarlet", colour: "crimson",   aggression: .66, risk: .52, bluff: .26, memory: 1.0, mistake: .02,
+    blurb: "Never wrong about a card, and never quite lets on what is being held." },
 ];
 const DIFFICULTY = { casual: .14, skilled: 0, expert: -.04 };
 
@@ -2889,6 +2911,28 @@ const BOSSES = [
 ];
 const bossById = (id) => BOSSES.find((b) => b.id === id) || null;
 
+/* The seven are the same seven every time — the same nerve, the same
+   memory, the same tell — but they turn up under different names, so a
+   session never feels like a rerun of the last one. Only the name moves:
+   ids are what records, bosses and saved games are keyed on, and those
+   stay exactly where they were. */
+const NAME_POOL = [
+  "Ari", "Bex", "Cass", "Dex", "Emi", "Fay", "Gus", "Hana", "Ivo", "Jai",
+  "Kit", "Lex", "Mo", "Nell", "Otto", "Pia", "Quin", "Ravi", "Sol", "Tam",
+  "Uma", "Vik", "Wren", "Xan", "Yara", "Zeke", "Bo", "Cleo", "Dot", "Elis",
+  "Finn", "Gia", "Hugo", "Indi", "Jude", "Kai", "Luca", "Mina", "Nico",
+  "Orla", "Perry", "Remy", "Sana", "Theo", "Vera", "Wes", "Yuki", "Zola",
+];
+(function renameTheCast() {
+  const seed = ((Date.now() & 0x7fffffff) ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0;
+  const drawn = rngFrom(seed).shuffle(NAME_POOL.slice());
+  CAST.forEach((c, i) => { c.name = drawn[i]; });
+  for (const b of BOSSES) {
+    const c = CAST.find((x) => x.id === b.id);
+    if (c) b.name = c.name;
+  }
+})();
+
 /* ── The daily challenge ──────────────────────────────────────────── */
 const Daily = {
   /* The user's own calendar day. Everything below is a pure function of
@@ -3778,7 +3822,10 @@ function viewSetup() {
 
   const saved = store.get("seats." + g.id, null);
   let seats = saved && saved.length >= g.min && saved.length <= g.max
-    ? saved.map((x) => ({ ...x }))
+    ? saved.map((x) => {
+        const c = x.ai ? CAST.find((y) => y.id === x.ai) : null;
+        return c ? { ...x, name: c.name } : { ...x };
+      })
     : defaultSeats(g);
 
   const field = el("div", "field");
@@ -3793,6 +3840,7 @@ function viewSetup() {
       : humans === 1 ? "Solo against the machine." : "Everyone is an opponent; you're watching.";
   };
 
+  let picking = false;
   const drawSeats = () => {
     list.innerHTML = "";
     refreshNote();
@@ -3820,20 +3868,53 @@ function viewSetup() {
       if (!g.solo) row.append(swap);
       if (seats.length > g.min && !g.solo) {
         const rm = el("button", "icon-btn", "−");
-        rm.title = "Remove"; rm.onclick = () => { seats.splice(i, 1); drawSeats(); };
+        rm.title = "Remove " + (seat.name || "this seat");
+        rm.setAttribute("aria-label", rm.title);
+        rm.onclick = () => { seats.splice(i, 1); picking = false; drawSeats(); };
         row.append(rm);
       }
       list.append(row);
     });
-    if (seats.length < g.max) {
+    if (seats.length < g.max && !picking) {
       const add = el("button", "btn ghost wide", "Add player");
-      add.onclick = () => {
-        const i = seats.length;
-        const p = CAST[i % CAST.length];
-        seats.push({ name: p.name, ai: p.id });
-        drawSeats();
-      };
+      add.onclick = () => { picking = true; drawSeats(); };
       list.append(add);
+    }
+    /* Who joins is a choice, not whoever happens to be next in the list,
+       so the seven say in one line how they play before you pick one. */
+    if (seats.length < g.max && picking) {
+      const box = el("div", "picker stack");
+      box.append(el("div", "label", "Who joins?"));
+
+      const person = el("button", "pickrow");
+      const ptext = el("span", "picktext");
+      ptext.append(el("span", "t", "Another person"),
+        el("span", "d", "Somebody else at this table. The device seals itself between your turns."));
+      person.append(el("span", "chip", "Human"), ptext);
+      person.onclick = () => {
+        seats.push({ name: "Player " + (seats.length + 1), ai: null });
+        picking = false; drawSeats();
+      };
+      box.append(person);
+
+      for (const c of CAST) {
+        if (seats.some((x) => x.ai === c.id)) continue;
+        const b = el("button", "pickrow");
+        const chip = el("span", "chip ai", "CPU");
+        chip.style.background = "var(--" + c.colour + ")";
+        const boss = bossById(c.id);
+        const t = el("span", "picktext");
+        t.append(el("span", "t", boss ? c.name + " · " + boss.title : c.name),
+          el("span", "d", c.blurb));
+        b.append(chip, t);
+        b.onclick = () => { seats.push({ name: c.name, ai: c.id }); picking = false; drawSeats(); };
+        box.append(b);
+      }
+
+      const cancel = el("button", "btn ghost wide", "Never mind");
+      cancel.onclick = () => { picking = false; drawSeats(); };
+      box.append(cancel);
+      list.append(box);
     }
   };
   drawSeats();

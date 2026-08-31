@@ -222,6 +222,20 @@ for (const id of Object.keys(GAMES)) {
     if (seatRows.length < g.max) {
       ok(!!add, `${id}: can add a player below the maximum`);
       try { click(add); } catch (e) { ok(false, `${id}: adding a player threw — ${e.message}`); }
+      /* Adding somebody now opens a chooser, so the seat only arrives
+         once one of the offered players has actually been picked. */
+      const rows = () => all(byId.screen).filter((n) => n.classList.contains("pickrow"));
+      const seated = all(byId.screen).filter((n) => n.classList.contains("seat-row")).length;
+      ok(rows().length >= 2,
+         `${id}: the chooser offers a person and the machines — offered ${rows().length}`);
+      const offered = rows()[1];
+      ok(offered && offered.textContent.trim().length > 10,
+         `${id}: each one says in a line how it plays`);
+      try { click(offered); } catch (e) { ok(false, `${id}: picking a player threw — ${e.message}`); }
+      const after = all(byId.screen).filter((n) => n.classList.contains("seat-row"));
+      ok(after.length === seated + 1,
+         `${id}: picking seats exactly one more — ${seated} then ${after.length}`);
+      ok(!rows().length, `${id}: the chooser closes once somebody is picked`);
     }
     // Turn a seat into a second person, so Pass & Play is exercised.
     const swap = all(byId.screen).filter((n) =>
