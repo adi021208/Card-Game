@@ -224,7 +224,9 @@ for (const id of Object.keys(GAMES)) {
       try { click(add); } catch (e) { ok(false, `${id}: adding a player threw — ${e.message}`); }
     }
     // Turn a seat into a second person, so Pass & Play is exercised.
-    const swap = all(byId.screen).filter((n) => n.tagName === "BUTTON" && n.title === "Make this a person")[0];
+    const swap = all(byId.screen).filter((n) =>
+      n.classList.contains("swapseat") && /human/i.test(n.textContent))[0];
+    ok(!!swap, `${id}: a computer seat can be handed to a person`);
     if (swap) { try { click(swap); } catch (e) { ok(false, `${id}: switching a seat threw — ${e.message}`); } }
   }
 

@@ -158,7 +158,11 @@ button {
 .icon-btn .pic { position: relative; width: 20px; height: 20px; }
 @media (hover: hover) { .icon-btn:hover { background: var(--ground-2); color: var(--on-ground); } }
 .icon-btn:active { transform: translate(1px, 1px); }
-.icon-btn.swapseat { font-family: var(--display); font-size: 8px; letter-spacing: .02em; }
+.icon-btn.swapseat {
+  width: auto; min-width: 44px; padding: 0 var(--s2);
+  font-family: var(--display); font-size: 7px; letter-spacing: .02em;
+  text-transform: uppercase;
+}
 
 /* ─── Buttons: a pressed key on a grey console ───────────────────── */
 .btn {
@@ -312,6 +316,7 @@ button {
 .chip {
   font-family: var(--display); font-size: 7px; line-height: 1.7;
   text-transform: uppercase; padding: var(--s1) var(--s2);
+  white-space: nowrap; flex: none;
   background: var(--iron); color: var(--paper);
 }
 .chip.ai { background: var(--cobalt); }
@@ -3793,7 +3798,7 @@ function viewSetup() {
     refreshNote();
     seats.forEach((seat, i) => {
       const row = el("div", "seat-row");
-      const chip = el("span", "chip" + (seat.ai ? " ai" : ""), seat.ai ? "AI" : "You");
+      const chip = el("span", "chip" + (seat.ai ? " ai" : ""), seat.ai ? "CPU" : "Human");
       chip.style.background = seat.ai ? `var(--${CAST.find((c) => c.id === seat.ai).colour})` : "";
       const input = el("input");
       input.value = seat.name; input.setAttribute("aria-label", `Player ${i + 1} name`);
@@ -3801,9 +3806,11 @@ function viewSetup() {
       input.setAttribute("autocomplete", "off");
       input.setAttribute("enterkeyhint", "done");
       input.oninput = () => { seat.name = input.value; };
-      /* No colour emoji on a screen made of squares. */
-      const swap = el("button", "icon-btn swapseat", seat.ai ? "YOU" : "CPU");
-      swap.title = seat.ai ? "Make this a person" : "Make this an opponent";
+      /* The label is what the seat becomes, so it never argues with
+         the chip beside it. No colour emoji on a screen of squares. */
+      const swap = el("button", "icon-btn swapseat", seat.ai ? "Human" : "CPU");
+      swap.title = seat.ai ? "Hand this seat to a person" : "Give this seat to the computer";
+      swap.setAttribute("aria-label", swap.title);
       swap.onclick = () => {
         if (seat.ai) { seat.ai = null; seat.name = "Player " + (i + 1); }
         else { const p = CAST[i % CAST.length]; seat.ai = p.id; seat.name = p.name; }
@@ -3857,7 +3864,7 @@ function viewSetup() {
 }
 function defaultSeats(g) {
   const n = Math.min(Math.max(g.min, g.solo ? 1 : Math.min(4, g.max)), g.max);
-  const out = [{ name: store.get("myname", "You"), ai: null }];
+  const out = [{ name: store.get("myname", "Player 1"), ai: null }];
   for (let i = 1; i < n; i++) { const p = CAST[(i - 1) % CAST.length]; out.push({ name: p.name, ai: p.id }); }
   return out;
 }
@@ -3929,7 +3936,7 @@ function viewDaily() {
   const play = el("button", "btn wide", done ? "Play it again (already counted)" : "Play the challenge");
   play.onclick = () => {
     const cast = [.0, 1, 2, 3, 4, 5].map((i) => CAST[i % CAST.length]);
-    const seats = [{ name: p.name || "You", ai: null }];
+    const seats = [{ name: p.name || "Player 1", ai: null }];
     for (let i = 1; i < c.players; i++) seats.push({ name: cast[i - 1].name, ai: cast[i - 1].id });
     App.dailyRun = done ? null : c;
     App.game = g;
@@ -4205,7 +4212,7 @@ function viewLobby() {
   v.players.forEach((p, i) => {
     const row = el("div", "seat-row");
     const dot = el("span", "dot" + (p.online ? "" : " off"));
-    const chip = el("span", "chip" + (p.ai ? " ai" : ""), p.ai ? "AI" : (p.seat === v.you ? "You" : "Player"));
+    const chip = el("span", "chip" + (p.ai ? " ai" : ""), p.ai ? "CPU" : (p.seat === v.you ? "You" : "Human"));
     const nm = el("span", null, p.name);
     nm.className = "poster h-s"; nm.style.cssText = "flex:1;text-shadow:none";
     row.append(dot, chip, nm);
@@ -4270,7 +4277,7 @@ function startGame(g, seats, difficulty, forcedSeed) {
     privacy: Privacy.make(state.seats, isHuman),
     log: [], busy: false, sealArmed: false,
   };
-  store.set("myname", seats.find((s) => !s.ai)?.name || "You");
+  store.set("myname", seats.find((s) => !s.ai)?.name || "Player 1");
   const first = state.active;
   const mode = Privacy.open(App.run.privacy, first === null || first === undefined ? state.seats[0] : first);
   App.run.sealArmed = mode === "handoff";
@@ -4343,7 +4350,7 @@ function settle() {
 
 function localProfile() {
   const p = store.get("profile", null);
-  const fresh = Profile.blank(store.get("myname", "You"));
+  const fresh = Profile.blank(store.get("myname", "Player 1"));
   const merged = p ? Object.assign(fresh, p) : fresh;
   Profile.expireStreak(merged, Daily.today());
   return merged;
