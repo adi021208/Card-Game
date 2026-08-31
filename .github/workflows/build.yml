@@ -1,0 +1,67 @@
+name: Build
+
+# Runs on macOS because the app target needs Xcode: SwiftUI, UIKit, StoreKit,
+# GameKit and Core Haptics do not exist in Linux Swift. The engine package is
+# pure Foundation and would build on Linux, but running both here keeps the
+# whole project under one compiler.
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  web:
+    name: Web — engine tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Engine
+        run: node web/test.js
+      - name: Interface
+        run: node web/test-ui.js
+      - name: Table server
+        run: node web/test-net.js
+
+  engine:
+    name: Engine — build and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build
+        run: swift build --package-path DeckEngine
+
+      - name: Test
+        run: swift test --package-path DeckEngine
+
+  app:
+    name: App — build for iOS Simulator
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          xcodebuild -list -project Deck.xcodeproj
+
+      # A generic simulator destination, so this does not depend on which
+      # device names the runner image happens to have installed.
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Deck.xcodeproj \
+            -scheme DECK \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO

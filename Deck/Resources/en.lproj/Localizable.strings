@@ -1,0 +1,1321 @@
+/* DECK — English strings.
+   Every user-facing string in the app is here. The engine ships localisation
+   keys rather than English, so a translated build needs nothing but this file. */
+
+/* MARK: achievement */
+"achievement.category.wins" = "Wins";
+"achievement.category.games" = "Games";
+"achievement.category.streak" = "Streak";
+"achievement.category.speed" = "Speed";
+"achievement.category.skill" = "Skill";
+"achievement.category.collection" = "Collection";
+"achievement.category.pass-and-play" = "Pass & Play";
+"achievement.category.boss" = "Bosses";
+"achievement.category.mastery" = "Mastery";
+"achievement.secret" = "Secret";
+"achievement.secret.detail" = "You will know it when you do it.";
+"achievement.unlocked" = "Unlocked";
+
+/* MARK: achievements */
+"achievements.empty.title" = "NOTHING HERE YET.";
+"achievements.empty.body" = "Play a few games and this fills up fast.";
+"achievements.title" = "ACHIEVEMENTS";
+"achievements.count" = "%d of %d earned";
+
+/* MARK: action */
+"action.play" = "Play";
+"action.playWild" = "Play as %@";
+"action.draw" = "Draw";
+"action.pass" = "Pass";
+"action.passThree" = "Pass %@";
+"action.fold" = "Fold";
+"action.check" = "Check";
+"action.call" = "Call %@";
+"action.bet" = "Bet %@";
+"action.raiseTo" = "Raise to %@";
+"action.allIn" = "All in %@";
+"action.bid" = "Bid %@";
+"action.bidNil" = "Nil";
+"action.turnStock" = "Turn";
+"action.recycle" = "Turn over";
+"action.move" = "Move";
+"action.collect" = "Send home";
+"action.dealRow" = "Deal a row";
+"action.flip" = "Flip";
+"action.war" = "War";
+"action.drawStock" = "Draw";
+"action.takeDiscard" = "Take";
+"action.passUpcard" = "Pass";
+"action.discard" = "Discard";
+"action.knock" = "Knock";
+"action.meld" = "Lay down";
+"action.layOff" = "Lay off";
+"action.askFor" = "Ask for %@ from %@";
+"action.claimCards" = "Claim %@ × %@";
+"action.believe" = "Believe";
+"action.cheat" = "Cheat!";
+"action.orderUp" = "Order it up";
+"action.orderUpAlone" = "Alone";
+"action.callTrump" = "%@";
+"action.callTrumpAlone" = "%@ alone";
+"action.playSet" = "Play %@ × %@";
+"action.turnCentre" = "Turn centre";
+
+/* MARK: ai */
+"ai.difficulty.beginner" = "Beginner";
+"ai.difficulty.casual" = "Casual";
+"ai.difficulty.skilled" = "Skilled";
+"ai.difficulty.expert" = "Expert";
+
+/* MARK: attempts */
+"attempts.remaining" = "%d of %d attempts left";
+"attempts.unlimited" = "Unlimited";
+
+/* MARK: boss */
+"boss.hal.title" = "The Metronome";
+"boss.hal.lore" = "He has played the same opening for eleven years. It is still working.";
+"boss.pedro.title" = "The Pressure";
+"boss.pedro.lore" = "Nobody has ever seen him fold first. Nobody has checked whether he can.";
+"boss.calvin.title" = "The Wall";
+"boss.calvin.lore" = "He does not need to win the hand. He needs you not to.";
+"boss.rohan.title" = "The Counter";
+"boss.rohan.lore" = "He knows which cards are left. He has known since the third trick.";
+"boss.shayla.title" = "The Reader";
+"boss.shayla.lore" = "She is not playing the cards. She is playing whoever is holding them.";
+"boss.honey.title" = "The Wildcard";
+"boss.honey.lore" = "Half of what she does is a mistake. Working out which half is the game.";
+"boss.scarlet.title" = "The Strategist";
+"boss.scarlet.lore" = "She has never believed the obvious move is the correct one.";
+"boss.modifier.sharper" = "Opponents play %@%% sharper.";
+"boss.modifier.harder" = "The target is %@%% harder.";
+"boss.modifier.handicap" = "You start %@ behind.";
+"boss.modifier.rules" = "House rule: %@ is set to %@.";
+"boss.modifier.timeLimit" = "You have %@ seconds.";
+"boss.modifier.reward" = "Beating this is worth %@%% of the usual score.";
+"boss.added" = "Added to your collection.";
+"boss.unknown" = "That opponent is not in the cast.";
+"boss.loreLocked" = "Beat them to learn what they are about.";
+"boss.ability" = "What changes";
+"boss.style" = "How they play";
+"boss.defeatedCount" = "Defeated";
+"boss.threat" = "Threat";
+"boss.defeated" = "Defeated";
+"boss.notDefeated" = "Not yet defeated";
+
+/* MARK: callout */
+"callout.suitInPlay" = "%@ in play";
+"callout.mustDraw" = "Take %@";
+"callout.playingTo" = "Playing to %@";
+"callout.cardsInStock" = "%@ in the stock";
+"callout.suitLed" = "%@ led";
+"callout.heartsBroken" = "Hearts are broken";
+"callout.heartsIntact" = "Hearts not broken";
+"callout.passDirection" = "Pass %@";
+"callout.pot" = "Pot %@";
+"callout.blinds" = "Blinds %@ / %@";
+"callout.toCall" = "%@ to call";
+"callout.bidding" = "Bidding";
+"callout.contract" = "%@ of %@";
+"callout.contractThem" = "Them %@ of %@";
+"callout.trump" = "%@ are trump";
+"callout.bags" = "Bags %@ / %@";
+"callout.namingTrump" = "Naming trump";
+"callout.tricksSplit" = "Tricks %@ – %@";
+"callout.gameScore" = "Game %@ – %@";
+"callout.moves" = "%@ moves";
+"callout.score" = "Score %@";
+"callout.foundationProgress" = "%@ of %@ home";
+"callout.canMove" = "Move %@ at once";
+"callout.cellsFree" = "%@ of %@ cells free";
+"callout.runsCleared" = "%@ of %@ runs";
+"callout.dealsLeft" = "%@ deals left";
+"callout.faceDown" = "%@ face down";
+"callout.claimRank" = "Claim %@";
+"callout.lastClaim" = "%@ × %@ claimed";
+"callout.pileSize" = "%@ in the pile";
+"callout.beatThis" = "Beat %@ × %@";
+"callout.yourLead" = "Your lead";
+"callout.dealOf" = "Deal %@ of %@";
+"callout.war" = "War ×%@";
+"callout.flips" = "%@ flips";
+"callout.cardsInPond" = "%@ in the pond";
+"callout.askHit" = "Handed over %@";
+"callout.askMiss" = "Go fish for %@";
+"callout.cardsLeft" = "%@ left";
+"callout.bothStuck" = "Nobody can move";
+"callout.deadwood" = "%@ deadwood";
+"callout.inHand" = "%@ in hand";
+
+/* MARK: card */
+"card.faceDown" = "Face-down card";
+"card.selected" = "Selected";
+"card.playable" = "Playable";
+"card.notPlayable" = "Not playable";
+"card.name.format" = "%@ of %@";
+"card.redJoker" = "Red Joker";
+"card.blackJoker" = "Black Joker";
+
+/* MARK: category */
+"category.poker" = "Poker";
+"category.trick-taking" = "Trick Taking";
+"category.rummy" = "Rummy";
+"category.solitaire" = "Solitaire";
+"category.shedding" = "Shedding";
+"category.family" = "Family";
+"category.speed" = "Speed";
+"category.bluff" = "Bluff";
+"category.strategy" = "Strategy";
+
+/* MARK: challenge */
+"challenge.kind.score" = "Score";
+"challenge.kind.score.detail" = "Score at least %@.";
+"challenge.kind.speed" = "Speed";
+"challenge.kind.speed.detail" = "Win in under %@m %@s.";
+"challenge.kind.efficiency" = "Efficiency";
+"challenge.kind.efficiency.detail" = "Win in %@ turns or fewer.";
+"challenge.kind.target" = "Target";
+"challenge.kind.target.detail" = "Reach %@.";
+"challenge.kind.handicap" = "Handicap";
+"challenge.kind.handicap.detail" = "Win from %@ behind.";
+"challenge.kind.perfect" = "Perfect";
+"challenge.kind.perfect.detail" = "Pull off the special objective.";
+"challenge.kind.boss" = "Boss";
+"challenge.kind.boss.detail" = "Beat %@.";
+"challenge.difficulty" = "Difficulty %@%d percent";
+"challenge.objective" = "Objective";
+"challenge.done" = "COMPLETED";
+"challenge.play" = "PLAY";
+"challenge.noAttempts" = "You have used today's three attempts.";
+"challenge.unlimited" = "GET UNLIMITED ATTEMPTS";
+"challenge.boss" = "BOSS";
+"challenge.best" = "Best";
+"challenge.attempts" = "Attempts";
+"challenge.stamp" = "DONE";
+"challenge.completed" = "Completed";
+
+/* MARK: collection */
+"collection.kind.theme" = "Themes";
+"collection.kind.card-back" = "Card backs";
+"collection.kind.avatar" = "Marks";
+"collection.kind.table" = "Tables";
+"collection.kind.sound-pack" = "Sound";
+"collection.title" = "COLLECTION";
+"collection.count" = "%d of %d unlocked";
+"collection.bosses" = "The cast";
+"collection.inUse" = "In use";
+"collection.owned" = "Tap to use";
+
+/* MARK: common */
+"common.dismiss" = "Dismiss";
+"common.cancel" = "CANCEL";
+"common.back" = "BACK";
+"common.clear" = "CLEAR";
+"common.done" = "Done";
+"common.retry" = "TRY AGAIN";
+"common.save" = "Save";
+"common.all" = "All";
+"common.nice" = "NICE";
+
+/* MARK: complexity */
+"complexity.easy" = "Easy";
+"complexity.moderate" = "Moderate";
+"complexity.involved" = "Involved";
+
+/* MARK: detail */
+"detail.mastery" = "Mastery";
+"detail.variants" = "Variants";
+"detail.yourRecord" = "Your record";
+"detail.achievements" = "Achievements";
+"detail.playSolo" = "PLAY SOLO";
+"detail.passAndPlay" = "PASS & PLAY";
+"detail.howToPlay" = "HOW TO PLAY";
+
+/* MARK: duration */
+"duration.quick" = "Under 5 min";
+"duration.short" = "5–15 min";
+"duration.medium" = "15–30 min";
+"duration.long" = "30 min+";
+
+/* MARK: error */
+"error.title" = "THE DECK GOT LOST.";
+
+/* MARK: filter */
+"filter.players" = "Players";
+"filter.length" = "Length";
+"filter.mode" = "Mode";
+"filter.category" = "Category";
+
+/* MARK: game */
+"game.crazyEights.name" = "Crazy Eights";
+"game.crazyEights.tagline" = "Match the suit, match the rank, or play an eight.";
+"game.crazyEights.description" = "Shed your hand by matching the card on the pile. Eights are wild and their player names the next suit.";
+"game.hearts.name" = "Hearts";
+"game.hearts.tagline" = "Win nothing. That is the whole idea.";
+"game.hearts.description" = "Every heart costs a point and the Queen of Spades costs thirteen. Take all twenty-six and you shoot the moon.";
+"game.spades.name" = "Spades";
+"game.spades.tagline" = "Say how many. Then take exactly that many.";
+"game.spades.description" = "Partnership bidding with spades always trump. Miss your bid and it hurts; beat it too often and the bags will get you.";
+"game.euchre.name" = "Euchre";
+"game.euchre.tagline" = "Twenty-four cards and two jacks that change everything.";
+"game.euchre.description" = "The jack of trumps and the jack of its colour are the two best cards in the pack. Three tricks out of five wins the hand.";
+"game.texasHoldem.name" = "Texas Hold'em";
+"game.texasHoldem.tagline" = "Two cards, five on the board, no limit.";
+"game.texasHoldem.description" = "Blinds, position, four rounds of betting and a showdown. Side pots, split pots and all-ins all work the way they do at a table.";
+"game.ginRummy.name" = "Gin Rummy";
+"game.ginRummy.tagline" = "Take the card you can see, or the one you cannot.";
+"game.ginRummy.description" = "Build sets and runs, and knock when your deadwood is down to ten. Go for gin and an undercut will cost you.";
+"game.rummy.name" = "Rummy";
+"game.rummy.tagline" = "Sets, runs, and knowing when to lay them down.";
+"game.rummy.description" = "Draw, meld, lay off and discard. Melding banks points and tells everybody what you are collecting.";
+"game.president.name" = "President";
+"game.president.tagline" = "Get out first. Stay out of last.";
+"game.president.description" = "Play sets that beat the pile or pass. Finish first and you are President; finish last and you hand over your best cards.";
+"game.klondike.name" = "Klondike";
+"game.klondike.tagline" = "The one everybody means by solitaire.";
+"game.klondike.description" = "Seven columns, four foundations and a stock you turn one or three at a time. Undo is unlimited.";
+"game.freeCell.name" = "FreeCell";
+"game.freeCell.tagline" = "Everything face up. Nowhere to hide.";
+"game.freeCell.description" = "Four cells, eight columns, and almost every deal can be won. Each empty cell doubles what you can move at once.";
+"game.spider.name" = "Spider";
+"game.spider.tagline" = "Two packs. Eight runs. One suit at a time.";
+"game.spider.description" = "Build down to untangle the columns, then clear king-to-ace in a single suit. One suit is gentle; four is not.";
+"game.goFish.name" = "Go Fish";
+"game.goFish.tagline" = "Ask, and listen to what everybody else asks.";
+"game.goFish.description" = "Collect four of a kind. Every question is public, which is more information than it sounds.";
+"game.war.name" = "War";
+"game.war.tagline" = "No decisions. That is the point.";
+"game.war.description" = "Highest card takes both. A tie means war: three down, one up, winner takes the lot.";
+"game.cheat.name" = "Cheat";
+"game.cheat.tagline" = "Say what you like. Somebody has to believe you.";
+"game.cheat.description" = "Put cards face down and claim a rank. Call it wrong and the whole pile is yours.";
+"game.speed.name" = "Speed";
+"game.speed.tagline" = "Both of you. At once. Now.";
+"game.speed.description" = "No turns: reach for the same two piles and play one rank above or below. First to empty out wins.";
+"game.paused" = "PAUSED";
+"game.round" = "Round";
+"game.elapsed" = "Time";
+"game.mode" = "Mode";
+"game.resume" = "RESUME";
+"game.rules" = "HOW TO PLAY";
+"game.quit" = "END GAME";
+"game.saveNote" = "Your game is saved. You can come back to it from Today.";
+"game.dealing" = "Dealing…";
+"game.pause" = "Pause";
+"game.undo" = "Undo";
+"game.hint" = "Hint";
+"game.thinking" = "Thinking…";
+"game.challengeFailed" = "Today's challenge could not be dealt. Try another game.";
+"game.noAttempts" = "You have used today's attempts.";
+"game.unknown" = "That game is not in the library.";
+"game.dealFailed" = "That game could not be dealt.";
+
+/* MARK: gamecenter */
+"gamecenter.unavailable" = "Game Center is not signed in on this device.";
+"gamecenter.connected" = "Connected";
+"gamecenter.notConnected" = "Not signed in";
+
+/* MARK: hand */
+"hand.label" = "Your hand";
+
+/* MARK: hearts */
+"hearts.pass.left" = "left";
+"hearts.pass.right" = "right";
+"hearts.pass.across" = "across";
+"hearts.pass.hold" = "nothing";
+
+/* MARK: hint */
+"hint.why" = "WHY?";
+
+/* MARK: history */
+"history.challenge" = "Daily";
+"history.title" = "RECENT GAMES";
+"history.empty.title" = "NOTHING PLAYED YET.";
+"history.empty.body" = "Finished games land here, with the deal they came from.";
+
+/* MARK: illegal */
+"illegal.notYourTurn" = "It is not your turn.";
+"illegal.gameOver" = "This game has finished.";
+"illegal.cardNotInHand" = "That card is not in your hand.";
+"illegal.noSuchAction" = "That move is not available here.";
+"illegal.emptyPile" = "There are no cards left in that pile.";
+"illegal.mustFollowSuit" = "You must follow %@.";
+"illegal.mustDrawPenalty" = "Take your %@ cards first.";
+"illegal.mustMatchSuitOrRank" = "Play a %@, match the rank, or play an eight.";
+"illegal.wildNeedsSuit" = "Choose the suit that follows your eight.";
+"illegal.mustPlayIfAble" = "You have a card that goes — play it.";
+"illegal.passExactlyThree" = "Choose exactly three cards to pass.";
+"illegal.noPointsFirstTrick" = "Points cannot be dropped on the first trick.";
+"illegal.heartsNotBroken" = "Hearts have not been broken, so you cannot lead one.";
+"illegal.spadesNotBroken" = "Spades have not been broken, so you cannot lead one.";
+"illegal.bidOutOfRange" = "Bid between 0 and %@.";
+"illegal.cannotFoldForFree" = "Nothing to call — check instead.";
+"illegal.mustCallOrFold" = "There is %@ to call. Call, raise or fold.";
+"illegal.nothingToCall" = "Nothing to call — check instead.";
+"illegal.noChips" = "You have no chips left.";
+"illegal.raiseTooSmall" = "The minimum raise is to %@.";
+"illegal.notEnoughChips" = "You only have %@ to put in.";
+"illegal.stockNotEmpty" = "Turn the rest of the stock first.";
+"illegal.noRedealsLeft" = "No redeals left in this game.";
+"illegal.cardNotAvailable" = "That card is not free to move — turn the cards above it first.";
+"illegal.foundationOneCard" = "Foundations take one card at a time.";
+"illegal.foundationOrder" = "Foundations go up in suit, starting with the ace.";
+"illegal.kingsOnly" = "Only a king can start an empty column.";
+"illegal.tableauOrder" = "Tableau piles go down in alternating colours.";
+"illegal.runNotOrdered" = "Only a run going down in alternating colours can be moved together.";
+"illegal.cellOneCard" = "A cell holds one card.";
+"illegal.cellOccupied" = "That cell is taken.";
+"illegal.notEnoughSpace" = "You can only move %@ cards at once with the cells and columns you have free.";
+"illegal.runNotOneSuit" = "Only a run in a single suit can be moved together.";
+"illegal.spiderOrder" = "A card can only go on one exactly a rank higher.";
+"illegal.fillEmptyColumnsFirst" = "Every column has to have a card before you can deal another row.";
+"illegal.cannotAskYourself" = "Ask somebody else.";
+"illegal.mustHoldRank" = "You can only ask for a rank you already hold.";
+"illegal.targetHasNoCards" = "That player has no cards left.";
+"illegal.layOneToFour" = "Put down between one and %@ cards.";
+"illegal.duplicateCards" = "Choose different cards.";
+"illegal.mustClaimNextRank" = "The pile is on %@ — that is what you have to claim.";
+"illegal.mustDecideUpcard" = "Take the upcard or pass it first.";
+"illegal.cannotReturnUpcard" = "You cannot discard the card you just took from the discard pile.";
+"illegal.deadwoodTooHigh" = "You would still be holding %@ in deadwood; you can only knock at %@ or less.";
+"illegal.notAValidMeld" = "A meld is three or more of a rank in different suits, or three or more in sequence in one suit.";
+"illegal.cannotLayOff" = "That card does not extend the meld you chose.";
+"illegal.mustLead" = "You have the lead — you have to play something.";
+"illegal.sameRankOnly" = "Every card you put down has to be the same rank.";
+"illegal.matchTheCount" = "The pile is on %@ cards, so you have to play %@.";
+"illegal.mustBeatRank" = "You have to beat %@ or pass.";
+"illegal.cannotNameTurnedSuit" = "That is the suit that was turned down — name a different one.";
+"illegal.dealerIsStuck" = "You are stuck — somebody has to name trump, and it is you.";
+"illegal.mustBeAdjacentRank" = "A card only goes on one exactly a rank above or below.";
+"illegal.someoneCanStillPlay" = "Somebody can still play — keep going.";
+"illegal.noReplacementsLeft" = "There are no cards left to turn.";
+
+/* MARK: intro */
+"intro.passTitle" = "ONE PHONE.\\nNO PEEKING.";
+"intro.passBody" = "When it is somebody else's turn, their cards are not hidden behind an animation — they are not on the device at all until they say it is them.";
+"intro.passRevealed" = "That is what your hand looks like when it is your turn.";
+"intro.passTap" = "Tap the card as though you were %@.";
+"intro.deal" = "DEAL";
+
+/* MARK: label */
+"label.points" = "Points";
+"label.chips" = "Chips";
+"label.tricks" = "Tricks";
+"label.books" = "Books";
+"label.cards" = "Cards";
+"label.score" = "Score";
+"label.moves" = "Moves";
+"label.cardsLeft" = "Left";
+
+/* MARK: leaderboards */
+"leaderboards.title" = "LEADERBOARDS";
+"leaderboards.offline.title" = "NOT SIGNED IN.";
+"leaderboards.offline.body" = "Connect Game Center to compare your streak with everybody else's. Everything else in DECK works without it.";
+"leaderboards.loading" = "Loading…";
+"leaderboards.empty.title" = "NOBODY HERE YET.";
+"leaderboards.empty.body" = "Be the first name on it.";
+"leaderboards.streak" = "Streak";
+"leaderboards.daily" = "Days";
+"leaderboards.wins" = "Wins";
+"leaderboards.yours" = "Your numbers";
+
+/* MARK: library */
+"library.unfavourite" = "Remove from favourites";
+"library.favourite" = "Add to favourites";
+"library.title" = "LIBRARY";
+"library.count" = "%d games, all offline.";
+"library.filters" = "Filters";
+"library.search" = "Search games";
+"library.noResults.title" = "NOTHING MATCHES.";
+"library.noResults.body" = "Try fewer filters, or a different word.";
+"library.clearFilters" = "CLEAR FILTERS";
+"library.favourites" = "Favourites";
+"library.quick" = "Quick";
+
+/* MARK: mastery */
+"mastery.level.0" = "Not played";
+"mastery.level.1" = "Learning";
+"mastery.level.2" = "Comfortable";
+"mastery.level.3" = "Strong";
+"mastery.level.4" = "Mastered";
+"mastery.mastered" = "Mastered";
+
+/* MARK: mode */
+"mode.solo" = "PLAY SOLO";
+"mode.passAndPlay" = "PASS & PLAY";
+"mode.solo.detail" = "You against the cast.";
+"mode.passAndPlay.detail" = "One phone, everybody round it.";
+
+/* MARK: move */
+"move.choose" = "CHOOSE";
+
+/* MARK: notification */
+"notification.daily.title" = "Today's deck is ready.";
+"notification.daily.streak" = "%d days. Keep it going.";
+"notification.daily.body" = "One challenge, three attempts.";
+
+/* MARK: pass */
+"pass.to" = "PASS TO";
+"pass.privacy" = "Make sure %@ is the only person looking at the screen.";
+"pass.reveal" = "REVEAL";
+"pass.revealAccessibility" = "Reveal %@'s hand";
+"pass.revealHint" = "Only tap this if you are the named player.";
+
+/* MARK: phase */
+"phase.deal" = "Deal %@";
+"phase.passing" = "Passing";
+"phase.trick" = "Trick %@";
+"phase.bidding" = "Bidding";
+"phase.solitaire" = "";
+"phase.draw" = "Draw";
+"phase.discard" = "Discard";
+"phase.build" = "Build";
+"phase.asking" = "Asking";
+"phase.battle" = "Battle";
+"phase.war" = "War";
+"phase.lay" = "Your claim";
+"phase.challenge" = "Call it?";
+"phase.speed" = "Go";
+
+/* MARK: pile */
+"pile.empty" = "%@, empty";
+"pile.faceDown" = "%@, %d face-down cards";
+"pile.count" = "%@, %d cards";
+
+/* MARK: play */
+"play.addPlayer" = "Add";
+"play.title" = "PLAY";
+"play.soloGames" = "Play on your own";
+"play.tableGames" = "Play round a table";
+"play.empty.title" = "YOUR TABLE IS EMPTY.";
+"play.empty.body" = "No game in the library fits that mode yet.";
+"play.whoIsHere" = "Who is here";
+
+/* MARK: players */
+"players.solo" = "Solo";
+"players.exact" = "%d players";
+"players.range" = "%d–%d players";
+
+/* MARK: poker */
+"poker.hand.highCard" = "High Card";
+"poker.hand.pair" = "Pair";
+"poker.hand.twoPair" = "Two Pair";
+"poker.hand.threeOfAKind" = "Three of a Kind";
+"poker.hand.straight" = "Straight";
+"poker.hand.flush" = "Flush";
+"poker.hand.fullHouse" = "Full House";
+"poker.hand.fourOfAKind" = "Four of a Kind";
+"poker.hand.straightFlush" = "Straight Flush";
+"poker.street.preflop" = "Pre-flop";
+"poker.street.flop" = "Flop";
+"poker.street.turn" = "Turn";
+"poker.street.river" = "River";
+"poker.street.showdown" = "Showdown";
+
+/* MARK: premium */
+"premium.badge" = "PREMIUM";
+"premium.eyebrow" = "DECK";
+"premium.title" = "PREMIUM";
+"premium.active" = "Premium is active. Thank you.";
+"premium.freeNote" = "Every game, both modes, all the tutorials, your statistics and your achievements are free and always will be. Premium adds unlimited daily attempts, extra variants and the rest of the cosmetics.";
+"premium.terms" = "Subscriptions renew until cancelled. Manage or cancel in the App Store at any time.";
+
+/* MARK: profile */
+"profile.playsMost" = "Plays %@ most";
+"profile.mastery" = "Mastery";
+"profile.masteryEmpty" = "Master a game by winning it, earning its achievements and beating an expert.";
+"profile.achievements" = "Achievements";
+"profile.statistics" = "Statistics";
+"profile.history" = "Recent games";
+"profile.players" = "Players on this device";
+"profile.leaderboards" = "Leaderboards";
+"profile.settings" = "Settings";
+"profile.recent" = "Last few games";
+
+/* MARK: profiles */
+"profiles.record" = "%d played · %d won";
+"profiles.you" = "You";
+"profiles.title" = "Players on this device";
+"profiles.footer" = "Profiles are stored on this device only. There is no account and nothing is uploaded.";
+"profiles.newName" = "Name";
+"profiles.add" = "Add";
+"profiles.avatar" = "Mark";
+
+/* MARK: rank */
+"rank.two" = "Two";
+"rank.three" = "Three";
+"rank.four" = "Four";
+"rank.five" = "Five";
+"rank.six" = "Six";
+"rank.seven" = "Seven";
+"rank.eight" = "Eight";
+"rank.nine" = "Nine";
+"rank.ten" = "Ten";
+"rank.jack" = "Jack";
+"rank.queen" = "Queen";
+"rank.king" = "King";
+"rank.ace" = "Ace";
+
+/* MARK: result */
+"result.wonShort" = "WON";
+"result.lostShort" = "LOST";
+"result.drawShort" = "DREW";
+"result.leftShort" = "LEFT";
+"result.win" = "YOU WIN";
+"result.loss" = "YOU LOSE";
+"result.draw" = "A DRAW";
+"result.abandoned" = "ABANDONED";
+"result.yourScore" = "Your score";
+"result.table" = "Table";
+"result.challenge" = "Daily challenge";
+"result.newBest" = "NEW BEST";
+"result.challengeMissed" = "The objective was not met.";
+"result.attemptsLeft" = "%d attempts left today.";
+"result.noAttemptsLeft" = "No attempts left today. Come back tomorrow.";
+"result.unlocked" = "Unlocked";
+"result.tryNext" = "Try next";
+"result.rematch" = "REMATCH";
+"result.done" = "DONE";
+
+/* MARK: rules */
+"rules.howItWorks" = "How it works";
+"rules.variants" = "Variants";
+"rules.players" = "Players";
+"rules.length" = "Length";
+"rules.complexity" = "Learning";
+
+/* MARK: seat */
+"seat.cardCount" = "%d cards";
+"seat.toPlay" = "to play";
+"seat.dealer" = "dealer";
+
+/* MARK: settings */
+"settings.restore" = "RESTORE PURCHASES";
+"settings.title" = "Settings";
+"settings.resetConfirm" = "Erase all progress?";
+"settings.resetConfirmAction" = "Erase everything";
+"settings.resetMessage" = "Statistics, achievements, your streak and your collection will all go. This cannot be undone.";
+"settings.moveAssist" = "Show playable cards";
+"settings.hintsInChallenges" = "Allow hints in the daily challenge";
+"settings.difficulty" = "Default opponents";
+"settings.gameplay" = "Gameplay";
+"settings.hintsFooter" = "Hints explain the rule behind a move. They are off in challenges by default so scores stay comparable.";
+"settings.sound" = "Sound";
+"settings.haptics" = "Haptics";
+"settings.feedback" = "Sound and feel";
+"settings.reduceMotion" = "Reduce motion";
+"settings.accessibility" = "Accessibility";
+"settings.reduceMotionFooter" = "Card physics and screen transitions are replaced with simple fades. Pass & Play still asks each player to confirm before their hand is shown.";
+"settings.reminder" = "Daily reminder";
+"settings.reminderTime" = "Remind me at";
+"settings.notificationsDenied" = "Notifications are turned off for DECK in the Settings app.";
+"settings.daily" = "Daily challenge";
+"settings.premium" = "Premium";
+"settings.premiumActive" = "Active";
+"settings.getPremium" = "Get Premium";
+"settings.gameCenter" = "Game Center";
+"settings.connectGameCenter" = "Connect Game Center";
+"settings.account" = "Account";
+"settings.offlineFooter" = "Everything except leaderboards works with no connection at all.";
+"settings.version" = "Version";
+"settings.games" = "Games";
+"settings.loadFailures" = "%d saved files could not be read and were reset.";
+"settings.debug" = "Developer tools";
+"settings.about" = "About";
+"settings.reset" = "Erase all progress";
+
+/* MARK: setup */
+"setup.targetScore" = "Playing to";
+"setup.handSize" = "Cards each";
+"setup.rounds" = "Deals";
+"setup.startingChips" = "Starting chips";
+"setup.blinds" = "Blinds";
+"setup.handLimit" = "Hands";
+"setup.drawMode" = "Turn from stock";
+"setup.redeals" = "Redeals";
+"setup.freeCells" = "Free cells";
+"setup.suits" = "Suits";
+"setup.maxPerTurn" = "Cards per turn";
+"setup.warStake" = "Cards staked in a war";
+"setup.difficulty" = "Opponents";
+"setup.players" = "Players";
+"setup.people" = "People here";
+"setup.opponents" = "AI opponents";
+"setup.rules" = "Rules";
+"setup.options" = "Options";
+"setup.deal" = "DEAL";
+"setup.oneDeal" = "One deal";
+"setup.to50" = "50";
+"setup.to100" = "100";
+"setup.to150" = "150";
+"setup.to200" = "200";
+"setup.to250" = "250";
+"setup.to500" = "500";
+"setup.to10" = "10";
+"setup.to15" = "15";
+"setup.chips400" = "400";
+"setup.chips1000" = "1,000";
+"setup.chips2500" = "2,500";
+"setup.chips5000" = "5,000";
+"setup.blinds5_10" = "5 / 10";
+"setup.blinds10_20" = "10 / 20";
+"setup.blinds25_50" = "25 / 50";
+"setup.untilOneLeft" = "Last player standing";
+"setup.hands20" = "20 hands";
+"setup.hands50" = "50 hands";
+"setup.drawOne" = "One";
+"setup.drawThree" = "Three";
+"setup.oneSuit" = "One";
+"setup.twoSuits" = "Two";
+"setup.fourSuits" = "Four";
+"setup.targetScore.zeroIsOneDeal" = "Zero plays a single deal.";
+"setup.redeals.zeroIsUnlimited" = "Zero means unlimited.";
+"setup.blinds.footnote" = "The small blind is half the big blind.";
+"setup.handLimit.footnote" = "After the limit, whoever has the most chips wins.";
+"setup.needsPlayers" = "%@ needs %d to %d players. You have %d.";
+"setup.seatSummary" = "%d at the table.";
+
+/* MARK: stat */
+"stat.wins" = "Wins";
+"stat.achievements" = "Achievements";
+"stat.winRate" = "Win rate";
+"stat.fastest" = "Fastest";
+"stat.gamesPlayed" = "Games";
+"stat.playTime" = "Play time";
+"stat.average" = "Average game";
+"stat.passAndPlay" = "Pass & Play";
+"stat.solo" = "Solo";
+"stat.streak" = "Streak";
+"stat.bestStreak" = "Best streak";
+"stat.favourite" = "Most played";
+"stat.record" = "%d played · %d won · %d%%";
+"stat.daysDone" = "Days completed";
+
+/* MARK: state */
+"state.ready" = "Ready";
+"state.folded" = "Folded";
+"state.allIn" = "All in";
+"state.in" = "In";
+"state.out" = "Out";
+"state.nil" = "Nil";
+"state.bid" = "Bid";
+"state.claiming" = "Claiming";
+"state.passed" = "Passed";
+"state.president" = "President";
+"state.scum" = "Scum";
+"state.maker" = "Called it";
+"state.sittingOut" = "Sitting out";
+
+/* MARK: statistics */
+"statistics.title" = "STATISTICS";
+"statistics.byGame" = "By game";
+"statistics.empty.title" = "NOTHING PLAYED YET.";
+"statistics.empty.body" = "Finish a game and its numbers land here.";
+
+/* MARK: store */
+"store.offline" = "The store is not reachable right now.";
+"store.purchaseFailed" = "That purchase did not go through.";
+"store.save" = "Save %d%%";
+"store.perMonth" = "per month";
+"store.perMonths" = "every %d months";
+"store.perYear" = "per year";
+"store.perWeek" = "per week";
+"store.perDay" = "per day";
+"store.loading" = "Checking prices…";
+"store.unavailable.title" = "THE SHOP IS SHUT.";
+
+/* MARK: streak */
+"streak.dayStreak" = "Day streak";
+"streak.best" = "Best";
+"streak.accessibility" = "Streak %d days, best %d. %d of the last %d days completed.";
+
+/* MARK: suit */
+"suit.clubs" = "Clubs";
+"suit.diamonds" = "Diamonds";
+"suit.hearts" = "Hearts";
+"suit.spades" = "Spades";
+
+/* MARK: today */
+"today.label" = "TODAY";
+"today.noChallenge.title" = "NO CHALLENGE TODAY";
+"today.noChallenge.body" = "The daily deal could not be built. Everything else still works.";
+"today.streak" = "Your streak";
+"today.continue" = "Continue";
+"today.continue.round" = "Round %d";
+"today.quickPlay" = "QUICK PLAY";
+"today.passAndPlay" = "PASS & PLAY";
+"today.explore" = "Explore";
+
+/* MARK: trait */
+"trait.aggression" = "Aggression";
+"trait.risk" = "Risk";
+"trait.bluff" = "Bluffing";
+"trait.memory" = "Memory";
+"trait.adaptability" = "Adapts to you";
+
+/* MARK: unlock */
+"unlock.default" = "Yours already";
+"unlock.achievement" = "Earn an achievement";
+"unlock.streak" = "Keep a streak";
+"unlock.mastery" = "Master a game";
+"unlock.boss" = "Beat a boss";
+"unlock.premium" = "Premium";
+"unlock.unlocked" = "UNLOCKED";
+"unlock.achievement.detail" = "Earn %@";
+"unlock.streak.detail" = "Reach a %d day streak";
+"unlock.mastery.detail" = "Reach mastery %d in %@";
+"unlock.boss.detail" = "Beat %@";
+"unlock.premium.detail" = "Premium";
+
+/* MARK: variant */
+"variant.crazyEights.standard" = "Standard";
+"variant.crazyEights.standard.summary" = "Draw until you can play. First out takes the deal.";
+"variant.crazyEights.quickfire" = "Quickfire";
+"variant.crazyEights.quickfire.summary" = "Draw one and pass. One deal decides it.";
+"variant.crazyEights.house" = "House rules";
+"variant.crazyEights.house.summary" = "Twos make you draw two, queens skip, aces reverse, jokers are wild.";
+"variant.president.standard" = "Standard";
+"variant.president.standard.summary" = "Twos are bombs and the President swaps cards with the Scum.";
+"variant.president.single" = "One deal";
+"variant.president.single.summary" = "A single hand, no card exchange.";
+"variant.president.strict" = "Strict";
+"variant.president.strict.summary" = "No bombs, no clearing on a completed rank.";
+"variant.hearts.standard" = "Standard";
+"variant.hearts.standard.summary" = "Hearts are one, the Queen is thirteen, and shooting the moon gives everybody else twenty-six.";
+"variant.hearts.omnibus" = "Omnibus";
+"variant.hearts.omnibus.summary" = "The Jack of Diamonds is worth minus ten.";
+"variant.hearts.subtractMoon" = "Moon subtracts";
+"variant.hearts.subtractMoon.summary" = "Shooting the moon takes twenty-six off your own score instead.";
+"variant.spades.standard" = "Standard";
+"variant.spades.standard.summary" = "Playing to 500, with nil worth a hundred either way.";
+"variant.spades.blindNil" = "Blind nil";
+"variant.spades.blindNil.summary" = "You may bid nil before you look at your hand.";
+"variant.spades.quick" = "Short game";
+"variant.spades.quick.summary" = "Playing to 250.";
+"variant.euchre.standard" = "Standard";
+"variant.euchre.standard.summary" = "Playing to ten, going alone allowed.";
+"variant.euchre.noLoners" = "No loners";
+"variant.euchre.noLoners.summary" = "Nobody plays alone.";
+"variant.poker.cash" = "Cash game";
+"variant.poker.cash.summary" = "Flat blinds, play until somebody has everything.";
+"variant.poker.tournament" = "Tournament";
+"variant.poker.tournament.summary" = "Blinds go up every eight hands.";
+"variant.poker.turbo" = "Turbo";
+"variant.poker.turbo.summary" = "Short stacks and blinds that climb fast.";
+"variant.gin.standard" = "Standard";
+"variant.gin.standard.summary" = "Knock at ten or less. Playing to a hundred.";
+"variant.gin.hollywood" = "Long game";
+"variant.gin.hollywood.summary" = "Playing to a hundred and fifty.";
+"variant.gin.oklahoma" = "Oklahoma";
+"variant.gin.oklahoma.summary" = "Knock at five or less.";
+"variant.rummy.standard" = "Standard";
+"variant.rummy.standard.summary" = "Lay off on anybody's melds. Playing to a hundred.";
+"variant.rummy.noLayOff" = "No lay-offs";
+"variant.rummy.noLayOff.summary" = "Your melds are your own.";
+"variant.rummy.fiveHundred" = "Five hundred";
+"variant.rummy.fiveHundred.summary" = "The long version.";
+"variant.klondike.drawOne" = "Draw one";
+"variant.klondike.drawOne.summary" = "One card at a time from the stock.";
+"variant.klondike.drawThree" = "Draw three";
+"variant.klondike.drawThree.summary" = "Three at a time. Considerably harder.";
+"variant.klondike.limited" = "Limited";
+"variant.klondike.limited.summary" = "Draw three, and only two passes through the stock.";
+"variant.freecell.standard" = "Four cells";
+"variant.freecell.standard.summary" = "The classic. Nearly every deal is winnable.";
+"variant.freecell.three" = "Three cells";
+"variant.freecell.three.summary" = "One fewer place to put things.";
+"variant.freecell.two" = "Two cells";
+"variant.freecell.two.summary" = "For people who have got very good at this.";
+"variant.spider.one" = "One suit";
+"variant.spider.one.summary" = "Spades only. The way in.";
+"variant.spider.two" = "Two suits";
+"variant.spider.two.summary" = "Spades and hearts.";
+"variant.spider.four" = "Four suits";
+"variant.spider.four.summary" = "All four. Good luck.";
+"variant.gofish.standard" = "Standard";
+"variant.gofish.standard.summary" = "A hit lets you ask again.";
+"variant.gofish.oneTurn" = "One ask";
+"variant.gofish.oneTurn.summary" = "One question each, hit or miss.";
+"variant.war.standard" = "Standard";
+"variant.war.standard.summary" = "Three cards down for each war.";
+"variant.war.quick" = "Quick";
+"variant.war.quick.summary" = "One card down, and a shorter game.";
+"variant.cheat.standard" = "Standard";
+"variant.cheat.standard.summary" = "Ranks go up in order. Anybody can call.";
+"variant.cheat.freeChoice" = "Free choice";
+"variant.cheat.freeChoice.summary" = "Claim any rank you like.";
+"variant.cheat.fast" = "Fast";
+"variant.cheat.fast.summary" = "Only the next player may call.";
+"variant.speed.standard" = "Standard";
+"variant.speed.standard.summary" = "Five in hand.";
+"variant.speed.wide" = "Wide";
+"variant.speed.wide.summary" = "Seven in hand.";
+
+/* MARK: welcome */
+"welcome.line1" = "ONE DECK.";
+"welcome.line2" = "EVERY GAME.";
+"welcome.start" = "GET STARTED";
+"welcome.how" = "HOW DO YOU\\nWANT TO PLAY?";
+"welcome.solo" = "Against seven opponents who each play differently.";
+"welcome.passAndPlay" = "One phone, passed round. Nobody sees anybody else's hand.";
+"welcome.browse" = "Just show me the library";
+
+/* MARK: zone */
+"zone.stock" = "Stock";
+"zone.stock.empty" = "Empty";
+"zone.stock.turnOver" = "Turn over";
+"zone.discard" = "Discard";
+"zone.waste" = "Turned";
+"zone.trick" = "Trick";
+"zone.community" = "Board";
+"zone.pile" = "Pile";
+"zone.pile.empty" = "Anything goes";
+"zone.pile.leadAnything" = "Your lead";
+"zone.pond" = "Pond";
+"zone.pond.empty" = "Empty";
+"zone.books" = "Books";
+"zone.battle" = "Battle";
+"zone.yourDeck" = "Your deck";
+"zone.upcard" = "Turned up";
+"zone.deals" = "Deals left";
+"zone.foundation.empty" = "Aces here";
+"zone.tableau.kingsOnly" = "Kings only";
+"zone.column.empty" = "Any card";
+"zone.cell.empty" = "Free";
+/* MARK: ach */
+"ach.boss.all" = "The Whole Cast";
+"ach.boss.all.desc" = "Beat all seven.";
+"ach.boss.scarlet" = "Beat Scarlet";
+"ach.boss.scarlet.desc" = "Take a daily challenge off the hardest of them.";
+"ach.cheat.first" = "Straight Face";
+"ach.cheat.first.desc" = "Win at Cheat.";
+"ach.cheat.perfectRead" = "Perfect Read";
+"ach.cheat.perfectRead.desc" = "Win without ever calling wrong.";
+"ach.cheat.serialLiar" = "Serial Liar";
+"ach.cheat.serialLiar.desc" = "Lie five times in one game and win anyway.";
+"ach.collection.ten" = "Collector";
+"ach.collection.ten.desc" = "Unlock ten things.";
+"ach.crazy8.first" = "Shed";
+"ach.crazy8.first.desc" = "Win at Crazy Eights.";
+"ach.crazy8.sweep" = "Clean Out";
+"ach.crazy8.sweep.desc" = "Go out twenty-five times.";
+"ach.crazy8.ten" = "Eight Times Over";
+"ach.crazy8.ten.desc" = "Win ten games of Crazy Eights.";
+"ach.crazy8.wildRun" = "Wild Run";
+"ach.crazy8.wildRun.desc" = "Play four eights in one game.";
+"ach.daily.ten" = "Ten Days";
+"ach.daily.ten.desc" = "Complete ten daily challenges.";
+"ach.euchre.first" = "Bower";
+"ach.euchre.first.desc" = "Win at Euchre.";
+"ach.euchre.loner" = "Alone";
+"ach.euchre.loner.desc" = "Take all five tricks playing alone.";
+"ach.freecell.efficient" = "Seventy";
+"ach.freecell.efficient.desc" = "Win FreeCell in seventy moves or fewer.";
+"ach.freecell.first" = "All Face Up";
+"ach.freecell.first.desc" = "Win at FreeCell.";
+"ach.freecell.tight" = "Tight Cells";
+"ach.freecell.tight.desc" = "Win FreeCell with fewer than four cells.";
+"ach.gin.first" = "Knock";
+"ach.gin.first.desc" = "Win at Gin Rummy.";
+"ach.gin.gin" = "Gin";
+"ach.gin.gin.desc" = "Go out with no deadwood at all.";
+"ach.gin.shutout" = "Shutout";
+"ach.gin.shutout.desc" = "Win a match without conceding a point.";
+"ach.global.fiftyWins" = "Fifty";
+"ach.global.fiftyWins.desc" = "Win fifty games.";
+"ach.global.firstWin" = "First Blood";
+"ach.global.firstWin.desc" = "Win a game. Any game.";
+"ach.global.hundredGames" = "The Regular";
+"ach.global.hundredGames.desc" = "Play a hundred games.";
+"ach.gofish.first" = "Books";
+"ach.gofish.first.desc" = "Win at Go Fish.";
+"ach.gofish.landslide" = "Landslide";
+"ach.gofish.landslide.desc" = "Take seven books in one game.";
+"ach.hearts.first" = "Heartless";
+"ach.hearts.first.desc" = "Win at Hearts.";
+"ach.hearts.moon" = "Shoot The Moon";
+"ach.hearts.moon.desc" = "Take all twenty-six in a single deal.";
+"ach.hearts.spotless" = "Spotless";
+"ach.hearts.spotless.desc" = "Win a match without taking a single point.";
+"ach.hearts.ten" = "Ten Hearts";
+"ach.hearts.ten.desc" = "Win ten games of Hearts.";
+"ach.klondike.drawThree" = "The Hard Way";
+"ach.klondike.drawThree.desc" = "Win Klondike drawing three.";
+"ach.klondike.fast" = "Under Five";
+"ach.klondike.fast.desc" = "Win Klondike in under five minutes.";
+"ach.klondike.first" = "Patience";
+"ach.klondike.first.desc" = "Win at Klondike.";
+"ach.klondike.noUndo" = "No Take-Backs";
+"ach.klondike.noUndo.desc" = "Win Klondike without a single undo.";
+"ach.library.everything" = "The Whole Shelf";
+"ach.library.everything.desc" = "Win at every game in the library.";
+"ach.library.five" = "Five A Side";
+"ach.library.five.desc" = "Win at five different games.";
+"ach.passplay.first" = "Round The Table";
+"ach.passplay.first.desc" = "Finish a Pass & Play game.";
+"ach.passplay.ten" = "The Host";
+"ach.passplay.ten.desc" = "Finish ten Pass & Play games.";
+"ach.poker.bluff" = "No Cards Required";
+"ach.poker.bluff.desc" = "Take twenty pots after the flop without showing.";
+"ach.poker.expert" = "Card Shark";
+"ach.poker.expert.desc" = "Beat an expert table.";
+"ach.poker.first" = "First Pot";
+"ach.poker.first.desc" = "Win at Texas Hold'em.";
+"ach.poker.quads" = "Quads";
+"ach.poker.quads.desc" = "Make four of a kind at showdown.";
+"ach.poker.royalFlush" = "Royal Flush";
+"ach.poker.royalFlush.desc" = "Make the best hand there is.";
+"ach.poker.ten" = "Ten Deep";
+"ach.poker.ten.desc" = "Win ten games of Texas Hold'em.";
+"ach.president.bombardier" = "Bombardier";
+"ach.president.bombardier.desc" = "Drop three bombs in one match.";
+"ach.president.dynasty" = "Dynasty";
+"ach.president.dynasty.desc" = "Finish first in every deal of a match.";
+"ach.president.first" = "Elected";
+"ach.president.first.desc" = "Win at President.";
+"ach.rummy.first" = "Laid Down";
+"ach.rummy.first.desc" = "Win at Rummy.";
+"ach.rummy.rummy" = "Rummy";
+"ach.rummy.rummy.desc" = "Go out in one turn without having melded before.";
+"ach.skill.expert" = "Above Your Weight";
+"ach.skill.expert.desc" = "Beat an expert opponent.";
+"ach.skill.expertTen" = "Ten Experts";
+"ach.skill.expertTen.desc" = "Beat an expert opponent ten times.";
+"ach.spades.first" = "Contract";
+"ach.spades.first.desc" = "Win at Spades.";
+"ach.spades.nil" = "Nil";
+"ach.spades.nil.desc" = "Bid nil and make it.";
+"ach.spades.tripleNil" = "Three Nils";
+"ach.spades.tripleNil.desc" = "Make three nil bids in one match.";
+"ach.speed.clean" = "No Resets";
+"ach.speed.clean.desc" = "Win Speed with two turns of the centre or fewer.";
+"ach.speed.fast" = "Ninety Seconds";
+"ach.speed.fast.desc" = "Win a game of Speed in under a minute and a half.";
+"ach.speed.first" = "Fast Hands";
+"ach.speed.first.desc" = "Win at Speed.";
+"ach.spider.first" = "Untangled";
+"ach.spider.first.desc" = "Win at Spider.";
+"ach.spider.fourSuit" = "Four Suits";
+"ach.spider.fourSuit.desc" = "Win Spider with all four suits.";
+"ach.spider.twoSuit" = "Two Suits";
+"ach.spider.twoSuit.desc" = "Win Spider with two suits.";
+"ach.streak.seven" = "A Week";
+"ach.streak.seven.desc" = "Complete seven daily challenges in a row.";
+"ach.streak.thirty" = "A Month";
+"ach.streak.thirty.desc" = "Complete thirty daily challenges in a row.";
+"ach.streak.three" = "Three Days";
+"ach.streak.three.desc" = "Complete three daily challenges in a row.";
+"ach.war.campaign" = "Long Campaign";
+"ach.war.campaign.desc" = "Fight five wars in one game.";
+"ach.war.first" = "Spoils";
+"ach.war.first.desc" = "Win at War.";
+
+/* MARK: cosmetic */
+"cosmetic.avatar.default" = "Player";
+"cosmetic.avatar.default.desc" = "The default mark.";
+"cosmetic.avatar.expert" = "Ten Experts";
+"cosmetic.avatar.expert.desc" = "Earned the hard way.";
+"cosmetic.avatar.liar" = "Straight Face";
+"cosmetic.avatar.liar.desc" = "Earned by never calling wrong.";
+"cosmetic.avatar.president" = "In Office";
+"cosmetic.avatar.president.desc" = "Earned by never losing a deal.";
+"cosmetic.avatar.scarlet" = "Scarlet's Mark";
+"cosmetic.avatar.scarlet.desc" = "Taken from her.";
+"cosmetic.avatar.shark" = "Card Shark";
+"cosmetic.avatar.shark.desc" = "Earned at the poker table.";
+"cosmetic.back.archive" = "Catalogued";
+"cosmetic.back.archive.desc" = "Filed and stamped.";
+"cosmetic.back.deck" = "House Mark";
+"cosmetic.back.deck.desc" = "The mark on every DECK card.";
+"cosmetic.back.gold" = "Fifty";
+"cosmetic.back.gold.desc" = "Fifty wins deep.";
+"cosmetic.back.library" = "The Whole Shelf";
+"cosmetic.back.library.desc" = "Every game, won.";
+"cosmetic.back.moon" = "Moonshot";
+"cosmetic.back.moon.desc" = "For taking all twenty-six.";
+"cosmetic.back.motion" = "Blur";
+"cosmetic.back.motion.desc" = "Drawn faster.";
+"cosmetic.back.press" = "Misregister";
+"cosmetic.back.press.desc" = "Two plates, a hair apart.";
+"cosmetic.back.royal" = "Royal";
+"cosmetic.back.royal.desc" = "Crimson and gold, for the best hand there is.";
+"cosmetic.back.speed" = "Motion Lines";
+"cosmetic.back.speed.desc" = "Drawn fast.";
+"cosmetic.back.spray" = "Sprayed";
+"cosmetic.back.spray.desc" = "Straight off the wall.";
+"cosmetic.back.stencil" = "Stencil";
+"cosmetic.back.stencil.desc" = "Cut, not printed.";
+"cosmetic.back.streak" = "Thirty Days";
+"cosmetic.back.streak.desc" = "One for every day.";
+"cosmetic.back.table" = "Around The Table";
+"cosmetic.back.table.desc" = "For playing with other people.";
+"cosmetic.back.web" = "Eight Legs";
+"cosmetic.back.web.desc" = "Eight runs, eight legs.";
+"cosmetic.sound.felt" = "Felt";
+"cosmetic.sound.felt.desc" = "Softer, slower, lower.";
+"cosmetic.sound.paper" = "Paper";
+"cosmetic.sound.paper.desc" = "Snaps and shuffles.";
+"cosmetic.sound.press" = "Print Shop";
+"cosmetic.sound.press.desc" = "Sharper, with a little machinery in it.";
+"cosmetic.table.felt" = "Painted Felt";
+"cosmetic.table.felt.desc" = "Green, but not that green.";
+"cosmetic.table.ink" = "Ink Field";
+"cosmetic.table.ink.desc" = "Flat black, one quiet suit.";
+"cosmetic.table.paper" = "Torn Paper";
+"cosmetic.table.paper.desc" = "Cream, with the edges going.";
+"cosmetic.table.press" = "Press Sheet";
+"cosmetic.table.press.desc" = "Registration marks and all.";
+"cosmetic.theme.archive" = "Archive";
+"cosmetic.theme.archive.desc" = "Cream stock, black type, red stamps.";
+"cosmetic.theme.midnight" = "Midnight Table";
+"cosmetic.theme.midnight.desc" = "A dark green table for playing late.";
+"cosmetic.theme.streetPrint" = "Street Print";
+"cosmetic.theme.streetPrint.desc" = "Black ground, cream paper, red spray, blue stencil.";
+"cosmetic.theme.sundayComic" = "Sunday Comic";
+"cosmetic.theme.sundayComic.desc" = "Warm newsprint, heavy ink, yellow accents.";
+
+/* MARK: hint */
+"hint.cheat.count" = "You hold %@ of that rank. The more you hold, the less likely their claim is — and the bigger the pile, the more a wrong call costs.";
+"hint.cheat.impossible" = "You hold %@ of them and they claimed %@. There are only four in the pack, so at least one of those is a lie.";
+"hint.cheat.mustLie" = "You have no %@s, so whatever you put down is a lie. Lay one card, not three — a small lie is a smaller loss.";
+"hint.cheat.truth" = "You can play %@ honestly. Getting rid of cards matters, but so does keeping a rank back for when you are forced to lie later.";
+"hint.crazy8.matches" = "These %@ cards match the suit or the rank. Saving your eight for a suit you cannot follow is usually worth more than playing it now.";
+"hint.crazy8.mustDraw" = "Nothing in your hand matches %@ or the top rank, so you draw.";
+"hint.crazy8.onlyWild" = "Only your eight will go. Nominate the suit you hold most of.";
+"hint.crazy8.penalty" = "A two was played against you. Take %@ cards before you can play again.";
+"hint.euchre.bidding" = "Count the bowers, not the suits: with the jack of %@ and the other jack of the same colour you already hold the two best cards. You have %@ cards that would be trump.";
+"hint.euchre.discard" = "Throw a singleton in a side suit if you can — being void lets you trump in later.";
+"hint.euchre.follow" = "Three tricks out of five is all the makers need. Work out which side is short and play to that.";
+"hint.euchre.trumping" = "Remember the left bower counts as trump, not as its printed suit. Spending a bower to take a trick nobody was contesting is how hands get euchred.";
+"hint.freecell.cellsFull" = "Every cell is full, so you can only move one card at a time. Emptying a cell is more urgent than anything else on the board.";
+"hint.freecell.emptyColumn" = "An empty column doubles what you can lift — you can move %@ cards. Filling it costs you that, so think before you park a king there.";
+"hint.freecell.plan" = "Dig for the aces first. Every card you send up is one fewer thing the cells have to hold.";
+"hint.freecell.stuck" = "Nothing moves. Undo back to the last point where a cell was free — that is almost always where it went wrong.";
+"hint.gin.canKnock" = "You are down to %@ deadwood, so you can knock. Knocking small wins small; holding on for gin wins more and loses badly to an undercut.";
+"hint.gin.discardHigh" = "Your deadwood is %@. Throw the highest card that is not part of anything — and prefer one your opponent has shown no interest in.";
+"hint.gin.drawStock" = "The upcard does not help, and taking it would tell your opponent what you are building. Draw blind.";
+"hint.gin.takeDiscard" = "That card cuts your deadwood by %@. Taking it also tells your opponent what you are collecting — worth it here.";
+"hint.gofish.listen" = "Somebody already asked for %@s, so they hold at least one. You hold one too — ask them.";
+"hint.gofish.nearBook" = "You are closest to a book of %@s. Asking for what you hold most of finishes books fastest.";
+"hint.hearts.discard" = "You are void, so nothing you play can win this trick. That makes it the moment to get rid of the Queen of Spades or a high heart.";
+"hint.hearts.follow" = "You hold %@, so you must follow. Play under the highest card already down and you cannot take the trick.";
+"hint.hearts.lead" = "Hearts are not broken, so you lead a black or diamond card. Leading low keeps you off the trick.";
+"hint.hearts.leadOpen" = "Leading a low card keeps the trick away from you. Whoever wins it takes whatever is in it.";
+"hint.hearts.passing" = "Pass your high spades if you hold fewer than three, and dump a whole short suit so you can discard into it later.";
+"hint.klondike.draw" = "Nothing on the tableau moves the game forward, so turn the stock and see what it gives you.";
+"hint.klondike.emptyColumn" = "Clearing this column gives you somewhere to put a king. That is worth more right now than another card on a foundation.";
+"hint.klondike.foundation" = "These can go up to a foundation. Sending low cards early is safe; hold a card back only while a lower one of the opposite colour still needs somewhere to sit.";
+"hint.klondike.shuffleAround" = "Only sideways moves are left. Prefer the one that exposes a face-down card, even if it looks like less progress.";
+"hint.klondike.stuck" = "There is no legal move left. This deal cannot be finished — deal a new one.";
+"hint.klondike.turnUp" = "Moving this run turns up the card underneath it. Uncovering cards is worth more than anything else on the board.";
+"hint.poker.made" = "You hold %@. Betting is how you get paid; checking a strong hand only helps opponents catch up for free.";
+"hint.poker.offsuit" = "Unpaired, unsuited cards need help from the board. Position matters more than the cards here.";
+"hint.poker.pair" = "A pocket pair is already a made hand. It plays well against one or two opponents and badly against five.";
+"hint.poker.potOdds" = "You hold %@. Calling %@ into %@ means you need to win about %@% of the time to break even.";
+"hint.poker.suited" = "Suited cards make a flush about one time in sixteen by the river — worth a call in position, not worth a big raise.";
+"hint.president.hold" = "Passing when you could play is often right: whoever plays last leads next, and leading is worth more than shedding one card.";
+"hint.president.lead" = "You have the lead, so you choose the size. Leading a pair or a triple burns other players' matching cards while you still hold singles to finish with.";
+"hint.president.mustPass" = "Nothing you hold beats that, so you pass. Once everybody passes, whoever played last leads again.";
+"hint.rummy.canMeld" = "You can lay %@ meld(s) down. Melding banks the points but tells everybody what you are collecting, and lets them lay off on you.";
+"hint.rummy.discardHigh" = "Throw the high card that is doing the least work. Watch what your opponents pick up — anything near it is dangerous.";
+"hint.rummy.drawStock" = "The discard does not finish anything. Draw blind and keep your intentions to yourself.";
+"hint.rummy.takeDiscard" = "That card completes a meld. Taking from the discard pile shows your hand though — think about whether it is worth the read.";
+"hint.spades.bags" = "You already have your %@. Extra tricks become bags, and ten bags costs a hundred points — duck from here.";
+"hint.spades.bidding" = "Count your certain tricks: aces, guarded kings, and every spade past the third. You hold %@ spades and %@ aces.";
+"hint.spades.contract" = "You still need %@. Spades beat everything, so a low spade on a suit you are void in is a trick nobody can take from you.";
+"hint.spades.nil" = "You bid nil, so every trick is a disaster. Play your highest losing card and stay off the lead.";
+"hint.speed.playable" = "You have %@ cards that fit. Playing the one that leaves you a follow-up on the same pile is worth more than playing the first one you see.";
+"hint.speed.stuck" = "Nothing in your hand fits either pile. Watch for the moment your opponent changes one — that is when your card becomes playable.";
+"hint.spider.empty" = "An empty column is the most valuable thing on the board. Use it to unpick a mixed pile, not to park a king you cannot move again.";
+"hint.spider.sameSuit" = "Building in the same suit is what actually wins Spider — a mixed pile looks tidy and cannot be moved. Prefer the move that keeps a suit together, even if it uncovers less.";
+"hint.spider.stuck" = "Nothing moves and there is no row left to deal. Undo, or start a new deal.";
+"hint.spider.uncover" = "There are %@ cards still face down. Uncovering them beats tidying the columns you can already see.";
+
+/* MARK: premium */
+"premium.benefit.attempts" = "Unlimited daily attempts";
+"premium.benefit.attempts.detail" = "Three a day becomes as many as you like.";
+"premium.benefit.cosmetics" = "The premium decks and themes";
+"premium.benefit.cosmetics.detail" = "The ones you cannot earn. Most of the good ones you still have to.";
+"premium.benefit.stats" = "Deeper statistics";
+"premium.benefit.stats.detail" = "Every metric each game reports, not just the headlines.";
+"premium.benefit.variants" = "Every variant";
+"premium.benefit.variants.detail" = "House rules, harder deals and the long-game settings.";
+
+/* MARK: stat */
+"stat.cheat.badCalls" = "Bad calls";
+"stat.cheat.bluffs" = "Bluffs made";
+"stat.cheat.caught" = "Liars caught";
+"stat.crazy8.bestScore" = "Best score";
+"stat.crazy8.eightsPlayed" = "Eights played";
+"stat.crazy8.roundsWon" = "Deals won";
+"stat.duration" = "Time";
+"stat.euchre.bestScore" = "Best score";
+"stat.euchre.euchres" = "Euchres";
+"stat.euchre.loners" = "Loners";
+"stat.euchre.marches" = "Marches";
+"stat.freecell.cells" = "Fewest cells";
+"stat.freecell.fewestMoves" = "Fewest moves";
+"stat.gin.bestScore" = "Best score";
+"stat.gin.gins" = "Gins";
+"stat.gin.knocks" = "Knocks";
+"stat.gin.undercuts" = "Undercuts";
+"stat.gofish.books" = "Books";
+"stat.gofish.luckyDraws" = "Lucky draws";
+"stat.hearts.bestScore" = "Lowest score";
+"stat.hearts.moonShots" = "Moons shot";
+"stat.hearts.queens" = "Queens taken";
+"stat.hearts.tricks" = "Tricks";
+"stat.hints" = "Hints";
+"stat.klondike.bestScore" = "Best score";
+"stat.klondike.fewestMoves" = "Fewest moves";
+"stat.klondike.foundations" = "Cards home";
+"stat.poker.bestHand" = "Best hand";
+"stat.poker.biggestPot" = "Biggest pot";
+"stat.poker.handsPlayed" = "Hands played";
+"stat.poker.handsWon" = "Hands won";
+"stat.poker.showdowns" = "Showdowns won";
+"stat.president.bestScore" = "Best score";
+"stat.president.bombs" = "Bombs";
+"stat.president.terms" = "Times President";
+"stat.rummy.bestScore" = "Best score";
+"stat.rummy.melds" = "Melds";
+"stat.rummy.timesOut" = "Went out";
+"stat.spades.bags" = "Bags";
+"stat.spades.bestScore" = "Best score";
+"stat.spades.nils" = "Nils made";
+"stat.spades.tricks" = "Tricks";
+"stat.speed.cardsPlayed" = "Cards played";
+"stat.speed.fewestFlips" = "Fewest resets";
+"stat.spider.fewestMoves" = "Fewest moves";
+"stat.spider.hardestSuits" = "Hardest suits";
+"stat.turns" = "Turns";
+"stat.undos" = "Undos";
+"stat.war.battles" = "Battles won";
+"stat.war.shortestGame" = "Shortest game";
+"stat.war.wars" = "Wars";
+
+/* MARK: tutorial */
+"tutorial.cheat.call.body" = "If you think somebody lied, say so. If you are right they take the pile; if you are wrong, you do.";
+"tutorial.cheat.call.title" = "Or call it";
+"tutorial.cheat.count.body" = "Four of each rank exist. If you hold three and they claim two, one of those is a lie.";
+"tutorial.cheat.count.title" = "Count";
+"tutorial.cheat.goal.body" = "Put cards down claiming a rank. They do not have to be that rank.";
+"tutorial.cheat.goal.title" = "Get rid of them";
+"tutorial.cheat.lay.body" = "Put one to four cards face down and say what they are.";
+"tutorial.cheat.lay.title" = "Claim";
+"tutorial.crazy8.draw.body" = "Then you draw. Keep drawing until something fits.";
+"tutorial.crazy8.draw.title" = "Nothing goes?";
+"tutorial.crazy8.eights.body" = "An eight can be played on anything — and you say what suit comes next.";
+"tutorial.crazy8.eights.title" = "Eights are wild";
+"tutorial.crazy8.finish.body" = "Play out the rest of the hand. Whoever empties first takes the deal.";
+"tutorial.crazy8.finish.title" = "Finish the deal";
+"tutorial.crazy8.goal.body" = "Play every card in your hand before anybody else does.";
+"tutorial.crazy8.goal.title" = "Get rid of them all";
+"tutorial.crazy8.match.body" = "Play a card that matches the suit or the rank of the one on the pile. Tap one.";
+"tutorial.crazy8.match.title" = "Match it";
+"tutorial.euchre.alone.body" = "Sit your partner out and take all five for four points. Or get euchred for two.";
+"tutorial.euchre.alone.title" = "Going alone";
+"tutorial.euchre.bowers.body" = "The jack of trumps is the best card. The jack of the same colour is the second best — and it counts as trump.";
+"tutorial.euchre.bowers.title" = "The bowers";
+"tutorial.euchre.goal.body" = "Three of the five wins the hand. Twenty-four cards, four players, two teams.";
+"tutorial.euchre.goal.title" = "Five tricks";
+"tutorial.euchre.order.body" = "Order the dealer to take the turned card, or pass and name a suit yourself.";
+"tutorial.euchre.order.title" = "Name trump";
+"tutorial.freecell.cells.body" = "Each one holds a single card. Each empty one doubles what you can move at once.";
+"tutorial.freecell.cells.title" = "Four cells";
+"tutorial.freecell.goal.body" = "Every card is face up from the start. Almost every deal can be won.";
+"tutorial.freecell.goal.title" = "Everything visible";
+"tutorial.freecell.lift.body" = "Down in alternating colours, as before. Move one now.";
+"tutorial.freecell.lift.title" = "Move a run";
+"tutorial.gin.discard.body" = "End your turn by discarding. Throw high, and avoid what they are collecting.";
+"tutorial.gin.discard.title" = "Throw one";
+"tutorial.gin.draw.body" = "From the stock, or from the discard pile — but taking the discard tells your opponent what you want.";
+"tutorial.gin.draw.title" = "Take one";
+"tutorial.gin.goal.body" = "Three of a rank, or three in sequence in a suit. Everything else is deadwood.";
+"tutorial.gin.goal.title" = "Sets and runs";
+"tutorial.gin.knock.body" = "Under ten deadwood and you can end the hand. Zero is gin, and worth more.";
+"tutorial.gin.knock.title" = "Knock";
+"tutorial.gin.melds.body" = "Aces are one, faces are ten. Get your deadwood down to ten and you can knock.";
+"tutorial.gin.melds.title" = "What counts";
+"tutorial.gofish.ask.body" = "You may only ask for a rank you already hold. Everybody hears the question.";
+"tutorial.gofish.ask.title" = "Ask somebody";
+"tutorial.gofish.books.body" = "What other people ask for tells you what they hold. That is the whole game.";
+"tutorial.gofish.books.title" = "Listen";
+"tutorial.gofish.goal.body" = "Collect four of a rank to make a book. Most books wins.";
+"tutorial.gofish.goal.title" = "Four of a kind";
+"tutorial.hearts.follow.body" = "If you hold the suit that was led, you must play it. Play one now.";
+"tutorial.hearts.follow.title" = "Follow the suit";
+"tutorial.hearts.goal.body" = "Every heart is a point against you and the Queen of Spades is thirteen. Low score wins.";
+"tutorial.hearts.goal.title" = "Take nothing";
+"tutorial.hearts.moon.body" = "Take all twenty-six and everybody else gets them instead. It rarely works. It is worth trying.";
+"tutorial.hearts.moon.title" = "Or take everything";
+"tutorial.hearts.pass.body" = "Choose three cards to give away. High spades and a short suit are the usual answer.";
+"tutorial.hearts.pass.title" = "Pass three";
+"tutorial.hearts.queen.body" = "Thirteen points in one card. Get rid of her the moment you cannot win the trick.";
+"tutorial.hearts.queen.title" = "The Queen";
+"tutorial.klondike.foundation.body" = "An ace starts a foundation, then twos, then threes. Do not send them up too early.";
+"tutorial.klondike.foundation.title" = "Send them home";
+"tutorial.klondike.goal.body" = "Build all four suits up from the ace. That is the whole game.";
+"tutorial.klondike.goal.title" = "Ace to king";
+"tutorial.klondike.kings.body" = "An empty column takes a king and nothing else. Save one.";
+"tutorial.klondike.kings.title" = "Kings only";
+"tutorial.klondike.stock.body" = "When nothing on the table moves, turn a card.";
+"tutorial.klondike.stock.title" = "Turn the stock";
+"tutorial.klondike.tableau.body" = "Red on black, black on red, one rank at a time. Move a card now.";
+"tutorial.klondike.tableau.title" = "Down, alternating";
+"tutorial.poker.act.body" = "Fold, call or raise. Position matters as much as the cards do.";
+"tutorial.poker.act.title" = "Your move";
+"tutorial.poker.blinds.body" = "Two players put money in before anyone has seen a card. That is what there is to play for.";
+"tutorial.poker.blinds.title" = "Blinds";
+"tutorial.poker.board.body" = "Three cards, then one, then one. Betting between each.";
+"tutorial.poker.board.title" = "The board";
+"tutorial.poker.goal.body" = "Make the best five from your two and the five in the middle. Or make everybody else fold.";
+"tutorial.poker.goal.title" = "Two cards each";
+"tutorial.poker.ranking.body" = "Straight flush, quads, full house, flush, straight, trips, two pair, pair, high card.";
+"tutorial.poker.ranking.title" = "What beats what";
+"tutorial.poker.showdown.body" = "Everybody still in turns their cards over. Best hand takes the pot.";
+"tutorial.poker.showdown.title" = "Showdown";
+"tutorial.president.goal.body" = "Shed your hand. First is President; last is Scum.";
+"tutorial.president.goal.title" = "First out wins";
+"tutorial.president.pass.body" = "When everybody passes, the pile is cleared and whoever played last leads.";
+"tutorial.president.pass.title" = "Passing is fine";
+"tutorial.president.sets.body" = "Play the same number of cards, of a higher rank. Or pass.";
+"tutorial.president.sets.title" = "Beat the pile";
+"tutorial.president.swap.body" = "Next deal, the Scum hands their two best cards to the President. That is the sting.";
+"tutorial.president.swap.title" = "The exchange";
+"tutorial.rummy.goal.body" = "Three of a rank, or three in sequence in a suit. Get rid of everything.";
+"tutorial.rummy.goal.title" = "Melds";
+"tutorial.rummy.layoff.body" = "You can add to anybody's meld, including your opponents'.";
+"tutorial.rummy.layoff.title" = "Lay off";
+"tutorial.rummy.meld.body" = "Melding banks the cards — and shows the table what you are collecting.";
+"tutorial.rummy.meld.title" = "Lay it down";
+"tutorial.rummy.out.body" = "Discard your last card and the hand ends. Everybody else counts what they are holding.";
+"tutorial.rummy.out.title" = "Going out";
+"tutorial.spades.bags.body" = "Every trick past your bid is a bag. Ten bags costs a hundred points.";
+"tutorial.spades.bags.title" = "Watch the bags";
+"tutorial.spades.bid.body" = "Count aces, guarded kings and every spade past the third.";
+"tutorial.spades.bid.title" = "Your bid";
+"tutorial.spades.goal.body" = "Bid the tricks you will take, then take exactly that many. Partnership game.";
+"tutorial.spades.goal.title" = "Say a number";
+"tutorial.spades.trump.body" = "A spade beats any other suit. You cannot lead one until somebody has thrown one away.";
+"tutorial.spades.trump.title" = "Spades win";
+"tutorial.speed.adjacent.body" = "A seven goes on a six or an eight. Aces join kings and twos.";
+"tutorial.speed.adjacent.title" = "One above or below";
+"tutorial.speed.goal.body" = "Both of you play at once, onto the same two piles.";
+"tutorial.speed.goal.title" = "No turns";
+"tutorial.speed.stuck.body" = "When neither of you can move, a new card goes on each pile.";
+"tutorial.speed.stuck.title" = "Both stuck";
+"tutorial.spider.deal.body" = "When nothing moves, deal ten more — but every column has to have a card in it first.";
+"tutorial.spider.deal.title" = "Deal a row";
+"tutorial.spider.goal.body" = "Clear king to ace in a single suit, eight times.";
+"tutorial.spider.goal.title" = "Eight runs";
+"tutorial.spider.suits.body" = "You can stack any card on one a rank higher, but only a same-suit run moves as a unit.";
+"tutorial.spider.suits.title" = "Same suit";
+"tutorial.war.flip.body" = "That is the whole move. Tap.";
+"tutorial.war.flip.title" = "Turn one";
+"tutorial.war.goal.body" = "Split the pack, turn one each, higher card takes both.";
+"tutorial.war.goal.title" = "Highest card wins";
+"tutorial.war.war.body" = "A tie means three cards face down and one up. Winner takes the lot.";
+"tutorial.war.war.title" = "War";
+
+/* MARK: hint (war) */
+"hint.war.noChoice" = "There is nothing to decide in War — that is the game. Turn the card.";
